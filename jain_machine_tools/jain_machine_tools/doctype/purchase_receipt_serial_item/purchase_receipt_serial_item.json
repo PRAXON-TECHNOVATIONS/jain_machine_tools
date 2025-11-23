@@ -1,0 +1,55 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2025-11-23 18:39:38.066720",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "column_break_kzyj",
+  "item_code",
+  "serial_no",
+  "vendor_manufacture_date",
+  "warranty_period_months"
+ ],
+ "fields": [
+  {
+   "fieldname": "item_code",
+   "fieldtype": "Data",
+   "label": "Item Code"
+  },
+  {
+   "fieldname": "vendor_manufacture_date",
+   "fieldtype": "Date",
+   "label": "Vendor Manufacture Date"
+  },
+  {
+   "fieldname": "column_break_kzyj",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "warranty_period_months",
+   "fieldtype": "Int",
+   "label": "Warranty Period (Months)"
+  },
+  {
+   "fieldname": "serial_no",
+   "fieldtype": "Data",
+   "label": "Serial No"
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2025-11-23 18:43:43.691815",
+ "modified_by": "Administrator",
+ "module": "Jain Machine Tools",
+ "name": "Purchase Receipt Serial Item",
+ "owner": "Administrator",
+ "permissions": [],
+ "row_format": "Dynamic",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}
