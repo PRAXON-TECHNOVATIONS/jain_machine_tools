@@ -7,7 +7,9 @@
  "engine": "InnoDB",
  "field_order": [
   "item_code",
-  "serial_no"
+  "serial_no",
+  "warranty_expiry_date",
+  "vendor_manufacturing_date"
  ],
  "fields": [
   {
@@ -23,13 +25,25 @@
    "in_list_view": 1,
    "label": "Serial No",
    "options": "Serial No"
+  },
+  {
+   "fieldname": "vendor_manufacturing_date",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "label": "Vendor Manufacturing Date"
+  },
+  {
+   "fieldname": "warranty_expiry_date",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "label": "Warranty Expiry Date"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2025-11-23 19:31:13.153660",
+ "modified": "2025-11-23 19:58:46.330535",
  "modified_by": "Administrator",
  "module": "Jain Machine Tools",
  "name": "Barcode Printing Table",

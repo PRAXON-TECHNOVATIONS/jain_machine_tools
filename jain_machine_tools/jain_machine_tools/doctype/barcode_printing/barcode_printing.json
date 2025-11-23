@@ -10,6 +10,7 @@
   "column_break_gorz",
   "item_name",
   "purchase_receipt",
+  "company",
   "section_break_aerv",
   "table_hjbk"
  ],
@@ -54,12 +55,19 @@
    "fieldname": "table_hjbk",
    "fieldtype": "Table",
    "options": "Barcode Printing Table"
+  },
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "label": "Company",
+   "options": "Company",
+   "reqd": 1
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-11-23 19:31:18.416641",
+ "modified": "2025-11-23 19:57:45.612219",
  "modified_by": "Administrator",
  "module": "Jain Machine Tools",
  "name": "Barcode Printing",
