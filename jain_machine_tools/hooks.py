@@ -31,7 +31,6 @@ app_license = "mit"
 # include js, css files in header of web template
 # web_include_css = "/assets/jain_machine_tools/css/jain_machine_tools.css"
 # web_include_js = "/assets/jain_machine_tools/js/jain_machine_tools.js"
-
 # include custom scss in every website theme (without file extension ".scss")
 # website_theme_scss = "jain_machine_tools/public/scss/website"
 
@@ -45,7 +44,9 @@ app_license = "mit"
 # include js in doctype views
 # doctype_js = {"doctype" : "public/js/doctype.js"}
 doctype_js = {
-    "Purchase Receipt": "public/js/purchase_receipt_custom.js"
+    "Purchase Receipt": "public/js/purchase_receipt_custom.js",
+    "Supplier": "public/js/supplier_terms.js",
+    "Material Request": "public/js/item_duplicate.js"
 }
 
 # doctype_list_js = {"doctype" : "public/js/doctype_list.js"}
@@ -245,4 +246,13 @@ doctype_js = {
 # default_log_clearing_doctypes = {
 # 	"Logging DocType Name": 30  # days to retain logs
 # }
+standard_queries = {
+    "Supplier": "jain_machine_tools.api.supplier_filter.supplier_query"
+}
 
+fixtures = [
+    'Custom Field',
+    {"doctype": "Workflow", "filters": [["name" , "in" , ("Supplier Approval", "Material Request Approval")]]},
+    {"doctype": "Notification", "filters": [["name" , "in" , ("New Supplier Created – Approval Required Mail", "New Supplier Created – Approval Required Notification")]]},
+
+]
