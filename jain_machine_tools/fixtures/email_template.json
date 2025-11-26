@@ -1,0 +1,12 @@
+[
+ {
+  "docstatus": 0,
+  "doctype": "Email Template",
+  "modified": "2025-11-26 01:37:26.376791",
+  "name": "Request for Quotation Email",
+  "response": "<div class=\"ql-editor read-mode\"><p>Dear {{ supplier_name }},</p><p>We hope you are doing well. Please find attached our Request for Quotation</p><p>(RFQ) for the list of items mentioned below. We request you to provide your</p><p>best possible price, delivery timeline, payment terms, and warranty</p><p>details. This information will help us finalize procurement planning for the</p><p>upcoming requirement.</p><p>Kindly ensure the quotation is complete, competitive, and valid for the</p><p>specified duration. In case you need clarifications, feel free to reach out to</p><p>us.</p><p>Thank You &amp; Regards</p><p>JMT Purchase Team</p></div>",
+  "response_html": null,
+  "subject": "Request for Quotation (RFQ) for the list of items",
+  "use_html": 0
+ }
+]
