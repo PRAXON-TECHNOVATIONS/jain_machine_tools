@@ -8,7 +8,7 @@ frappe.ui.form.on("Material Request Item", {
             frappe.msgprint({
                 title: "Duplicate Item",
                 indicator: "red",
-                message: `Item <b>${row.item_code}</b> is already Added.`
+                message: `Item <b>${row.item_code}</b> has been entered multiple times`
             });
             frappe.model.set_value(cdt, cdn, "item_code", "");
         }
