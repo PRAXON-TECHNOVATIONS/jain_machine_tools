@@ -46,7 +46,9 @@ app_license = "mit"
 doctype_js = {
     "Purchase Receipt": "public/js/purchase_receipt_custom.js",
     "Supplier": "public/js/supplier_terms.js",
-    "Material Request": "public/js/item_duplicate.js"
+    "Supplier Quotation": "public/js/supplier_quot_terms.js",
+    "Material Request": "public/js/mr_item_duplicate.js",
+    "Request for Quotation":"public/js/rfq_item_duplicate.js",  
 }
 
 # doctype_list_js = {"doctype" : "public/js/doctype_list.js"}
@@ -150,6 +152,13 @@ doctype_js = {
 # 	}
 # }
 
+doc_events = {
+    "Supplier Quotation": {
+        "validate": "jain_machine_tools.api.supplier_quotation.validate_duplicate_sq"
+    }
+}
+
+
 # Scheduled Tasks
 # ---------------
 
@@ -252,7 +261,7 @@ standard_queries = {
 
 fixtures = [
     'Custom Field',
-    {"doctype": "Workflow", "filters": [["name" , "in" , ("Supplier Approval", "Material Request Approval")]]},
-    {"doctype": "Notification", "filters": [["name" , "in" , ("New Supplier Created – Approval Required Mail", "New Supplier Created – Approval Required Notification")]]},
+    {"doctype": "Workflow", "filters": [["name" , "in" , ("Purchase Order Approval","Supplier Approval", "Material Request Approval")]]},
+    {"doctype": "Notification", "filters": [["name" , "in" , ("PO Send to Supplier After Approval","Purchase Order Approval - Notify Purchase Manager","New Supplier Created – Approval Required Mail", "New Supplier Created – Approval Required Notification")]]},
 
 ]
