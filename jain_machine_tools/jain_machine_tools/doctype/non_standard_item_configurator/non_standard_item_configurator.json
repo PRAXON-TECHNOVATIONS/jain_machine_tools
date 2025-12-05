@@ -5,32 +5,40 @@
  "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
+  "non_standard_details_section",
   "base_item",
-  "base_price",
+  "manufacturer",
   "frame_size",
-  "voltage",
   "frequency",
-  "vpi_required",
   "paint_type",
+  "column_break_grcs",
+  "select_base_price",
+  "base_price",
+  "voltage",
+  "vpi_required",
   "mounting",
+  "section_break_hcgs",
   "generated_item_code",
-  "calculated_price",
   "applied_rules",
+  "create_item",
+  "column_break_owik",
   "final_description",
-  "create_item"
+  "calculated_price"
  ],
  "fields": [
   {
    "fieldname": "base_item",
    "fieldtype": "Link",
    "label": "Base Item",
-   "options": "Item"
+   "options": "Item",
+   "reqd": 1
   },
   {
+   "fetch_from": "select_base_price.price_list_rate",
    "fieldname": "base_price",
-   "fieldtype": "Link",
+   "fieldtype": "Float",
    "label": "Base Price",
-   "options": "Item Price"
+   "read_only": 1
   },
   {
    "fieldname": "frame_size",
@@ -41,13 +49,13 @@
    "fieldname": "voltage",
    "fieldtype": "Select",
    "label": "Voltage",
-   "options": "STANDARD\n220V"
+   "options": "Standard (415V)\n220V\n380V\n460V\n690V\nDual Voltage\nTriple Voltage\nOther Voltage (< 500V)\nOther Voltage (> 500V)\nInverter Duty Winding (<= 500V)\nInverter Duty Winding (> 500V)"
   },
   {
    "fieldname": "frequency",
    "fieldtype": "Select",
    "label": "Frequency",
-   "options": "50Hz\n60Hz\n70Hz\n80Hz"
+   "options": "50 Hz (Standard)\n60 Hz"
   },
   {
    "default": "0",
@@ -59,45 +67,83 @@
    "fieldname": "paint_type",
    "fieldtype": "Select",
    "label": "Paint Type",
-   "options": "STANDARD\nEpoxy"
+   "options": "Standard Paint\nEpoxy Paint\nPU Paint (Polyurethane)\nEpoxy Gel Coat\nZinc Silicate\nC3 / C4 / C5 High Grade\nPrimer Only (Red Oxide)"
   },
   {
    "fieldname": "mounting",
    "fieldtype": "Select",
    "label": "Mounting",
-   "options": "STANDARD\nFloor"
+   "options": "B3 (Foot Mounted) (Standard)\nB5 (Flange Mounted)\nB14 (Face Mounted)\nB35 (Foot + Flange)\nB34 (Foot + Face)\nV1 (Vertical Shaft Down)"
   },
   {
    "fieldname": "generated_item_code",
    "fieldtype": "Link",
    "label": "Generated Item Code",
-   "options": "Item"
+   "options": "Item",
+   "read_only": 1
   },
   {
    "fieldname": "calculated_price",
    "fieldtype": "Currency",
-   "label": "Calculated Price"
+   "label": "Calculated Price",
+   "read_only": 1
   },
   {
    "fieldname": "applied_rules",
    "fieldtype": "Small Text",
-   "label": "Applied Rules"
+   "label": "Applied Rules",
+   "read_only": 1
   },
   {
    "fieldname": "final_description",
    "fieldtype": "Small Text",
-   "label": "Final Description"
+   "label": "Final Description",
+   "read_only": 1
   },
   {
    "fieldname": "create_item",
    "fieldtype": "Button",
    "label": "Create Item"
+  },
+  {
+   "fieldname": "non_standard_details_section",
+   "fieldtype": "Section Break",
+   "label": "Non Standard Item Creation Details"
+  },
+  {
+   "fetch_from": "base_item.brand",
+   "fetch_if_empty": 1,
+   "fieldname": "manufacturer",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Manufacturer",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_grcs",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "select_base_price",
+   "fieldtype": "Link",
+   "label": "Select Base Price",
+   "options": "Item Price",
+   "reqd": 1
+  },
+  {
+   "fieldname": "section_break_hcgs",
+   "fieldtype": "Section Break",
+   "label": "Non Standard Created Item"
+  },
+  {
+   "fieldname": "column_break_owik",
+   "fieldtype": "Column Break"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-12-04 18:18:15.126492",
+ "modified": "2025-12-05 16:39:36.044750",
  "modified_by": "Administrator",
  "module": "Jain Machine Tools",
  "name": "Non Standard Item Configurator",
