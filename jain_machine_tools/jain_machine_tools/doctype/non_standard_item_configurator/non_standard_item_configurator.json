@@ -1,0 +1,123 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2025-12-03 16:39:56.266983",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "base_item",
+  "base_price",
+  "frame_size",
+  "voltage",
+  "frequency",
+  "vpi_required",
+  "paint_type",
+  "mounting",
+  "generated_item_code",
+  "calculated_price",
+  "applied_rules",
+  "final_description",
+  "create_item"
+ ],
+ "fields": [
+  {
+   "fieldname": "base_item",
+   "fieldtype": "Link",
+   "label": "Base Item",
+   "options": "Item"
+  },
+  {
+   "fieldname": "base_price",
+   "fieldtype": "Link",
+   "label": "Base Price",
+   "options": "Item Price"
+  },
+  {
+   "fieldname": "frame_size",
+   "fieldtype": "Int",
+   "label": "Frame Size"
+  },
+  {
+   "fieldname": "voltage",
+   "fieldtype": "Select",
+   "label": "Voltage",
+   "options": "STANDARD\n220V"
+  },
+  {
+   "fieldname": "frequency",
+   "fieldtype": "Select",
+   "label": "Frequency",
+   "options": "50Hz\n60Hz\n70Hz\n80Hz"
+  },
+  {
+   "default": "0",
+   "fieldname": "vpi_required",
+   "fieldtype": "Check",
+   "label": "VPI Required"
+  },
+  {
+   "fieldname": "paint_type",
+   "fieldtype": "Select",
+   "label": "Paint Type",
+   "options": "STANDARD\nEpoxy"
+  },
+  {
+   "fieldname": "mounting",
+   "fieldtype": "Select",
+   "label": "Mounting",
+   "options": "STANDARD\nFloor"
+  },
+  {
+   "fieldname": "generated_item_code",
+   "fieldtype": "Link",
+   "label": "Generated Item Code",
+   "options": "Item"
+  },
+  {
+   "fieldname": "calculated_price",
+   "fieldtype": "Currency",
+   "label": "Calculated Price"
+  },
+  {
+   "fieldname": "applied_rules",
+   "fieldtype": "Small Text",
+   "label": "Applied Rules"
+  },
+  {
+   "fieldname": "final_description",
+   "fieldtype": "Small Text",
+   "label": "Final Description"
+  },
+  {
+   "fieldname": "create_item",
+   "fieldtype": "Button",
+   "label": "Create Item"
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2025-12-04 18:18:15.126492",
+ "modified_by": "Administrator",
+ "module": "Jain Machine Tools",
+ "name": "Non Standard Item Configurator",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}
