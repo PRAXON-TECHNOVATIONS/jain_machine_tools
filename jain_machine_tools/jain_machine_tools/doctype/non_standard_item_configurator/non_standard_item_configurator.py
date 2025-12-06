@@ -1,115 +1,15 @@
 # Copyright (c) 2025, Praxon Technovation and contributors
 # For license information, please see license.txt
 
-# import frappe
-# from frappe.model.document import Document
-
-# # Rules for price increment
-# PRICE_RULES = {
-#     "frame_size": {80: 0, 180: 10},
-#     "voltage": {"Standard": 0, "220V": 5},
-#     "vpi_required": {0: 0, 1: 8},
-#     "paint_type": {"Standard": 0, "Epoxy": 7},
-#     "mounting": {"Standard": 0, "Floor": 3}
-# }
-
-# class NonStandardItemConfigurator(Document):
-
-#     def before_save(self):
-#         self.calculate_price()
-
-#     def calculate_price(self):
-#         if not self.base_price:
-#             frappe.throw("Select Base Price first!")
-
-#         final_price = self.get_base_price_value()
-#         applied_rules_summary = []
-
-#         for field, rules in PRICE_RULES.items():
-#             value = getattr(self, field, None)
-
-#             if field == "vpi_required":
-#                 value = 1 if value else 0
-
-#             if value in rules:
-#                 perc = rules[value]
-#                 amount = final_price * perc / 100
-#                 final_price += amount
-#                 applied_rules_summary.append(f"{field}: {perc}% → {amount:.2f}")
-
-#         self.calculated_price = final_price
-#         self.applied_rules = "\n".join(applied_rules_summary)
-
-#     def get_base_price_value(self):
-#         price_doc = frappe.get_doc("Item Price", self.base_price)
-#         return price_doc.price_list_rate
-
-#     @frappe.whitelist()
-#     def create_item_and_price(self):
-#         if not self.base_item:
-#             frappe.throw("Select Base Item first!")
-
-#         generated_code = f"NS-{self.base_item}-{frappe.utils.now_datetime().strftime('%Y%m%d%H%M%S')}"
-
-#         # Create new Item
-#         item = frappe.get_doc({
-#             "doctype": "Item",
-#             "item_code": generated_code,
-#             "item_name": f"{self.base_item} Non Standard",
-#             "is_stock_item": 1,
-#             "item_group": "Products",
-#             "stock_uom": "Nos",
-#             "gst_hsn_code": "010121"
-#         })
-#         item.insert()
-#         frappe.db.commit()
-
-#         # Create Item Price
-#         frappe.get_doc({
-#             "doctype": "Item Price",
-#             "item_code": generated_code,
-#             "price_list": "Standard Selling",
-#             "price_list_rate": self.calculated_price,
-#             "selling": 1
-#         }).insert()
-#         frappe.db.commit()
-
-#         # Fill fields inside doctype
-#         self.generated_item_code = generated_code
-#         self.final_description = (
-#             f"Generated non-standard item based on {self.base_item} "
-#             f"with final calculated price {self.calculated_price}"
-#         )
-
-#         self.save()
-#         frappe.db.commit()
-
-#         frappe.msgprint(f"Item {generated_code} created with price {self.calculated_price}")
-#         return generated_code
-
-
-# @frappe.whitelist()
-# def get_base_price_query(doctype, txt, searchfield, start, page_len, filters):
-#     if not filters.get("base_item"):
-#         return []
-
-#     return frappe.db.sql("""
-#         SELECT name, price_list_rate
-#         FROM `tabItem Price`
-#         WHERE item_code=%s AND price_list='Standard Selling'
-#         AND name LIKE %s
-#         LIMIT %s
-#     """, (filters["base_item"], f"%{txt}%", page_len), as_dict=True)
-
 import frappe
 from frappe.model.document import Document
 from frappe.utils import flt, now
 
 # --- SIEMENS FIXED RATE DATA ---
 SIEMENS_DATA = {
-    "voltage_adder": {71: 1470, 132: 3360, 160: 8820, 180: 12810, 225: 20160},
-    "mounting_adder": {71: 1155, 132: 3360, 160: 8820, 180: 12810, 225: 29190},
-    "epoxy_paint": {160: 11130, 225: 19110},
+    "voltage_adder": {71: 1470, 80: 1785, 90: 1995, 100: 2415, 112: 3045, 132: 4830, 160: 6510, 180: 8820, 200: 12810, 225: 19110, 250: 39375, 280: 51975, 315: 70350},
+    "mounting_adder": {71: 1155, 80: 1785, 90: 2415, 100: 3045, 112: 3360, 132: 3360, 160: 8820, 180: 12810, 200: 20160, 225: 29190, 250: 45675, 280: 59850, 315: 105525},
+    "epoxy_paint": {71: 2835, 80: 2835, 90: 2835, 100: 4095, 112: 4095, 132: 7560, 160: 12810, 180: 12810, 200: 23940, 225: 23940, 250: 48300, 280: 63000, 315: 101850},
 }
 
 class NonStandardItemConfigurator(Document):
@@ -133,11 +33,14 @@ class NonStandardItemConfigurator(Document):
         # --- Conditions Check ---
         v_val = self.voltage
         f_val = self.frequency
+        m_val = self.mounting
+        p_val = self.paint_type
         
         # Helper bools
         is_volt_changed_hm = v_val not in ["Standard (415V)", "380V"]
         is_freq_changed_hm = f_val == "60 Hz"
-        is_volt_changed_cg = v_val not in ["Standard (415V)", "380V", "460V"]
+        # CG ke liye standard check (Note: >500V wala logic alag se handle hoga)
+        is_volt_changed_cg_basic = v_val not in ["Standard (415V)", "380V", "460V", "Inverter Duty Winding (> 500V)"]
         is_volt_changed_siemens = v_val != "Standard (415V)"
         
         # ============================================================
@@ -162,38 +65,65 @@ class NonStandardItemConfigurator(Document):
                     rules_log.append(f"Frequency ({f_val}): +{pct}% → ₹ {amt:,.0f}")
 
         elif make == "CG Power":
-            if is_volt_changed_cg:
+            # --- CG Special Logic for Inverter Winding > 500V ---
+            if "Inverter Duty Winding (> 500V)" in v_val:
+                if frame >= 280:
+                    # Fixed Price Rule for Large Frames
+                    cost = 25000
+                    total_fixed_cost += cost
+                    rules_log.append(f"Voltage (>500V, Fr:{frame}): +₹ {cost:,.0f}")
+                else:
+                    # 5% Rule for Small Frames
+                    pct = 5
+                    amt = (base * pct) / 100
+                    total_hike_pct += pct
+                    rules_log.append(f"Voltage (>500V, Fr:{frame}): +{pct}% → ₹ {amt:,.0f}")
+            
+            # --- Other Non-Standard Voltages (Dual, Triple, Other) ---
+            elif is_volt_changed_cg_basic:
                 pct = 5
                 amt = (base * pct) / 100
                 total_hike_pct += pct
                 rules_log.append(f"Voltage ({v_val}): +{pct}% → ₹ {amt:,.0f}")
+            
+            # 60Hz is Free for CG
             if f_val == "60 Hz":
-                rules_log.append("Freq 60Hz: Free (CG Standard)")
+                rules_log.append(f"Frequency ({f_val}): Free (CG Standard)")
 
         elif make == "Siemens":
             if is_volt_changed_siemens:
                 cost = self.get_siemens_cost("voltage_adder", frame)
                 total_fixed_cost += cost
-                rules_log.append(f"Voltage Change (Siemens): +₹ {cost:,.0f}")
+                rules_log.append(f"Voltage ({v_val}) (Siemens): +₹ {cost:,.0f}")
 
         # ============================================================
         # 2. MOUNTING LOGIC
         # ============================================================
-        if self.mounting and "B3" not in self.mounting:
-            if make in ["Hindustan Electric Motors", "CG Power"]:
+        
+        if not m_val or ("B3" in m_val and "35" not in m_val and "34" not in m_val):
+            pass 
+
+        elif make in ["Hindustan Electric Motors", "CG Power"]:
+            if "B35" in m_val or "B34" in m_val:
+                pct = 3
+                amt = (base * pct) / 100
+                total_hike_pct += pct
+                rules_log.append(f"Mounting ({m_val}): +{pct}% → ₹ {amt:,.0f}")
+            else:
                 pct = 3 if frame <= 160 else 5
                 amt = (base * pct) / 100
                 total_hike_pct += pct
-                rules_log.append(f"Mounting ({self.mounting}): +{pct}% → ₹ {amt:,.0f}")
-            elif make == "Siemens":
-                cost = self.get_siemens_cost("mounting_adder", frame)
-                total_fixed_cost += cost
-                rules_log.append(f"Mounting (Siemens): +₹ {cost:,.0f}")
+                rules_log.append(f"Mounting ({m_val}): +{pct}% → ₹ {amt:,.0f}")
+
+        elif make == "Siemens":
+            cost = self.get_siemens_cost("mounting_adder", frame)
+            total_fixed_cost += cost
+            rules_log.append(f"Mounting ({m_val}) (Siemens): +₹ {cost:,.0f}")
 
         # ============================================================
         # 3. PAINT LOGIC
         # ============================================================
-        if self.paint_type == "Epoxy Paint":
+        if p_val == "Epoxy Paint":
             if make in ["Hindustan Electric Motors", "CG Power"]:
                 pct = 3
                 amt = (base * pct) / 100
@@ -204,18 +134,59 @@ class NonStandardItemConfigurator(Document):
                 total_fixed_cost += cost
                 rules_log.append(f"Epoxy Paint (Siemens): +₹ {cost:,.0f}")
 
-        elif self.paint_type in ["Zinc Silicate", "PU Paint (Polyurethane)", "C3 / C4 / C5 High Grade"]:
-            pct = 10 if (make == "CG Power" and self.paint_type == "Zinc Silicate") else 15
+        elif p_val == "Epoxy Gel Coat":
+            if make == "Hindustan Electric Motors":
+                pct = 5
+                amt = (base * pct) / 100
+                total_hike_pct += pct
+                rules_log.append(f"Epoxy Gel Coat: +{pct}% → ₹ {amt:,.0f}")
+            elif make == "CG Power":
+                pct = 2
+                amt = (base * pct) / 100
+                total_hike_pct += pct
+                rules_log.append(f"Epoxy Gel Coat / Tropicalization: +{pct}% → ₹ {amt:,.0f}")
+            else:
+                pct = 5
+                amt = (base * pct) / 100
+                total_hike_pct += pct
+                rules_log.append(f"Epoxy Gel Coat: +{pct}% (Est.) → ₹ {amt:,.0f}")
+
+        elif p_val == "PU Paint (Polyurethane)":
+            if make == "Siemens":
+                rules_log.append(f"{p_val} (Siemens): Free/Standard")
+            else:
+                pct = 15
+                amt = (base * pct) / 100
+                total_hike_pct += pct
+                rules_log.append(f"{p_val}: +{pct}% (Est.) → ₹ {amt:,.0f}")
+
+        elif p_val == "Zinc Silicate":
+            if make == "CG Power":
+                pct = 10
+                amt = (base * pct) / 100
+                total_hike_pct += pct
+                rules_log.append(f"Zinc Silicate: +{pct}% → ₹ {amt:,.0f}")
+            else:
+                pct = 15
+                amt = (base * pct) / 100
+                total_hike_pct += pct
+                rules_log.append(f"Zinc Silicate: +{pct}% (Est.) → ₹ {amt:,.0f}")
+        
+        elif p_val == "C3 / C4 / C5 High Grade":
+            pct = 20
             amt = (base * pct) / 100
             total_hike_pct += pct
-            rules_log.append(f"{self.paint_type}: +{pct}% (Est.) → ₹ {amt:,.0f}")
+            rules_log.append(f"High Grade Paint: +{pct}% → ₹ {amt:,.0f}")
+
+        elif p_val == "Primer Only (Red Oxide)":
+            rules_log.append("Primer Only: No Price Reduction")
 
         # ============================================================
         # 4. VPI LOGIC
         # ============================================================
         if self.vpi_required:
             is_chargeable = True
-            if make == "Siemens": is_chargeable = False
+            if make == "Siemens": is_chargeable = False 
             elif make == "Hindustan Electric Motors" and frame >= 250: is_chargeable = False
             elif make == "CG Power" and frame >= 280: is_chargeable = False
             
@@ -224,6 +195,8 @@ class NonStandardItemConfigurator(Document):
                 amt = (base * pct) / 100
                 total_hike_pct += pct
                 rules_log.append(f"VPI Treatment: +{pct}% → ₹ {amt:,.0f}")
+            else:
+                rules_log.append("VPI Treatment: Standard/Free")
 
         # ============================================================
         # FINAL CALCULATION
@@ -235,7 +208,6 @@ class NonStandardItemConfigurator(Document):
         self.applied_rules = "\n".join(rules_log) if rules_log else "Standard Specification"
 
     def generate_description(self):
-        """Creates a professional looking description"""
         base_item_name = frappe.db.get_value("Item", self.base_item, "item_name") or self.base_item
         
         desc_lines = []
@@ -248,7 +220,7 @@ class NonStandardItemConfigurator(Document):
             desc_lines.append(f"• Voltage: {self.voltage}")
         if self.frequency != "50 Hz":
             desc_lines.append(f"• Frequency: {self.frequency}")
-        if self.mounting and "B3" not in self.mounting:
+        if self.mounting and not ("B3" in self.mounting and "35" not in self.mounting and "34" not in self.mounting):
             desc_lines.append(f"• Mounting: {self.mounting}")
         if self.paint_type != "Standard Paint":
             desc_lines.append(f"• Paint Type: {self.paint_type}")
@@ -260,52 +232,51 @@ class NonStandardItemConfigurator(Document):
     def get_siemens_cost(self, key, frame):
         data = SIEMENS_DATA.get(key, {})
         if frame in data: return data[frame]
+        
+        # Fallback logic
+        sorted_frames = sorted(data.keys())
+        for f in sorted_frames:
+            if f >= frame:
+                return data[f]
         return 0
 
     def generate_smart_item_code(self):
-        """
-        Logic: [Base_Item]_[Voltage]_[Freq]_[Mounting]_[Paint]_[VPI]
-        Only adds suffix if value is Non-Standard.
-        """
         suffix_list = []
 
-        # 1. Voltage
-        # Standard 415V gets ignored
+        # Voltage Suffix
         if "380V" in self.voltage: suffix_list.append("380V")
         elif "460V" in self.voltage: suffix_list.append("460V")
         elif "690V" in self.voltage: suffix_list.append("690V")
         elif "Dual" in self.voltage: suffix_list.append("DUAL")
+        elif "Inverter" in self.voltage: suffix_list.append("VFD") # Added VFD suffix for Inverter Duty
 
-        # 2. Frequency
-        # Standard 50Hz gets ignored
+        # Frequency Suffix
         if "60" in self.frequency: suffix_list.append("60HZ")
 
-        # 3. Mounting
-        # Standard B3 (Foot) gets ignored
-        if "B5" in self.mounting: suffix_list.append("B5")
-        elif "B14" in self.mounting: suffix_list.append("B14")
-        elif "B35" in self.mounting: suffix_list.append("B35")
-        elif "B34" in self.mounting: suffix_list.append("B34")
-        elif "V1" in self.mounting: suffix_list.append("V1")
+        # Mounting Suffix
+        if self.mounting and "B3" in self.mounting and "35" not in self.mounting and "34" not in self.mounting:
+             pass 
+        else:
+            if "B5" in self.mounting: suffix_list.append("B5")
+            elif "B14" in self.mounting: suffix_list.append("B14")
+            elif "B35" in self.mounting: suffix_list.append("B35")
+            elif "B34" in self.mounting: suffix_list.append("B34")
+            elif "V18" in self.mounting or "V19" in self.mounting: suffix_list.append("V18")
+            elif "V1" in self.mounting: suffix_list.append("V1")
 
-        # 4. Paint
-        # Standard Paint gets ignored
+        # Paint Suffix
         if "Epoxy" in self.paint_type: suffix_list.append("EPX")
         elif "PU" in self.paint_type: suffix_list.append("PU")
         elif "Zinc" in self.paint_type: suffix_list.append("ZN")
         elif "High Grade" in self.paint_type: suffix_list.append("C4")
 
-        # 5. VPI
+        # VPI Suffix
         if self.vpi_required: suffix_list.append("VPI")
 
-        # Construct final code
         if len(suffix_list) > 0:
-            # Join all parts with underscore
             smart_suffix = "_" + "_".join(suffix_list)
             return f"{self.base_item}{smart_suffix}"
         else:
-            # Case where user selects all standard options but clicks create
-            # Add a generic suffix to avoid duplicate error if really needed
             return f"{self.base_item}_NS"
 
     @frappe.whitelist()
@@ -314,23 +285,17 @@ class NonStandardItemConfigurator(Document):
             frappe.throw("Select Base Item!")
         
         self.calculate_price()
-
-        # Generate Smart Code
         generated_code = self.generate_smart_item_code()
 
-        # Check if Item already exists
         if frappe.db.exists("Item", generated_code):
-            # Item Exists -> Update Price Only
             msg = f"<b>Item Already Exists:</b> {generated_code}<br>"
             
-            # Check/Update Price
             existing_price = frappe.db.get_value("Item Price", {"item_code": generated_code, "price_list": "Standard Buying"}, "name")
             
             if existing_price:
                 frappe.db.set_value("Item Price", existing_price, "price_list_rate", self.calculated_price)
                 msg += f"Price updated to: ₹ {self.calculated_price:,.2f}"
             else:
-                # Create Price if missing
                 new_price = frappe.new_doc("Item Price")
                 new_price.item_code = generated_code
                 new_price.price_list = "Standard Buying"
@@ -340,7 +305,6 @@ class NonStandardItemConfigurator(Document):
                 new_price.insert(ignore_permissions=True)
                 msg += f"New Price added: ₹ {self.calculated_price:,.2f}"
 
-            # Update Configurator Doc
             self.generated_item_code = generated_code
             self.save()
             frappe.db.commit()
@@ -349,7 +313,6 @@ class NonStandardItemConfigurator(Document):
             return generated_code
 
         else:
-            # Item DOES NOT Exist -> Create New
             base_doc = frappe.get_doc("Item", self.base_item)
 
             new_item = frappe.new_doc("Item")
@@ -364,7 +327,6 @@ class NonStandardItemConfigurator(Document):
             new_item.valuation_method = base_doc.valuation_method or "FIFO"
             new_item.insert(ignore_permissions=True)
 
-            # Create Price
             new_price = frappe.new_doc("Item Price")
             new_price.item_code = generated_code
             new_price.price_list = "Standard Buying" 
@@ -373,7 +335,6 @@ class NonStandardItemConfigurator(Document):
             new_price.currency = "INR"
             new_price.insert(ignore_permissions=True)
 
-            # Update Configurator
             self.generated_item_code = generated_code
             self.save()
             frappe.db.commit()

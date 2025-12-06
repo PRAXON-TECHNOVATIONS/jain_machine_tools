@@ -73,7 +73,7 @@
    "fieldname": "mounting",
    "fieldtype": "Select",
    "label": "Mounting",
-   "options": "B3 (Foot Mounted) (Standard)\nB5 (Flange Mounted)\nB14 (Face Mounted)\nB35 (Foot + Flange)\nB34 (Foot + Face)\nV1 (Vertical Shaft Down)"
+   "options": "B3 (Foot Mounted) (Standard)\nB5 (Flange Mounted)\nB14 (Face Mounted)\nB35 (Foot + Flange)\nV18 / V19 (Vertical Special)\nB34 (Foot + Face)\nV1 (Vertical Shaft Down)"
   },
   {
    "fieldname": "generated_item_code",
@@ -143,7 +143,7 @@
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-12-05 16:39:36.044750",
+ "modified": "2025-12-06 17:48:19.658150",
  "modified_by": "Administrator",
  "module": "Jain Machine Tools",
  "name": "Non Standard Item Configurator",
