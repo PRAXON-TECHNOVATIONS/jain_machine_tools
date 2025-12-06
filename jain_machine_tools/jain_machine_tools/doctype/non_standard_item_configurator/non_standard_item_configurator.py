@@ -37,10 +37,10 @@ class NonStandardItemConfigurator(Document):
         p_val = self.paint_type
         
         # Helper bools
-        is_volt_changed_hm = v_val not in ["Standard (415V)", "380V"]
+        is_volt_changed_hm = v_val not in ["Standard (415V)", "380V", "220V"]
         is_freq_changed_hm = f_val == "60 Hz"
         # CG ke liye standard check (Note: >500V wala logic alag se handle hoga)
-        is_volt_changed_cg_basic = v_val not in ["Standard (415V)", "380V", "460V", "Inverter Duty Winding (> 500V)"]
+        is_volt_changed_cg_basic = v_val not in ["Standard (415V)", "460V", "Inverter Duty Winding (> 500V)"]
         is_volt_changed_siemens = v_val != "Standard (415V)"
         
         # ============================================================
