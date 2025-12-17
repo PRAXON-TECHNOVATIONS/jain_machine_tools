@@ -48,7 +48,8 @@ doctype_js = {
     "Supplier": "public/js/supplier_terms.js",
     "Supplier Quotation": "public/js/supplier_quot_terms.js",
     "Material Request": "public/js/mr_item_duplicate.js",
-    "Request for Quotation":"public/js/rfq_item_duplicate.js",  
+    "Request for Quotation":"public/js/rfq_item_duplicate.js",
+    "Purchase Order": "public/js/po_fields.js"
 }
 
 # doctype_list_js = {"doctype" : "public/js/doctype_list.js"}
@@ -156,8 +157,11 @@ doc_events = {
     "Supplier Quotation": {
         "validate": "jain_machine_tools.api.supplier_quotation.validate_duplicate_sq"
     },
-    # "Request for Quotation": {
-    #     "before_cancel": "jain_machine_tools.api.cancel_rfq.cancel_with_reason"
+    "Request for Quotation": {
+        "before_cancel": "jain_machine_tools.api.cancel_rfq.cancel_with_reason"
+    },
+    # "Material Request": {
+    #     "before_insert": "jain_machine_tools.api.po_create_button.set_reorder_type"
     # }
 }
 
@@ -267,7 +271,7 @@ standard_queries = {
 fixtures = [
     'Custom Field',
     {"doctype": "Workflow", "filters": [["name" , "in" , ("Purchase Order Approval","Supplier Approval", "Material Request Approval")]]},
-    {"doctype": "Notification", "filters": [["name" , "in" , ("Purchase Order Approval - Notify Purchase Manager","New Supplier Created – Approval Required Mail", "New Supplier Created – Approval Required Notification","Approved New Supplier","Rejected New Supplier")]]},
+    {"doctype": "Notification", "filters": [["document_type" , "in" , ("Purchase Order", "Material Request" , "Supplier")]]},
     {"doctype": "Email Template", "filters": [["name" , "in" , ("Request for Quotation Email")]]},
     {"doctype": "Server Script", "filters": [["name" , "in" , ("Purchase User Role see only approved suppliers")]]},
     {"doctype": "Print Format", "filters": [["name" , "in" , ("PO Print Format")]]},

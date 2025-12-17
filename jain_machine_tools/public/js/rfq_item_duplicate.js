@@ -14,3 +14,41 @@ frappe.ui.form.on("Request for Quotation Item", {
         }
     }
 });
+
+frappe.ui.form.on('Request for Quotation', {
+    refresh(frm) {
+        hide_get_items_from_rfq(frm);
+        hide_tools_rfq(frm);
+    },
+    onload(frm) {
+        hide_get_items_from_rfq(frm);
+        hide_tools_rfq(frm);
+    },
+    after_save(frm) {
+        hide_get_items_from_rfq(frm);
+        hide_tools_rfq(frm);
+    }
+});
+
+function hide_get_items_from_rfq(frm) {
+    setTimeout(() => {
+        [
+            'Opportunity',
+            'Possible Supplier'
+        ].forEach(btn => {
+            frm.remove_custom_button(btn, 'Get Items From');
+        });
+    }, 200);
+}
+function hide_tools_rfq(frm) {
+    setTimeout(() => {
+        [
+            'Get Suppliers',
+            'Link to Material Requests',
+            'Send Emails to Suppliers',
+            'Download PDF'
+        ].forEach(btn => {
+            frm.remove_custom_button(btn, 'Tools');
+        });
+    }, 200);
+}

@@ -31,5 +31,40 @@ frappe.ui.form.on('Supplier Quotation', {
                 frm.refresh_field("custom_payment_term_details");
             }
         });
+    },
+    refresh(frm) {
+        hide_get_items_from_so(frm);
+        hide_tools_so(frm);
+    },
+    onload(frm) {
+        hide_get_items_from_so(frm);
+        hide_tools_so(frm);
+    },
+    after_save(frm) {
+        hide_get_items_from_so(frm);
+        hide_tools_so(frm);
     }
 });
+
+
+function hide_get_items_from_so(frm) {
+    setTimeout(() => {
+        [
+            'Material Request'
+        ].forEach(btn => {
+            frm.remove_custom_button(btn, 'Get Items From');
+        });
+    }, 200);
+}
+function hide_tools_so(frm) {
+    setTimeout(() => {
+        [
+            'Get Suppliers',
+            'Link to Material Requests',
+            'Send Emails to Suppliers',
+            'Download PDF'
+        ].forEach(btn => {
+            frm.remove_custom_button(btn, 'Tools');
+        });
+    }, 200);
+}
