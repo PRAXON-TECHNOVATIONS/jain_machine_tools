@@ -24,6 +24,3 @@ def make_po_from_mr(material_request):
     return po
 
 
-# def set_reorder_type(doc, method):
-#     if doc.get("reorder_level") or doc.get("__onload", {}).get("reorder"):
-#         doc.custom_custom_material_request_type = "Reorder"
