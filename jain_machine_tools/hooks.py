@@ -291,4 +291,6 @@ fixtures = [
     {"doctype": "Email Template", "filters": [["name" , "in" , ("Request for Quotation Email")]]},
     {"doctype": "Server Script", "filters": [["name" , "in" , ("Purchase User Role see only approved suppliers")]]},
     {"doctype": "Print Format", "filters": [["name" , "in" , ("PO Print Format")]]},
+    {"doctype": "Workspace", "filters": [["name" , "in" , ("Purchase")]]},
+    {"doctype": "Custom DocPerm", "filters": [["role" , "in" , ("Store Manager")]]},
 ]
