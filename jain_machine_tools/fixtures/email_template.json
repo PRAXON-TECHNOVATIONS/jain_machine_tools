@@ -2,10 +2,10 @@
  {
   "docstatus": 0,
   "doctype": "Email Template",
-  "modified": "2025-11-28 17:40:54.491098",
+  "modified": "2025-11-26 01:37:26.376791",
   "name": "Request for Quotation Email",
-  "response": "<div class=\"ql-editor read-mode\"><p>Dear {{ supplier_name }},</p><p>We hope you are doing well. Please find attached our Request for Quotation</p><p>(RFQ) for the list of items mentioned below. We request you to provide your</p><p>best possible price, delivery timeline, payment terms, and warranty</p><p>details. This information will help us finalize procurement planning for the</p><p>upcoming requirement.</p><p>Kindly ensure the quotation is complete, competitive, and valid for the</p><p>specified duration. In case you need clarifications, feel free to reach out to</p><p>us.</p><p>Thank You &amp; Regards</p><p>JMT Purchase Team<br></p></div>",
-  "response_html": "{% set emp = frappe.db.get_value(\"Employee\", {\"user_id\": frappe.session.user}, \"name\") %}\n{% set desig = frappe.db.get_value(\"Employee\", emp, \"designation\") %}\n{% set user_full = frappe.utils.get_fullname(frappe.session.user) %}\n\nDear {{ supplier_name }},\n\nWe hope you are doing well. Please find attached our Request for Quotation (RFQ) for the list of items mentioned below.\n\nWe kindly request you to provide your best possible price, delivery timeline, payment terms, and warranty details. This information will help us finalize procurement planning for the upcoming requirement.\n\nKindly ensure the quotation is complete, competitive, and valid for the specified duration. If you need any clarification, feel free to reach out to us.\n\nThank You & Regards,\n\n{{ user_full }}\n{{ desig }}\nJMT Purchase Team\n",
+  "response": "<div class=\"ql-editor read-mode\"><p>Dear {{ supplier_name }},</p><p>We hope you are doing well. Please find attached our Request for Quotation</p><p>(RFQ) for the list of items mentioned below. We request you to provide your</p><p>best possible price, delivery timeline, payment terms, and warranty</p><p>details. This information will help us finalize procurement planning for the</p><p>upcoming requirement.</p><p>Kindly ensure the quotation is complete, competitive, and valid for the</p><p>specified duration. In case you need clarifications, feel free to reach out to</p><p>us.</p><p>Thank You &amp; Regards</p><p>JMT Purchase Team</p></div>",
+  "response_html": null,
   "subject": "Request for Quotation (RFQ) for the list of items",
   "use_html": 0
  }
