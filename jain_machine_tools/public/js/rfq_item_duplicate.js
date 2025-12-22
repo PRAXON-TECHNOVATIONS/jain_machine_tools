@@ -14,9 +14,6 @@ frappe.ui.form.on("Request for Quotation Item", {
             frappe.model.set_value(cdt, cdn, "item_code", "");
         }
     }
-<<<<<<< HEAD
-});
-=======
 });
 
 frappe.ui.form.on('Request for Quotation', {
@@ -111,4 +108,3 @@ function toggle_cancel_reason(frm) {
     }
 }
 
->>>>>>> main

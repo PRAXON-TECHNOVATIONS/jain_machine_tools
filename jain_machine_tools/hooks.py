@@ -294,13 +294,8 @@ fixtures = [
     {"doctype": "Workflow", "filters": [["name" , "in" , ("Purchase Order Approval","Supplier Approval", "Material Request Approval")]]},
     {"doctype": "Notification", "filters": [["name" , "in" , ("PO Send to Supplier After Approval","Purchase Order Approval - Notify Purchase Manager","New Supplier Created – Approval Required Mail", "New Supplier Created – Approval Required Notification")]]},
     {"doctype": "Email Template", "filters": [["name" , "in" , ("Request for Quotation Email")]]},
-<<<<<<< HEAD
     {"doctype": "Print Format","filters":[["module", "in", "Jain Machine Tools"]]}
-]
-=======
     {"doctype": "Server Script", "filters": [["name" , "in" , ("Purchase User Role see only approved suppliers")]]},
-    {"doctype": "Print Format", "filters": [["name" , "in" , ("PO Print Format")]]},
     {"doctype": "Workspace", "filters": [["name" , "in" , ("Purchase")]]},
     {"doctype": "Custom DocPerm", "filters": [["role" , "in" , ("Store Manager")]]},
 ]
->>>>>>> main
