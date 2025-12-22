@@ -10,6 +10,10 @@ app_license = "mit"
 
 # required_apps = []
 
+# boot_session = [
+#     "jain_machine_tools.patches.reorder_patch.apply_reorder_patch"
+# ]
+
 # Each item in the list will be shown as an app in the apps page
 # add_to_apps_screen = [
 # 	{
@@ -130,6 +134,12 @@ jinja = {
 # 	"Event": "frappe.desk.doctype.event.event.get_permission_query_conditions",
 # }
 #
+
+permission_query_conditions = {
+    "Material Request": "jain_machine_tools.permissions.material_request_permission.material_request_permission",
+    "Purchase Order":"jain_machine_tools.permissions.purchase_order_permission.purchase_order_permission"
+}
+
 # has_permission = {
 # 	"Event": "frappe.desk.doctype.event.event.has_permission",
 # }
@@ -163,7 +173,13 @@ doc_events = {
     },
     "Purchase Order": {
         "validate": "jain_machine_tools.api.auto_populate_supplier_code.populate_supplier_item_code"
-    }
+    },
+    "Request for Quotation": {
+        "before_insert": "jain_machine_tools.api.rfq.before_insert"
+    },
+    # "Material Request": {
+    #     "after_insert": "jain_machine_tools.api.po_create_button.set_reorder_field"
+    # }
 }
 
 
@@ -187,6 +203,12 @@ doc_events = {
 # 		"jain_machine_tools.tasks.monthly"
 # 	],
 # }
+
+scheduler_events = {
+    "all": [
+        "jain_machine_tools.patches.reorder_patch.apply_reorder_patch"
+    ]
+}
 
 # Testing
 # -------
@@ -272,5 +294,13 @@ fixtures = [
     {"doctype": "Workflow", "filters": [["name" , "in" , ("Purchase Order Approval","Supplier Approval", "Material Request Approval")]]},
     {"doctype": "Notification", "filters": [["name" , "in" , ("PO Send to Supplier After Approval","Purchase Order Approval - Notify Purchase Manager","New Supplier Created – Approval Required Mail", "New Supplier Created – Approval Required Notification")]]},
     {"doctype": "Email Template", "filters": [["name" , "in" , ("Request for Quotation Email")]]},
+<<<<<<< HEAD
     {"doctype": "Print Format","filters":[["module", "in", "Jain Machine Tools"]]}
 ]
+=======
+    {"doctype": "Server Script", "filters": [["name" , "in" , ("Purchase User Role see only approved suppliers")]]},
+    {"doctype": "Print Format", "filters": [["name" , "in" , ("PO Print Format")]]},
+    {"doctype": "Workspace", "filters": [["name" , "in" , ("Purchase")]]},
+    {"doctype": "Custom DocPerm", "filters": [["role" , "in" , ("Store Manager")]]},
+]
+>>>>>>> main
