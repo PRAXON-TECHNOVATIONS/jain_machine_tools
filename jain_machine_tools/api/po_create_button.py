@@ -22,5 +22,3 @@ def make_po_from_mr(material_request):
         }
     )
     return po
-
-
