@@ -52,3 +52,58 @@ function hide_tools_rfq(frm) {
         });
     }, 200);
 }
+
+
+frappe.ui.form.on('Request for Quotation', {
+    before_cancel(frm) {
+        if (!frm.doc.custom_cancel_reason) {
+            frappe.validated = false;
+            frappe.prompt(
+                [
+                    {
+                        fieldname: 'reason',
+                        fieldtype: 'Small Text',
+                        label: 'Cancel Reason',
+                        reqd: 1
+                    }
+                ],
+                (values) => {
+                    frappe.call({
+                        method: "jain_machine_tools.api.rfq.cancel_with_reason",
+                        args: {
+                            docname: frm.doc.name,
+                            reason: values.reason
+                        },
+                        callback: () => {
+                            frappe.show_alert({
+                                message: __('Request for Quotation Cancelled'),
+                                indicator: 'red'
+                            });
+                            frm.reload_doc();
+                        }
+                    });
+                },
+                __('Cancel Request for Quotation'),
+                __('Cancel')
+            );
+        }
+    }
+});
+
+frappe.ui.form.on('Request for Quotation', {
+    refresh(frm) {
+        toggle_cancel_reason(frm);
+    },
+    onload_post_render(frm) {
+        toggle_cancel_reason(frm);
+    }
+});
+
+function toggle_cancel_reason(frm) {
+    if (frm.doc.docstatus === 2) {
+        frm.set_df_property('custom_cancel_reason', 'hidden', 0);
+    } else {
+        frm.set_df_property('custom_cancel_reason', 'hidden', 1);
+    }
+}
+
