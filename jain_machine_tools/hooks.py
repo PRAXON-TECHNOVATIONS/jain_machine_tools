@@ -168,7 +168,7 @@ doc_events = {
         "validate": "jain_machine_tools.api.supplier_quotation.validate_duplicate_sq"
     },
     "Request for Quotation": {
-        "before_cancel": "jain_machine_tools.api.cancel_rfq.cancel_with_reason"
+        "before_insert": "jain_machine_tools.api.rfq.before_insert"
     },
     # "Material Request": {
     #     "after_insert": "jain_machine_tools.api.po_create_button.set_reorder_field"
