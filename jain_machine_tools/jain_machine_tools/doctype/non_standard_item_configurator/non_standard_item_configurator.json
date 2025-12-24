@@ -1,0 +1,275 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2025-12-03 16:39:56.266983",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "non_standard_details_section",
+  "base_item",
+  "select_base_price",
+  "frame_size",
+  "column_break_grcs",
+  "derived_base_type",
+  "base_price",
+  "manufacturer",
+  "section_break_plvv",
+  "voltage_frequency",
+  "thermistor_type",
+  "vpi_required_cg",
+  "roller_bearing_required",
+  "forced_cooling_required",
+  "column_break_ilfm",
+  "ip_rating",
+  "insulated_bearing",
+  "space_heater_required",
+  "class_h_insulation",
+  "atex_certification",
+  "vpi_required",
+  "voltage",
+  "frequency",
+  "paint_type",
+  "mounting",
+  "section_break_hcgs",
+  "generated_item_code",
+  "applied_rules",
+  "create_item",
+  "column_break_owik",
+  "final_description",
+  "calculated_price"
+ ],
+ "fields": [
+  {
+   "fieldname": "base_item",
+   "fieldtype": "Link",
+   "label": "Base Item",
+   "options": "Item",
+   "reqd": 1
+  },
+  {
+   "fetch_from": "select_base_price.price_list_rate",
+   "fieldname": "base_price",
+   "fieldtype": "Float",
+   "label": "Base Price",
+   "read_only": 1
+  },
+  {
+   "fieldname": "frame_size",
+   "fieldtype": "Int",
+   "label": "Frame Size"
+  },
+  {
+   "fieldname": "voltage",
+   "fieldtype": "Select",
+   "hidden": 1,
+   "label": "Voltage",
+   "options": "Standard (415V)\n220V\n380V\n460V\n690V\nDual Voltage\nTriple Voltage\nOther Voltage (< 500V)\nOther Voltage (> 500V)\nInverter Duty Winding (<= 500V)\nInverter Duty Winding (> 500V)"
+  },
+  {
+   "fieldname": "frequency",
+   "fieldtype": "Select",
+   "hidden": 1,
+   "label": "Frequency",
+   "options": "50 Hz (Standard)\n60 Hz"
+  },
+  {
+   "default": "0",
+   "fieldname": "vpi_required",
+   "fieldtype": "Check",
+   "hidden": 1,
+   "label": "VPI Required"
+  },
+  {
+   "fieldname": "paint_type",
+   "fieldtype": "Select",
+   "hidden": 1,
+   "label": "Paint Type",
+   "options": "Standard Paint\nEpoxy Paint\nPU Paint (Polyurethane)\nEpoxy Gel Coat\nZinc Silicate\nC3 / C4 / C5 High Grade\nPrimer Only (Red Oxide)"
+  },
+  {
+   "fieldname": "mounting",
+   "fieldtype": "Select",
+   "hidden": 1,
+   "label": "Mounting",
+   "options": "B3 (Foot Mounted) (Standard)\nB5 (Flange Mounted)\nB14 (Face Mounted)\nB35 (Foot + Flange)\nV18 / V19 (Vertical Special)\nB34 (Foot + Face)\nV1 (Vertical Shaft Down)"
+  },
+  {
+   "fieldname": "generated_item_code",
+   "fieldtype": "Link",
+   "label": "Generated Item Code",
+   "options": "Item",
+   "read_only": 1
+  },
+  {
+   "fieldname": "calculated_price",
+   "fieldtype": "Currency",
+   "label": "Calculated Price",
+   "read_only": 1
+  },
+  {
+   "fieldname": "applied_rules",
+   "fieldtype": "Small Text",
+   "label": "Applied Rules",
+   "read_only": 1
+  },
+  {
+   "fieldname": "final_description",
+   "fieldtype": "Small Text",
+   "label": "Final Description",
+   "read_only": 1
+  },
+  {
+   "fieldname": "create_item",
+   "fieldtype": "Button",
+   "label": "Create Item"
+  },
+  {
+   "fieldname": "non_standard_details_section",
+   "fieldtype": "Section Break",
+   "label": "Non Standard Item Creation Details"
+  },
+  {
+   "fetch_from": "base_item.brand",
+   "fetch_if_empty": 1,
+   "fieldname": "manufacturer",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Manufacturer",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_grcs",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "select_base_price",
+   "fieldtype": "Link",
+   "label": "Select Base Price",
+   "options": "Item Price",
+   "reqd": 1
+  },
+  {
+   "fieldname": "section_break_hcgs",
+   "fieldtype": "Section Break",
+   "label": "Non Standard Created Item"
+  },
+  {
+   "fieldname": "column_break_owik",
+   "fieldtype": "Column Break"
+  },
+  {
+   "depends_on": "eval:doc.manufacturer == \"CG Power\"",
+   "fieldname": "voltage_frequency",
+   "fieldtype": "Select",
+   "label": "Voltage & Frequency",
+   "options": "\n220V50Hz\n380V50Hz\n400V50Hz\n415V50Hz\n440V50Hz\n480V50Hz\n220V60Hz\n380V60Hz\n400V60Hz\n415V60Hz\n440V60Hz\n480V60Hz"
+  },
+  {
+   "default": "0",
+   "depends_on": "eval:doc.manufacturer == \"CG Power\"",
+   "fieldname": "space_heater_required",
+   "fieldtype": "Check",
+   "label": "Space Heater"
+  },
+  {
+   "depends_on": "eval:doc.manufacturer == \"CG Power\"",
+   "fieldname": "thermistor_type",
+   "fieldtype": "Select",
+   "label": "Thermistor Type",
+   "options": "\nNONFLP-3-PTC\nNONFLP-6-PTC\nNONFLP-3-PTC-130\nNONFLP-3-PTC-150\nFLP-3-PTC-130\nFLP-6-PTC-130\nFLP-3-PTC-150\nFLP-6-PTC-150"
+  },
+  {
+   "depends_on": "eval:doc.manufacturer == \"CG Power\"",
+   "fieldname": "ip_rating",
+   "fieldtype": "Select",
+   "label": "IP Rating",
+   "options": "\nIP65\nIP66\nIP56"
+  },
+  {
+   "default": "0",
+   "depends_on": "eval:doc.manufacturer == \"CG Power\"",
+   "fieldname": "roller_bearing_required",
+   "fieldtype": "Check",
+   "label": "Roller Bearing"
+  },
+  {
+   "depends_on": "eval:doc.manufacturer == \"CG Power\"",
+   "fieldname": "insulated_bearing",
+   "fieldtype": "Select",
+   "label": "Insulated Bearing",
+   "options": "\n160IB\n180IB\n200IB\n225IB\n2Pole-250IB\n2Pole-280IB\n2Pole-315IB\n2Pole-355IB\n4Pole-250IB\n4Pole-280IB\n4Pole-315IB\n4Pole-355IB"
+  },
+  {
+   "default": "0",
+   "depends_on": "eval:doc.manufacturer == \"CG Power\"",
+   "fieldname": "class_h_insulation",
+   "fieldtype": "Check",
+   "label": "Class H"
+  },
+  {
+   "default": "0",
+   "depends_on": "eval:doc.manufacturer == \"CG Power\"",
+   "fieldname": "forced_cooling_required",
+   "fieldtype": "Check",
+   "label": "Forced Cooling"
+  },
+  {
+   "default": "0",
+   "depends_on": "eval:doc.manufacturer == \"CG Power\" && doc.derived_base_type == \"FLAMEPROOF\"",
+   "fieldname": "atex_certification",
+   "fieldtype": "Check",
+   "label": "Atex Certification"
+  },
+  {
+   "default": "0",
+   "depends_on": "eval:doc.manufacturer == \"CG Power\"",
+   "fieldname": "vpi_required_cg",
+   "fieldtype": "Check",
+   "label": "VPI Required"
+  },
+  {
+   "fetch_from": "base_item.item_group",
+   "fetch_if_empty": 1,
+   "fieldname": "derived_base_type",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Base Type",
+   "read_only": 1
+  },
+  {
+   "fieldname": "section_break_plvv",
+   "fieldtype": "Section Break",
+   "label": "Non Standard Addons"
+  },
+  {
+   "fieldname": "column_break_ilfm",
+   "fieldtype": "Column Break"
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2025-12-24 22:13:11.880762",
+ "modified_by": "Administrator",
+ "module": "Jain Machine Tools",
+ "name": "Non Standard Item Configurator",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}
