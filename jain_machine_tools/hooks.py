@@ -172,10 +172,11 @@ doc_events = {
     },
     "Purchase Order": {
         "validate": "jain_machine_tools.api.purchase_order_discount.validate_items"
+    },
+    "Material Request": {
+        "before_insert": "jain_machine_tools.patches.reorder_override.set_reorder_field"
     }
-    # "Material Request": {
-    #     "after_insert": "jain_machine_tools.api.po_create_button.set_reorder_field"
-    # }
+
 }
 
 
@@ -202,11 +203,6 @@ doc_events = {
 # 	],
 # }
 
-scheduler_events = {
-    "all": [
-        "jain_machine_tools.patches.reorder_patch.apply_reorder_patch"
-    ]
-}
 
 # Testing
 # -------
