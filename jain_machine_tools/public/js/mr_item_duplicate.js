@@ -14,3 +14,49 @@ frappe.ui.form.on("Material Request Item", {
         }
     }
 });
+
+frappe.ui.form.on('Material Request', {
+    refresh(frm) {
+        setTimeout(() => {
+            ['Bill of Materials', 'Sales Order', 'Product Bundle'].forEach(btn => {
+                frm.remove_custom_button(btn, 'Get Items From');
+            });
+        }, 100);
+
+        if (frm.fields_dict.material_request_type) {
+            frm.set_df_property(
+                'material_request_type',
+                'options',
+                ['Purchase', 'Material Transfer'].join('\n')
+            );
+        }
+        if (frm.doc.docstatus !== 1) {
+            hide_create_button(frm);
+        } else {
+            show_create_button(frm);
+        }
+    }
+});
+
+function hide_create_button(frm) {
+    frm.page.btn_group && frm.page.btn_group.find('.dropdown-toggle')
+        ?.filter(function () {
+            return $(this).text().trim() === 'Create';
+        }).hide();
+}
+
+function show_create_button(frm) {
+    frm.page.btn_group && frm.page.btn_group.find('.dropdown-toggle')
+        ?.show();
+    frm.remove_custom_button(__('Purchase Order'), __('Create'));
+    frm.add_custom_button(__('Purchase Order'), () => {
+        frappe.call({
+            method: 'jain_machine_tools.api.po_create_button.make_po_from_mr',
+            args: { material_request: frm.doc.name }
+        }).then(r => {
+            if (!r.message) return;
+            let doc = frappe.model.sync(r.message)[0];
+            frappe.set_route('Form', doc.doctype, doc.name);
+        });
+    }, __('Create'));
+}
