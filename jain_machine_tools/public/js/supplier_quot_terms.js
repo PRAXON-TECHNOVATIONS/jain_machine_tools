@@ -32,7 +32,7 @@ frappe.ui.form.on('Supplier Quotation', {
             }
         });
     },
-    refresh(frm) {
+        refresh(frm) {
         hide_get_items_from_so(frm);
         hide_tools_so(frm);
     },
@@ -68,3 +68,33 @@ function hide_tools_so(frm) {
         });
     }, 200);
 }
+
+// Auto-populate supplier item code in items child table
+frappe.ui.form.on('Supplier Quotation Item', {
+    item_code: function(frm, cdt, cdn) {
+        let row = locals[cdt][cdn];
+
+        if (!row.item_code || !frm.doc.supplier) {
+            return;
+        }
+
+        // Fetch supplier item code from Party Specific Item
+        frappe.call({
+            method: 'frappe.client.get_value',
+            args: {
+                doctype: 'Party Specific Item',
+                filters: {
+                    party_type: 'Supplier',
+                    party: frm.doc.supplier,
+                    based_on_value: row.item_code
+                },
+                fieldname: 'supplier_item_code'
+            },
+            callback: function(r) {
+                if (r.message && r.message.supplier_item_code) {
+                    frappe.model.set_value(cdt, cdn, 'custom_supplier_code', r.message.supplier_item_code);
+                }
+            }
+        });
+    }
+});

@@ -4,7 +4,7 @@
   "doctype": "Workflow",
   "document_type": "Supplier",
   "is_active": 1,
-  "modified": "2025-12-17 11:34:02.219342",
+  "modified": "2025-12-23 13:13:34.418563",
   "name": "Supplier Approval",
   "override_status": 0,
   "send_email_alert": 1,
@@ -140,7 +140,7 @@
   "doctype": "Workflow",
   "document_type": "Material Request",
   "is_active": 1,
-  "modified": "2025-12-17 12:05:47.444562",
+  "modified": "2025-12-23 13:06:32.424890",
   "name": "Material Request Approval",
   "override_status": 0,
   "send_email_alert": 1,
@@ -157,8 +157,8 @@
     "parenttype": "Workflow",
     "send_email": 1,
     "state": "Draft",
-    "update_field": null,
-    "update_value": null,
+    "update_field": "status",
+    "update_value": "Draft",
     "workflow_builder_id": null
    },
    {
@@ -173,8 +173,8 @@
     "parenttype": "Workflow",
     "send_email": 1,
     "state": "Pending",
-    "update_field": null,
-    "update_value": null,
+    "update_field": "status",
+    "update_value": "Draft",
     "workflow_builder_id": null
    },
    {
@@ -189,8 +189,8 @@
     "parenttype": "Workflow",
     "send_email": 1,
     "state": "Pending",
-    "update_field": null,
-    "update_value": null,
+    "update_field": "status",
+    "update_value": "Draft",
     "workflow_builder_id": null
    },
    {
@@ -205,14 +205,14 @@
     "parenttype": "Workflow",
     "send_email": 1,
     "state": "Approved",
-    "update_field": null,
-    "update_value": null,
+    "update_field": "status",
+    "update_value": "Submitted",
     "workflow_builder_id": null
    },
    {
     "allow_edit": "Purchase Manager",
     "avoid_status_override": 0,
-    "doc_status": "0",
+    "doc_status": "1",
     "is_optional_state": 0,
     "message": null,
     "next_action_email_template": null,
@@ -221,8 +221,24 @@
     "parenttype": "Workflow",
     "send_email": 1,
     "state": "Rejected",
-    "update_field": null,
-    "update_value": null,
+    "update_field": "status",
+    "update_value": "Submitted",
+    "workflow_builder_id": null
+   },
+   {
+    "allow_edit": "Purchase Manager",
+    "avoid_status_override": 0,
+    "doc_status": "2",
+    "is_optional_state": 0,
+    "message": null,
+    "next_action_email_template": null,
+    "parent": "Material Request Approval",
+    "parentfield": "states",
+    "parenttype": "Workflow",
+    "send_email": 1,
+    "state": "Cancelled",
+    "update_field": "status",
+    "update_value": "Cancelled",
     "workflow_builder_id": null
    }
   ],
@@ -265,6 +281,32 @@
     "send_email_to_creator": 0,
     "state": "Pending",
     "workflow_builder_id": null
+   },
+   {
+    "action": "Cancel",
+    "allow_self_approval": 1,
+    "allowed": "Purchase Manager",
+    "condition": null,
+    "next_state": "Cancelled",
+    "parent": "Material Request Approval",
+    "parentfield": "transitions",
+    "parenttype": "Workflow",
+    "send_email_to_creator": 0,
+    "state": "Approved",
+    "workflow_builder_id": null
+   },
+   {
+    "action": "Cancel",
+    "allow_self_approval": 1,
+    "allowed": "Purchase Manager",
+    "condition": null,
+    "next_state": "Cancelled",
+    "parent": "Material Request Approval",
+    "parentfield": "transitions",
+    "parenttype": "Workflow",
+    "send_email_to_creator": 0,
+    "state": "Rejected",
+    "workflow_builder_id": null
    }
   ],
   "workflow_data": null,
@@ -276,7 +318,7 @@
   "doctype": "Workflow",
   "document_type": "Purchase Order",
   "is_active": 1,
-  "modified": "2025-12-17 11:34:52.285252",
+  "modified": "2025-12-23 13:10:15.395268",
   "name": "Purchase Order Approval",
   "override_status": 0,
   "send_email_alert": 1,
@@ -293,8 +335,8 @@
     "parenttype": "Workflow",
     "send_email": 1,
     "state": "Draft",
-    "update_field": "",
-    "update_value": null,
+    "update_field": "status",
+    "update_value": "Draft",
     "workflow_builder_id": null
    },
    {
@@ -309,8 +351,8 @@
     "parenttype": "Workflow",
     "send_email": 1,
     "state": "Pending Approval",
-    "update_field": null,
-    "update_value": null,
+    "update_field": "status",
+    "update_value": "Draft",
     "workflow_builder_id": null
    },
    {
@@ -325,8 +367,8 @@
     "parenttype": "Workflow",
     "send_email": 1,
     "state": "Pending Approval",
-    "update_field": null,
-    "update_value": null,
+    "update_field": "status",
+    "update_value": "Draft",
     "workflow_builder_id": null
    },
    {
@@ -341,14 +383,14 @@
     "parenttype": "Workflow",
     "send_email": 1,
     "state": "Approved",
-    "update_field": null,
-    "update_value": null,
+    "update_field": "status",
+    "update_value": "To Receive and Bill",
     "workflow_builder_id": null
    },
    {
     "allow_edit": "Purchase Manager",
     "avoid_status_override": 0,
-    "doc_status": "0",
+    "doc_status": "1",
     "is_optional_state": 0,
     "message": null,
     "next_action_email_template": null,
@@ -357,8 +399,24 @@
     "parenttype": "Workflow",
     "send_email": 1,
     "state": "Rejected",
-    "update_field": null,
-    "update_value": null,
+    "update_field": "status",
+    "update_value": "Closed",
+    "workflow_builder_id": null
+   },
+   {
+    "allow_edit": "Purchase Manager",
+    "avoid_status_override": 0,
+    "doc_status": "2",
+    "is_optional_state": 0,
+    "message": null,
+    "next_action_email_template": null,
+    "parent": "Purchase Order Approval",
+    "parentfield": "states",
+    "parenttype": "Workflow",
+    "send_email": 1,
+    "state": "Cancelled",
+    "update_field": "status",
+    "update_value": "Cancelled",
     "workflow_builder_id": null
    }
   ],
@@ -400,6 +458,32 @@
     "parenttype": "Workflow",
     "send_email_to_creator": 0,
     "state": "Pending Approval",
+    "workflow_builder_id": null
+   },
+   {
+    "action": "Cancel",
+    "allow_self_approval": 1,
+    "allowed": "Purchase Manager",
+    "condition": null,
+    "next_state": "Cancelled",
+    "parent": "Purchase Order Approval",
+    "parentfield": "transitions",
+    "parenttype": "Workflow",
+    "send_email_to_creator": 0,
+    "state": "Approved",
+    "workflow_builder_id": null
+   },
+   {
+    "action": "Cancel",
+    "allow_self_approval": 1,
+    "allowed": "Purchase Manager",
+    "condition": null,
+    "next_state": "Cancelled",
+    "parent": "Purchase Order Approval",
+    "parentfield": "transitions",
+    "parenttype": "Workflow",
+    "send_email_to_creator": 0,
+    "state": "Rejected",
     "workflow_builder_id": null
    }
   ],

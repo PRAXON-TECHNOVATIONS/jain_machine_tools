@@ -4,6 +4,7 @@ frappe.ui.form.on("Request for Quotation Item", {
         let row = locals[cdt][cdn];
         if (!row.item_code) return;
         let duplicate = frm.doc.items.filter(i => i.item_code === row.item_code);
+
         if (duplicate.length > 1) {
             frappe.msgprint({
                 title: "Duplicate Item",
