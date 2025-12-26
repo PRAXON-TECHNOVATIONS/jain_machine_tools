@@ -49,11 +49,11 @@ app_license = "mit"
 # doctype_js = {"doctype" : "public/js/doctype.js"}
 doctype_js = {
     "Purchase Receipt": "public/js/purchase_receipt_custom.js",
-    "Purchase Order": "public/js/purchase_order_custom.js",
     "Supplier": "public/js/supplier_terms.js",
     "Supplier Quotation": "public/js/supplier_quot_terms.js",
     "Material Request": "public/js/mr_item_duplicate.js",
     "Request for Quotation":"public/js/rfq_item_duplicate.js",
+    "Purchase Order": "public/js/purchase_order_custom.js"
 }
 
 # doctype_list_js = {"doctype" : "public/js/doctype_list.js"}
@@ -86,11 +86,10 @@ doctype_js = {
 # ----------
 
 # add methods and filters to jinja environment
-jinja = {
-	"methods": [
-		"jain_machine_tools.jain_machine_tools.doctype.barcode_printing.barcode_printing.get_barcode_image"
-	]
-}
+# jinja = {
+# 	"methods": "jain_machine_tools.utils.jinja_methods",
+# 	"filters": "jain_machine_tools.utils.jinja_filters"
+# }
 
 # Installation
 # ------------
@@ -166,21 +165,21 @@ permission_query_conditions = {
 
 doc_events = {
     "Supplier Quotation": {
-        "validate": [
-            "jain_machine_tools.api.supplier_quotation.validate_duplicate_sq",
-            "jain_machine_tools.api.auto_populate_supplier_code.populate_supplier_item_code"
-        ]
+        "validate": "jain_machine_tools.api.supplier_quotation.validate_duplicate_sq"
     },
     "Request for Quotation": {
         "before_insert": "jain_machine_tools.api.rfq.before_insert"
     },
-    # "Material Request": {
-    #     "after_insert": "jain_machine_tools.api.po_create_button.set_reorder_field"
-    # },
     "Purchase Order": {
-        "validate": "jain_machine_tools.api.auto_populate_supplier_code.populate_supplier_item_code"
+        "validate": "jain_machine_tools.api.purchase_order_discount.validate_items"
     },
+    "Material Request": {
+        "before_insert": "jain_machine_tools.patches.reorder_override.set_reorder_field"
+    }
+
 }
+
+
 
 
 # Scheduled Tasks
@@ -204,11 +203,6 @@ doc_events = {
 # 	],
 # }
 
-scheduler_events = {
-    "all": [
-        "jain_machine_tools.patches.reorder_patch.apply_reorder_patch"
-    ]
-}
 
 # Testing
 # -------
@@ -290,14 +284,12 @@ standard_queries = {
 }
 
 fixtures = [
-    "Workflow State",
-    "Workflow Action Master",
+    'Custom Field',
     {"doctype": "Workflow", "filters": [["name" , "in" , ("Purchase Order Approval","Supplier Approval", "Material Request Approval")]]},
-    {"doctype": "Notification", "filters": [["name" , "in" , ("PO Send to Supplier After Approval","Purchase Order Approval - Notify Purchase Manager","New Supplier Created – Approval Required Mail", "New Supplier Created – Approval Required Notification")]]},
+    {"doctype": "Notification", "filters": [["document_type" , "in" , ("Purchase Order", "Material Request" , "Supplier")],["is_standard", "=", 0]]},
     {"doctype": "Email Template", "filters": [["name" , "in" , ("Request for Quotation Email")]]},
     {"doctype": "Server Script", "filters": [["name" , "in" , ("Purchase User Role see only approved suppliers")]]},
     {"doctype": "Print Format", "filters": [["name" , "in" , ("PO Print Format")]]},
     {"doctype": "Workspace", "filters": [["name" , "in" , ("Purchase")]]},
     {"doctype": "Custom DocPerm", "filters": [["role" , "in" , ("Store Manager")]]},
-    {"doctype": "Print Format","filters":[["module", "in", "Jain Machine Tools"]]}
-]
+]   
