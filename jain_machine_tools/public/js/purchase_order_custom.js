@@ -25,6 +25,18 @@ frappe.ui.form.on('Purchase Order Item', {
                 }
             }
         });
+    },
+
+    item_code: function(frm, cdt, cdn) { calculate_row(frm, cdt, cdn); },
+    price_list_rate: function(frm, cdt, cdn) { calculate_row(frm, cdt, cdn); },
+    custom_non_standard_percentage: function(frm, cdt, cdn) { calculate_row(frm, cdt, cdn); },
+    custom_discount_percent: function(frm, cdt, cdn) { calculate_row(frm, cdt, cdn); },
+    custom_extra_non_standard_amount: function(frm, cdt, cdn) { calculate_row(frm, cdt, cdn); },
+    custom_handling_percentage: function(frm, cdt, cdn) { calculate_row(frm, cdt, cdn); },
+    
+    // Standard/Non-Standard change toggles the visblity
+    custom_is_standard: function(frm, cdt, cdn) {
+        calculate_row(frm, cdt, cdn);
     }
 });
 
@@ -63,3 +75,48 @@ function hide_tools_po(frm) {
         });
     }, 200);
 }
+
+
+var calculate_row = function(frm, cdt, cdn) {
+    var row = locals[cdt][cdn];
+    if (!row.item_code) return;
+
+    // Get Values
+    let list_price = flt(row.price_list_rate);
+    let is_standard = row.custom_is_standard;
+    
+    let ns_percent = flt(row.custom_non_standard_percentage);
+    let discount_percent = flt(row.custom_discount_percent);
+    let extra_ns_amt = flt(row.custom_extra_non_standard_amount);
+    let handling_percent = flt(row.custom_handling_percentage);
+
+    let discount_price = 0.0;
+    let absolute_ns_price = 0.0;
+    let final_rate = 0.0;
+
+    if (is_standard) {
+        // Standard Logic
+        let discount_amount = list_price * (discount_percent / 100);
+        discount_price = list_price - discount_amount;
+        
+        let handling_amount = discount_price * (handling_percent / 100);
+        final_rate = discount_price + handling_amount;
+        
+        absolute_ns_price = 0; 
+    } else {
+        // Non-Standard Logic
+        let val_after_ns_percent = list_price + (list_price * (ns_percent / 100));
+        
+        let discount_amount = val_after_ns_percent * (discount_percent / 100);
+        discount_price = val_after_ns_percent - discount_amount;
+
+        absolute_ns_price = discount_price + extra_ns_amt;
+
+        let handling_amount = absolute_ns_price * (handling_percent / 100);
+        final_rate = absolute_ns_price + handling_amount;
+    }
+
+    frappe.model.set_value(cdt, cdn, 'custom_discount_price', discount_price);
+    frappe.model.set_value(cdt, cdn, 'custom_absolute_ns_price', absolute_ns_price);
+    frappe.model.set_value(cdt, cdn, 'rate', final_rate);
+};
