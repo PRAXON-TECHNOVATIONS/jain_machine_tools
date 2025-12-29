@@ -284,7 +284,6 @@ standard_queries = {
 }
 
 fixtures = [
-    'Custom Field',
     {"doctype": "Workflow", "filters": [["name" , "in" , ("Purchase Order Approval","Supplier Approval", "Material Request Approval")]]},
     {"doctype": "Notification", "filters": [["document_type" , "in" , ("Purchase Order", "Material Request" , "Supplier")],["is_standard", "=", 0]]},
     {"doctype": "Email Template", "filters": [["name" , "in" , ("Request for Quotation Email")]]},
