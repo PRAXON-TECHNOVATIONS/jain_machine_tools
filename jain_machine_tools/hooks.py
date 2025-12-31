@@ -175,9 +175,12 @@ doc_events = {
     },
     "Material Request": {
         "before_insert": "jain_machine_tools.patches.reorder_override.set_reorder_field"
+    },
+    "Supplier": {
+        "before_save": "jain_machine_tools.api.supplier_gstin_check.check_duplicate_gstin"
     }
-
 }
+
 
 
 
