@@ -293,5 +293,5 @@ fixtures = [
     {"doctype": "Server Script", "filters": [["name" , "in" , ("Purchase User Role see only approved suppliers")]]},
     {"doctype": "Print Format", "filters": [["name" , "in" , ("PO Print Format")]]},
     {"doctype": "Workspace", "filters": [["name" , "in" , ("Purchase")]]},
-    {"doctype": "Custom DocPerm", "filters": [["role" , "in" , ("Store Manager")]]},
+    {"doctype": "Custom DocPerm", "filters": [["role" , "in" , ("Store Manager","Purchase Manager","Accounts Manager","Purchase User")]]},
 ]   
