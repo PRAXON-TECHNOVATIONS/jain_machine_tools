@@ -175,9 +175,12 @@ doc_events = {
     },
     "Material Request": {
         "before_insert": "jain_machine_tools.patches.reorder_override.set_reorder_field"
+    },
+    "Supplier": {
+        "before_save": "jain_machine_tools.api.supplier_gstin_check.check_duplicate_gstin"
     }
-
 }
+
 
 
 
@@ -290,5 +293,5 @@ fixtures = [
     {"doctype": "Server Script", "filters": [["name" , "in" , ("Purchase User Role see only approved suppliers")]]},
     {"doctype": "Print Format", "filters": [["name" , "in" , ("PO Print Format")]]},
     {"doctype": "Workspace", "filters": [["name" , "in" , ("Purchase")]]},
-    {"doctype": "Custom DocPerm", "filters": [["role" , "in" , ("Store Manager")]]},
+    {"doctype": "Custom DocPerm", "filters": [["role" , "in" , ("Store Manager","Purchase Manager","Accounts Manager","Purchase User")]]},
 ]   

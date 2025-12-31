@@ -33,3 +33,39 @@ frappe.ui.form.on('Supplier', {
         });
     }
 });
+
+frappe.ui.form.on("Supplier", {
+    gstin(frm) {
+        if (!frm.doc.gstin) return;
+        frm.set_value({
+            pan: "",
+            tax_id: "",
+        });
+        frappe.call({
+            method: "frappe.client.get_list",
+            args: {
+                doctype: "Supplier",
+                filters: [
+                    ["gstin", "=", frm.doc.gstin],
+                    ["name", "!=", frm.doc.name]
+                ],
+                fields: ["name"],
+                limit_page_length: 1
+            },
+            callback(r) {
+                if (r.message && r.message.length) {
+                    frappe.msgprint({
+                        title: __("Duplicate GSTIN"),
+                        indicator: "red",
+                        message: __(
+                            "Duplicate GSTIN already exists in Supplier <b>{0}</b>. You cannot use this GSTIN.",
+                            [r.message[0].name]
+                        )
+                    });
+
+                    frm.set_value("gstin", "");
+                }
+            }
+        });
+    }
+});
