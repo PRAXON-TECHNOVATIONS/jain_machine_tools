@@ -63,6 +63,7 @@ function hide_get_items_from_po(frm) {
         ].forEach(btn => {
             frm.remove_custom_button(btn, 'Get Items From');
         });
+        frm.remove_custom_button('Update Items');
     }, 200);
 }
 function hide_tools_po(frm) {
