@@ -64,3 +64,42 @@ def get_items_with_t_warehouse(doctype, txt, searchfield, start, page_len, filte
         'start': start,
         'page_len': page_len
     })
+
+
+@frappe.whitelist()
+@frappe.validate_and_sanitize_search_inputs
+def get_items_with_serial_no(doctype, txt, searchfield, start, page_len, filters):
+    """
+    Get items from Purchase Receipt Item where serial_and_batch_bundle has serial numbers.
+
+    Args:
+        filters: Should contain 'purchase_receipt' - the Purchase Receipt record name
+    """
+
+    purchase_receipt = filters.get('purchase_receipt')
+
+    if not purchase_receipt:
+        return []
+
+    return frappe.db.sql("""
+        SELECT DISTINCT pri.item_code, pri.item_name
+        FROM `tabPurchase Receipt Item` pri
+        WHERE
+            pri.parent = %(purchase_receipt)s
+            AND pri.serial_and_batch_bundle IS NOT NULL
+            AND pri.serial_and_batch_bundle != ''
+            AND EXISTS (
+                SELECT 1 FROM `tabSerial and Batch Entry` sbe
+                WHERE sbe.parent = pri.serial_and_batch_bundle
+                AND sbe.serial_no IS NOT NULL
+                AND sbe.serial_no != ''
+            )
+            AND pri.item_code LIKE %(txt)s
+        ORDER BY pri.idx
+        LIMIT %(start)s, %(page_len)s
+    """, {
+        'purchase_receipt': purchase_receipt,
+        'txt': '%%%s%%' % txt,
+        'start': start,
+        'page_len': page_len
+    })

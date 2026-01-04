@@ -11,14 +11,14 @@ def execute():
 
     custom_fields = {
         "Item": [
-            # Is Standard checkbox - only visible for Electric Motor items
+            # Is Standard checkbox - visibility controlled by client script (item.js)
+            # Shows when parent_item_group == "Electric Motor"
             {
-                "fieldname": "is_standard",
-                "label": "Is Standard",
+                "fieldname": "is_non_standard",
+                "label": "Is Non Standard",
                 "fieldtype": "Check",
                 "insert_after": "item_group",
-                "depends_on": "eval:doc.item_group == 'Electric Motor'",
-                "description": "Check if this is a standard item"
+                "description": "Check if this is a non standard item"
             },
 
             # Warranty Section - shown when has_serial_no is checked

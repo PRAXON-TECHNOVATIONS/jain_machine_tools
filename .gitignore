@@ -5,3 +5,7 @@
 tags
 node_modules
 __pycache__
+
+# Ignore docs folders (documentation and client files)
+docs/
+jain_machine_tools/docs/
