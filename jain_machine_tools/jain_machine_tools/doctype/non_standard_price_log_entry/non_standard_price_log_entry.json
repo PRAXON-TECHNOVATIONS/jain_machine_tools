@@ -1,0 +1,131 @@
+{
+ "actions": [],
+ "autoname": "hash",
+ "creation": "2026-01-02 14:00:00",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "non_standard_item",
+  "reference_doctype",
+  "reference_name",
+  "column_break_ref",
+  "created_by",
+  "created_on",
+  "section_break_discount",
+  "discount_parameter",
+  "column_break_disc",
+  "discount_percentage",
+  "section_break_price",
+  "valuation_price",
+  "column_break_price",
+  "final_price"
+ ],
+ "fields": [
+  {
+   "fieldname": "non_standard_item",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Non Standard Item Creation",
+   "options": "Non Standard Item Creation",
+   "reqd": 1
+  },
+  {
+   "fieldname": "reference_doctype",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Reference Document Type",
+   "options": "DocType"
+  },
+  {
+   "fieldname": "reference_name",
+   "fieldtype": "Dynamic Link",
+   "in_list_view": 1,
+   "label": "Reference Document",
+   "options": "reference_doctype"
+  },
+  {
+   "fieldname": "column_break_ref",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "created_by",
+   "fieldtype": "Link",
+   "label": "Created By",
+   "options": "User"
+  },
+  {
+   "fieldname": "created_on",
+   "fieldtype": "Datetime",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Created On"
+  },
+  {
+   "fieldname": "section_break_discount",
+   "fieldtype": "Section Break",
+   "label": "Discount Applied"
+  },
+  {
+   "fieldname": "discount_parameter",
+   "fieldtype": "Data",
+   "label": "Discount After Parameter"
+  },
+  {
+   "fieldname": "column_break_disc",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "discount_percentage",
+   "fieldtype": "Percent",
+   "label": "Discount %"
+  },
+  {
+   "fieldname": "section_break_price",
+   "fieldtype": "Section Break",
+   "label": "Price Details"
+  },
+  {
+   "fieldname": "valuation_price",
+   "fieldtype": "Currency",
+   "label": "Valuation Price (Before Discount)",
+   "precision": "2"
+  },
+  {
+   "fieldname": "column_break_price",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "final_price",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "Final Price (After Discount)",
+   "precision": "2"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-01-02 20:13:00.468687",
+ "modified_by": "Administrator",
+ "module": "Jain Machine Tools",
+ "name": "Non Standard Price Log Entry",
+ "naming_rule": "Random",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager"
+  }
+ ],
+ "row_format": "Dynamic",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

@@ -1,0 +1,96 @@
+{
+ "actions": [],
+ "creation": "2025-12-27 12:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "parameter",
+  "parameter_code",
+  "column_break_1",
+  "selected_value",
+  "_available_options",
+  "section_break_pricing",
+  "pricing_type",
+  "column_break_pricing",
+  "price_percentage",
+  "price_amount"
+ ],
+ "fields": [
+  {
+   "fieldname": "parameter",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Parameter",
+   "options": "Motor Parameter Master",
+   "reqd": 1,
+   "get_query": "jain_machine_tools.jain_machine_tools.doctype.non_standard_item_creation.non_standard_item_creation.get_brand_parameters"
+  },
+  {
+   "fetch_from": "parameter.parameter_code",
+   "fieldname": "parameter_code",
+   "fieldtype": "Data",
+   "label": "Code",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "selected_value",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Selected Value",
+   "reqd": 1
+  },
+  {
+   "fieldname": "_available_options",
+   "fieldtype": "Small Text",
+   "hidden": 1,
+   "label": "Available Options",
+   "read_only": 1
+  },
+  {
+   "fieldname": "section_break_pricing",
+   "fieldtype": "Section Break",
+   "label": "Pricing Details"
+  },
+  {
+   "fieldname": "pricing_type",
+   "fieldtype": "Select",
+   "label": "Pricing Type",
+   "options": "Percentage\nFixed Amount\nBoth",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_pricing",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "price_percentage",
+   "fieldtype": "Percent",
+   "label": "Percentage (%)",
+   "read_only": 1
+  },
+  {
+   "fieldname": "price_amount",
+   "fieldtype": "Currency",
+   "label": "Fixed Amount",
+   "read_only": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2025-12-27 12:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Jain Machine Tools",
+ "name": "Non Standard Item Parameter",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

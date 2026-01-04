@@ -29,8 +29,13 @@ app_license = "mit"
 # ------------------
 
 # include js, css files in header of desk.html
-# app_include_css = "/assets/jain_machine_tools/css/jain_machine_tools.css"
-# app_include_js = "/assets/jain_machine_tools/js/jain_machine_tools.js"
+app_include_css = [
+    "https://cdn.form.io/formiojs/formio.full.min.css",
+    "/assets/jain_machine_tools/css/formio_custom.css?v=5"
+]
+app_include_js = [
+    "/assets/jain_machine_tools/js/grid_custom_icons.js?v=6.7"
+]
 
 # include js, css files in header of web template
 # web_include_css = "/assets/jain_machine_tools/css/jain_machine_tools.css"
@@ -49,11 +54,21 @@ app_license = "mit"
 # doctype_js = {"doctype" : "public/js/doctype.js"}
 doctype_js = {
     "Purchase Receipt": "public/js/purchase_receipt_custom.js",
+<<<<<<< HEAD
+=======
+    "Purchase Order": "public/js/purchase_order_custom.js",
+    "Quotation": "public/js/quotation_custom.js",
+    "Sales Order": "public/js/sales_order_custom.js",
+>>>>>>> 3c73069e1e8f32bc2cfff8d6b22cf7cfc36d6560
     "Supplier": "public/js/supplier_terms.js",
     "Supplier Quotation": "public/js/supplier_quot_terms.js",
     "Material Request": "public/js/mr_item_duplicate.js",
     "Request for Quotation":"public/js/rfq_item_duplicate.js",
+<<<<<<< HEAD
     "Purchase Order": "public/js/purchase_order_custom.js"
+=======
+    "Item": "public/js/item.js",
+>>>>>>> 3c73069e1e8f32bc2cfff8d6b22cf7cfc36d6560
 }
 
 # doctype_list_js = {"doctype" : "public/js/doctype_list.js"}
@@ -177,7 +192,23 @@ doc_events = {
         "before_insert": "jain_machine_tools.patches.reorder_override.set_reorder_field"
     },
     "Supplier": {
-        "before_save": "jain_machine_tools.api.supplier_gstin_check.check_duplicate_gstin"
+        "before_save": "jain_machine_tools.api.supplier_gstin_check.check_duplicate_gstin",
+        "validate": "jain_machine_tools.api.auto_populate_supplier_code.populate_supplier_item_code"
+    },
+    "Serial No": {
+        "on_update": "jain_machine_tools.api.serial_no_hooks.on_update"
+    },
+    "Quotation": {
+        "validate": "jain_machine_tools.overrides.quotation.validate_quotation"
+    },
+    "Sales Order": {
+        "validate": "jain_machine_tools.overrides.quotation.validate_sales_order"
+    },
+    "Sales Invoice": {
+        "validate": "jain_machine_tools.overrides.quotation.validate_sales_invoice"
+    },
+    "Delivery Note": {
+        "validate": "jain_machine_tools.overrides.quotation.validate_delivery_note"
     }
 }
 
@@ -237,7 +268,7 @@ doc_events = {
 
 # Request Events
 # ----------------
-# before_request = ["jain_machine_tools.utils.before_request"]
+before_request = ["jain_machine_tools.overrides.quotation.patch_insert_item_price"]
 # after_request = ["jain_machine_tools.utils.after_request"]
 
 # Job Events

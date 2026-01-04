@@ -1,0 +1,453 @@
+/* Form.io Custom Styling for ERPNext Integration */
+
+/* Fix input field visibility */
+.formio-component input[type="text"],
+.formio-component input[type="number"],
+.formio-component input[type="email"],
+.formio-component input[type="password"],
+.formio-component textarea,
+.formio-component select {
+    border: 1px solid #000000 !important;
+    border-radius: 4px !important;
+    padding: 6px 12px !important;
+    background-color: #ffffff !important;
+    color: #36414c !important;
+    font-size: 13px !important;
+    line-height: 1.5 !important;
+    transition: border-color 0.15s ease-in-out !important;
+    min-height: 34px !important;
+}
+
+.formio-component input[type="text"]:focus,
+.formio-component input[type="number"]:focus,
+.formio-component input[type="email"]:focus,
+.formio-component input[type="password"]:focus,
+.formio-component textarea:focus,
+.formio-component select:focus {
+    border-color: #000000 !important;
+    outline: none !important;
+    box-shadow: 0 0 0 2px rgba(36, 144, 239, 0.1) !important;
+}
+
+/* Fix textarea visibility */
+.formio-component textarea {
+    min-height: 80px !important;
+}
+
+/* Fix select dropdown visibility */
+.formio-component select {
+    appearance: auto !important;
+    -webkit-appearance: auto !important;
+    -moz-appearance: auto !important;
+}
+
+/* Fix placeholder text visibility */
+.formio-component input::placeholder,
+.formio-component textarea::placeholder {
+    color: #a8b3ba !important;
+    opacity: 1 !important;
+}
+
+/* Fix labels */
+.formio-component label {
+    color: #36414c !important;
+    font-weight: 500 !important;
+    font-size: 13px !important;
+    margin-bottom: 4px !important;
+    display: block !important;
+}
+
+/* Fix required asterisk */
+.formio-component .field-required {
+    color: #ff5858 !important;
+}
+
+/* Panel styling */
+.formio-component .card,
+.formio-component .panel {
+    border: 1px solid #e8ebed !important;
+    border-radius: 6px !important;
+    margin-bottom: 16px !important;
+    background-color: #ffffff !important;
+}
+
+.formio-component .card-header,
+.formio-component .panel-heading {
+    background-color: #f7f9fb !important;
+    border-bottom: 1px solid #e8ebed !important;
+    padding: 12px 16px !important;
+    font-weight: 600 !important;
+    color: #36414c !important;
+    border-radius: 6px 6px 0 0 !important;
+}
+
+.formio-component .card-body,
+.formio-component .panel-body {
+    padding: 16px !important;
+}
+
+/* Collapsible panel styling */
+.formio-component .panel-title {
+    font-size: 14px !important;
+    font-weight: 600 !important;
+    color: #36414c !important;
+}
+
+.formio-component .panel-title .clickable {
+    cursor: pointer !important;
+    user-select: none !important;
+}
+
+/* Button styling */
+.formio-component button,
+.formio-component .btn {
+    border: 1px solid #d1d8dd !important;
+    border-radius: 4px !important;
+    padding: 6px 12px !important;
+    font-size: 13px !important;
+    font-weight: 500 !important;
+    cursor: pointer !important;
+    transition: all 0.15s ease-in-out !important;
+    background-color: #ffffff !important;
+    color: #36414c !important;
+}
+
+.formio-component button:hover,
+.formio-component .btn:hover {
+    background-color: #f7f9fb !important;
+    border-color: #a8b3ba !important;
+}
+
+.formio-component .btn-primary {
+    background-color: #000000 !important;
+    border-color: #000000 !important;
+    color: #ffffff !important;
+}
+
+.formio-component .btn-primary:hover {
+    background-color: #1976d2 !important;
+    border-color: #1976d2 !important;
+    color: #ffffff !important;
+}
+
+/* Data grid (table) styling */
+.formio-component table.table {
+    border: 1px solid #e8ebed !important;
+    border-radius: 4px !important;
+    overflow: hidden !important;
+}
+
+.formio-component table.table thead {
+    background-color: #f7f9fb !important;
+}
+
+.formio-component table.table thead th {
+    border-bottom: 1px solid #e8ebed !important;
+    padding: 8px 12px !important;
+    font-weight: 600 !important;
+    font-size: 12px !important;
+    color: #36414c !important;
+}
+
+.formio-component table.table tbody td {
+    border-bottom: 1px solid #f0f3f5 !important;
+    padding: 8px 12px !important;
+    font-size: 13px !important;
+    color: #36414c !important;
+}
+
+.formio-component table.table tbody tr:last-child td {
+    border-bottom: none !important;
+}
+
+.formio-component table.table tbody tr:hover {
+    background-color: #fafbfc !important;
+}
+
+/* Data grid input fields inside tables */
+.formio-component table.table input[type="text"],
+.formio-component table.table input[type="number"],
+.formio-component table.table select {
+    margin: 0 !important;
+    width: 100% !important;
+}
+
+/* Help text / description */
+.formio-component .help-block,
+.formio-component .form-text {
+    color: #6c7680 !important;
+    font-size: 12px !important;
+    margin-top: 4px !important;
+}
+
+/* Error messages */
+.formio-component .has-error input,
+.formio-component .has-error select,
+.formio-component .has-error textarea {
+    border-color: #ff5858 !important;
+}
+
+.formio-component .error,
+.formio-component .form-error {
+    color: #ff5858 !important;
+    font-size: 12px !important;
+    margin-top: 4px !important;
+}
+
+/* Checkbox and radio styling */
+.formio-component input[type="checkbox"],
+.formio-component input[type="radio"] {
+    width: 16px !important;
+    height: 16px !important;
+    cursor: pointer !important;
+    margin-right: 8px !important;
+}
+
+/* Form group spacing */
+.formio-component .form-group {
+    margin-bottom: 16px !important;
+}
+
+/* Category panel icon styling */
+.formio-component .panel-title:before {
+    margin-right: 8px !important;
+}
+
+/* Add row button in data grid */
+.formio-component .formio-button-add-row {
+    margin-top: 8px !important;
+}
+
+/* Remove row button in data grid */
+.formio-component .formio-button-remove-row {
+    background-color: #ff5858 !important;
+    border-color: #ff5858 !important;
+    color: #ffffff !important;
+    padding: 4px 8px !important;
+    font-size: 12px !important;
+}
+
+.formio-component .formio-button-remove-row:hover {
+    background-color: #e53e3e !important;
+    border-color: #e53e3e !important;
+}
+
+/* Suffix and prefix styling */
+.formio-component .input-group-addon {
+    background-color: #f7f9fb !important;
+    border: 1px solid #d1d8dd !important;
+    padding: 6px 12px !important;
+    font-size: 13px !important;
+    color: #6c7680 !important;
+}
+
+/* Submit button container */
+.formio-component .formio-component-submit {
+    margin-top: 24px !important;
+}
+
+/* Number input arrows visibility */
+.formio-component input[type="number"]::-webkit-inner-spin-button,
+.formio-component input[type="number"]::-webkit-outer-spin-button {
+    opacity: 1 !important;
+}
+
+/* Input Group - prevent wrapping - OVERRIDE desk.bundle.css */
+/* Multiple selectors with high specificity to override ERPNext's default styles */
+.formio-component .input-group,
+.formio-component .form-group .input-group,
+.formio-component .form-group .element .input-group,
+div[ref="element"] .input-group,
+.formio-form .input-group,
+table.table .input-group {
+    flex-wrap: nowrap !important;
+    display: flex !important;
+}
+
+/* Ensure input takes available space */
+.formio-component .input-group input.form-control,
+.formio-component .input-group input[type="text"],
+.formio-component .input-group input[type="number"],
+div[ref="element"] .input-group input,
+table.table .input-group input {
+    flex: 1 1 auto !important;
+    min-width: 0 !important;
+}
+
+/* Keep suffix/prefix from wrapping */
+.formio-component .input-group .input-group-append,
+.formio-component .input-group .input-group-prepend,
+div[ref="element"] .input-group .input-group-append,
+div[ref="element"] .input-group .input-group-prepend,
+table.table .input-group .input-group-append,
+table.table .input-group .input-group-prepend {
+    flex-shrink: 0 !important;
+    flex-wrap: nowrap !important;
+}
+
+/* Professional Stepper Progress Indicator */
+.stepper-container {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 25px 30px;
+    margin: 0;
+    border-radius: 0;
+}
+
+.stepper-progress {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: relative;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.stepper-progress::before {
+    content: '';
+    position: absolute;
+    top: 24px;
+    left: 20%;
+    right: 20%;
+    height: 3px;
+    background: rgba(255, 255, 255, 0.3);
+    z-index: 0;
+}
+
+.stepper-progress .step {
+    flex: 1;
+    text-align: center;
+    position: relative;
+    z-index: 1;
+}
+
+.stepper-progress .step-circle {
+    width: 48px;
+    height: 48px;
+    margin: 0 auto 12px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.2);
+    border: 3px solid rgba(255, 255, 255, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    backdrop-filter: blur(10px);
+}
+
+.stepper-progress .step-number {
+    font-size: 18px;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.8);
+    transition: all 0.3s ease;
+}
+
+.stepper-progress .step-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.7);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    transition: all 0.3s ease;
+}
+
+.stepper-progress .step-description {
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.6);
+    margin-top: 4px;
+    font-weight: 400;
+}
+
+/* Active Step */
+.stepper-progress .step.active .step-circle {
+    background: #ffffff;
+    border-color: #ffffff;
+    box-shadow: 0 4px 20px rgba(255, 255, 255, 0.4), 0 0 0 6px rgba(255, 255, 255, 0.1);
+    transform: scale(1.1);
+}
+
+.stepper-progress .step.active .step-number {
+    color: #667eea;
+}
+
+.stepper-progress .step.active .step-label {
+    color: #ffffff;
+    font-weight: 700;
+}
+
+/* Completed Step */
+.stepper-progress .step.completed .step-circle {
+    background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+    border-color: #48bb78;
+    box-shadow: 0 4px 12px rgba(72, 187, 120, 0.3);
+}
+
+.stepper-progress .step.completed .step-number {
+    display: none;
+}
+
+.stepper-progress .step.completed .step-circle::after {
+    content: '✓';
+    color: #ffffff;
+    font-size: 24px;
+    font-weight: bold;
+}
+
+.stepper-progress .step.completed .step-label {
+    color: rgba(255, 255, 255, 0.9);
+}
+
+/* Progress Line Animation */
+.stepper-progress .progress-line {
+    position: absolute;
+    top: 24px;
+    left: 20%;
+    height: 3px;
+    background: linear-gradient(90deg, #48bb78 0%, #38a169 100%);
+    z-index: 0;
+    transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 2px 8px rgba(72, 187, 120, 0.3);
+}
+
+/* Info Cards Styling */
+.info-card {
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.info-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
+    transition: width 0.3s ease;
+}
+
+.info-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12) !important;
+}
+
+.info-card:hover::before {
+    width: 6px;
+}
+
+/* Config Card Enhancements */
+.config-card {
+    position: relative;
+    overflow: hidden;
+}
+
+.config-card::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 100px;
+    height: 100%;
+    background: linear-gradient(90deg, transparent 0%, rgba(72, 187, 120, 0.05) 100%);
+    pointer-events: none;
+}

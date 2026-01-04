@@ -1,0 +1,199 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2025-12-27 00:16:45.751948",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "base_item",
+  "item_group",
+  "base_price",
+  "column_break_mxwf",
+  "brand",
+  "frame_size",
+  "is_flameproof_flp",
+  "section_break_parameters",
+  "parameters",
+  "section_break_discount",
+  "apply_discount_after",
+  "discount_percentage",
+  "section_break_price_recalc",
+  "new_item_code",
+  "non_standard_item_description",
+  "column_break_price",
+  "valuation_price",
+  "logs_tab",
+  "section_break_price_logs",
+  "price_log_html",
+  "amended_from"
+ ],
+ "fields": [
+  {
+   "fieldname": "base_item",
+   "fieldtype": "Link",
+   "label": "Base Item",
+   "link_filters": "[[\"Item\",\"is_non_standard\",\"=\",0]]",
+   "options": "Item"
+  },
+  {
+   "fetch_from": "base_item.brand",
+   "fieldname": "brand",
+   "fieldtype": "Link",
+   "label": "Brand",
+   "options": "Brand",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_mxwf",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fetch_from": "base_item.frame_size",
+   "fieldname": "frame_size",
+   "fieldtype": "Data",
+   "label": "Frame Size",
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "fetch_from": "base_item.is_flameproof",
+   "fieldname": "is_flameproof_flp",
+   "fieldtype": "Check",
+   "label": "Is Flameproof (FLP)",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "base_item.item_group",
+   "fieldname": "item_group",
+   "fieldtype": "Link",
+   "label": "Item Group",
+   "options": "Item Group",
+   "read_only": 1
+  },
+  {
+   "fieldname": "base_price",
+   "fieldtype": "Currency",
+   "label": "Base Price",
+   "precision": "2",
+   "read_only": 1
+  },
+  {
+   "fieldname": "section_break_parameters",
+   "fieldtype": "Section Break",
+   "label": "Non-Standard Parameters"
+  },
+  {
+   "fieldname": "parameters",
+   "fieldtype": "Table",
+   "label": "Parameters",
+   "options": "Non Standard Item Parameter"
+  },
+  {
+   "fieldname": "section_break_discount",
+   "fieldtype": "Section Break",
+   "hidden": 1,
+   "label": "Discount Configuration"
+  },
+  {
+   "description": "Discount to apply on the computed price",
+   "fieldname": "discount_percentage",
+   "fieldtype": "Percent",
+   "hidden": 1,
+   "label": "Discount Percentage",
+   "options": "0.0",
+   "read_only": 1
+  },
+  {
+   "fieldname": "section_break_price_recalc",
+   "fieldtype": "Section Break",
+   "label": "Price Recalculation"
+  },
+  {
+   "fieldname": "column_break_price",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "new_item_code",
+   "fieldtype": "Data",
+   "label": "New Non-Standard Item Code",
+   "read_only": 1
+  },
+  {
+   "description": "Base valuation rate without discount - used for accounting",
+   "fieldname": "valuation_price",
+   "fieldtype": "Currency",
+   "label": "ZD Non Standard Price ( Zero Discount Price )",
+   "precision": "2",
+   "read_only": 1
+  },
+  {
+   "fieldname": "non_standard_item_description",
+   "fieldtype": "Text",
+   "label": "Non Standard Item Description",
+   "read_only": 1
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "section_break_price_logs",
+   "fieldtype": "Section Break",
+   "label": "Price & Discount History"
+  },
+  {
+   "fieldname": "price_log_html",
+   "fieldtype": "HTML",
+   "read_only": 1
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "Non Standard Item Creation",
+   "print_hide": 1,
+   "read_only": 1,
+   "search_index": 1
+  },
+  {
+   "fieldname": "logs_tab",
+   "fieldtype": "Tab Break",
+   "label": "Logs"
+  },
+  {
+   "description": "Discount percentage will be applied after this parameter in the item code sequence",
+   "fieldname": "apply_discount_after",
+   "fieldtype": "Select",
+   "hidden": 1,
+   "label": "Apply Discount After",
+   "options": "\nPercentage Values\nAbsolute Amount",
+   "read_only": 1
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "is_submittable": 1,
+ "links": [],
+ "modified": "2026-01-03 12:46:09.235792",
+ "modified_by": "Administrator",
+ "module": "Jain Machine Tools",
+ "name": "Non Standard Item Creation",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "rows_threshold_for_grid_search": 20,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

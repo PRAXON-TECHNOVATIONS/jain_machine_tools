@@ -14,13 +14,20 @@ frappe.ui.form.on("Barcode Printing", {
 			return {};
 		});
 
-		// Set query for item_code field to filter by t_warehouse
+		// Set query for item_code field to filter by t_warehouse or serial_no
 		frm.set_query('item_code', function() {
 			if (frm.doc.record && frm.doc.type === 'Stock Entry') {
 				return {
 					query: 'jain_machine_tools.api.barcode_printing_filters.get_items_with_t_warehouse',
 					filters: {
 						'stock_entry': frm.doc.record
+					}
+				};
+			} else if (frm.doc.record && frm.doc.type === 'Purchase Receipt') {
+				return {
+					query: 'jain_machine_tools.api.barcode_printing_filters.get_items_with_serial_no',
+					filters: {
+						'purchase_receipt': frm.doc.record
 					}
 				};
 			}
@@ -57,6 +64,13 @@ frappe.ui.form.on("Barcode Printing", {
 						'stock_entry': frm.doc.record
 					}
 				};
+			} else if (frm.doc.record && frm.doc.type === 'Purchase Receipt') {
+				return {
+					query: 'jain_machine_tools.api.barcode_printing_filters.get_items_with_serial_no',
+					filters: {
+						'purchase_receipt': frm.doc.record
+					}
+				};
 			}
 			return {};
 		});
@@ -64,6 +78,11 @@ frappe.ui.form.on("Barcode Printing", {
 
 	get_serial_no(frm) {
 		// Validate required fields
+		if (!frm.doc.type) {
+			frappe.msgprint(__('Please select a Type first'));
+			return;
+		}
+
 		if (!frm.doc.record) {
 			frappe.msgprint(__('Please select a Record first'));
 			return;
@@ -74,12 +93,13 @@ frappe.ui.form.on("Barcode Printing", {
 			return;
 		}
 
-		// Fetch serial numbers from the Stock Entry
+		// Fetch serial numbers from the Stock Entry or Purchase Receipt
 		frappe.call({
 			method: 'jain_machine_tools.jain_machine_tools.doctype.barcode_printing.barcode_printing.get_serial_numbers',
 			args: {
 				record: frm.doc.record,
-				item_code: frm.doc.item_code
+				item_code: frm.doc.item_code,
+				doctype_name: frm.doc.type
 			},
 			callback: function(r) {
 				if (r.message && r.message.length > 0) {
