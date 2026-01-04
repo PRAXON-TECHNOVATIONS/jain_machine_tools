@@ -10,6 +10,10 @@ app_license = "mit"
 
 # required_apps = []
 
+# boot_session = [
+#     "jain_machine_tools.patches.reorder_patch.apply_reorder_patch"
+# ]
+
 # Each item in the list will be shown as an app in the apps page
 # add_to_apps_screen = [
 # 	{
@@ -50,13 +54,13 @@ app_include_js = [
 # doctype_js = {"doctype" : "public/js/doctype.js"}
 doctype_js = {
     "Purchase Receipt": "public/js/purchase_receipt_custom.js",
-    "Purchase Order": "public/js/purchase_order_custom.js",
-    "Quotation": "public/js/quotation_custom.js",
-    "Sales Order": "public/js/sales_order_custom.js",
     "Supplier": "public/js/supplier_terms.js",
     "Supplier Quotation": "public/js/supplier_quot_terms.js",
     "Material Request": "public/js/mr_item_duplicate.js",
     "Request for Quotation":"public/js/rfq_item_duplicate.js",
+    "Purchase Order": "public/js/purchase_order_custom.js",
+    "Quotation": "public/js/quotation_custom.js",
+    "Sales Order": "public/js/sales_order_custom.js",
     "Item": "public/js/item.js",
 }
 
@@ -138,6 +142,12 @@ jinja = {
 # 	"Event": "frappe.desk.doctype.event.event.get_permission_query_conditions",
 # }
 #
+
+permission_query_conditions = {
+    "Material Request": "jain_machine_tools.permissions.material_request_permission.material_request_permission",
+    "Purchase Order":"jain_machine_tools.permissions.purchase_order_permission.purchase_order_permission"
+}
+
 # has_permission = {
 # 	"Event": "frappe.desk.doctype.event.event.has_permission",
 # }
@@ -169,8 +179,20 @@ doc_events = {
             "jain_machine_tools.api.auto_populate_supplier_code.populate_supplier_item_code"
         ]
     },
+    "Request for Quotation": {
+        "before_insert": "jain_machine_tools.api.rfq.before_insert"
+    },
     "Purchase Order": {
-        "validate": "jain_machine_tools.api.auto_populate_supplier_code.populate_supplier_item_code"
+        "validate": [
+            "jain_machine_tools.api.purchase_order_discount.validate_items",
+            "jain_machine_tools.api.auto_populate_supplier_code.populate_supplier_item_code"
+        ]
+    },
+    "Material Request": {
+        "before_insert": "jain_machine_tools.patches.reorder_override.set_reorder_field"
+    },
+    "Supplier": {
+        "before_save": "jain_machine_tools.api.supplier_gstin_check.check_duplicate_gstin"
     },
     "Serial No": {
         "on_update": "jain_machine_tools.api.serial_no_hooks.on_update"
@@ -210,6 +232,7 @@ doc_events = {
 # 		"jain_machine_tools.tasks.monthly"
 # 	],
 # }
+
 
 # Testing
 # -------
@@ -291,9 +314,11 @@ standard_queries = {
 }
 
 fixtures = [
-    'Custom Field',
     {"doctype": "Workflow", "filters": [["name" , "in" , ("Purchase Order Approval","Supplier Approval", "Material Request Approval")]]},
     {"doctype": "Notification", "filters": [["name" , "in" , ("PO Send to Supplier After Approval","Purchase Order Approval - Notify Purchase Manager","New Supplier Created – Approval Required Mail", "New Supplier Created – Approval Required Notification")]]},
     {"doctype": "Email Template", "filters": [["name" , "in" , ("Request for Quotation Email")]]},
-    {"doctype": "Print Format","filters":[["module", "in", "Jain Machine Tools"]]}
+    {"doctype": "Print Format","filters":[["module", "in", "Jain Machine Tools"]]},
+    {"doctype": "Server Script", "filters": [["name" , "in" , ("Purchase User Role see only approved suppliers")]]},
+    {"doctype": "Workspace", "filters": [["name" , "in" , ("Purchase")]]},
+    {"doctype": "Custom DocPerm", "filters": [["role" , "in" , ("Store Manager","Purchase Manager","Accounts Manager","Purchase User")]]},
 ]
