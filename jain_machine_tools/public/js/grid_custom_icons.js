@@ -1686,7 +1686,7 @@ jain_machine_tools.grid_custom_icons = {
 									args: {
 										doctype: 'Item Price',
 										filters: {
-											item_name: item.name,
+											item_code : item.name,
 											brand: item.brand
 										},
 										fields: ['price_list_rate', 'price_list'],
