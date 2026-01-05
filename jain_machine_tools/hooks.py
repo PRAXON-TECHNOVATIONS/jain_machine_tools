@@ -145,7 +145,7 @@ jinja = {
 
 permission_query_conditions = {
     # "Material Request": "jain_machine_tools.permissions.material_request_permission.material_request_permission",
-    "Purchase Order":"jain_machine_tools.permissions.purchase_order_permission.purchase_order_permission"
+    # "Purchase Order":"jain_machine_tools.permissions.purchase_order_permission.purchase_order_permission"
 }
 
 # has_permission = {
