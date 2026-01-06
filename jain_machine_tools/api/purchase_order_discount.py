@@ -7,7 +7,7 @@ def validate_items(doc, method):
         price_list_rate = flt(item.price_list_rate)
         
         # Custom Fields
-        is_standard = item.custom_is_standard
+        is_non_standard = item.custom_is_non_standard
         ns_percent = flt(item.custom_non_standard_percentage)
         discount_percent = flt(item.custom_discount_percent)
         extra_ns_amt = flt(item.custom_extra_non_standard_amount)
@@ -18,16 +18,7 @@ def validate_items(doc, method):
         absolute_ns_price = 0.0
         final_rate = 0.0
 
-        if is_standard:
-            # === STANDARD ===
-            discount_amount = price_list_rate * (discount_percent / 100.0)
-            discount_price = price_list_rate - discount_amount
-            
-            handling_amount = discount_price * (handling_percent / 100.0)
-            final_rate = discount_price + handling_amount
-            
-            absolute_ns_price = 0.0
-        else:
+        if is_non_standard:
             # === NON-STANDARD ===
             val_after_ns_percent = price_list_rate + (price_list_rate * (ns_percent / 100.0))
             
@@ -38,6 +29,16 @@ def validate_items(doc, method):
             
             handling_amount = absolute_ns_price * (handling_percent / 100.0)
             final_rate = absolute_ns_price + handling_amount
+            
+        else:
+            # === STANDARD ===
+            discount_amount = price_list_rate * (discount_percent / 100.0)
+            discount_price = price_list_rate - discount_amount
+            
+            handling_amount = discount_price * (handling_percent / 100.0)
+            final_rate = discount_price + handling_amount
+            
+            absolute_ns_price = 0.0
 
         # === UPDATE VALUES ===
         item.custom_discount_price = discount_price
