@@ -5,10 +5,14 @@ frappe.provide('jain_machine_tools.grid_custom_icons');
 
 jain_machine_tools.grid_custom_icons = {
 	// List of doctypes where custom icons should appear
-	applicable_doctypes: ['Quotation', 'Purchase Order', 'Sales Order'],
+	// UAT
+	applicable_doctypes: ['Quotation', 'Sales Order'],
+	// applicable_doctypes: ['Quotation', 'Purchase Order', 'Sales Order'],
 
 	// List of child table doctypes
-	child_table_doctypes: ['Quotation Item', 'Purchase Order Item', 'Sales Order Item'],
+	// UAT
+	child_table_doctypes: ['Quotation Item', 'Sales Order Item'],
+	// child_table_doctypes: ['Quotation Item', 'Purchase Order Item', 'Sales Order Item'],
 
 	setup: function(frm) {
 		// Check if current doctype is applicable
