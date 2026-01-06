@@ -1,24 +1,21 @@
 // Custom Purchase Order handlers
-// 
-//  Commented for some time only FOR UAT from line 4-21
+frappe.ui.form.on('Purchase Order', {
+	refresh: function(frm) {
+		// Initialize custom grid icons
+		if (jain_machine_tools && jain_machine_tools.grid_custom_icons) {
+			jain_machine_tools.grid_custom_icons.setup(frm);
+		}
+	},
 
-// frappe.ui.form.on('Purchase Order', {
-// 	refresh: function(frm) {
-// 		// Initialize custom grid icons
-// 		if (jain_machine_tools && jain_machine_tools.grid_custom_icons) {
-// 			jain_machine_tools.grid_custom_icons.setup(frm);
-// 		}
-// 	},
-
-// 	items_add: function(frm, cdt, cdn) {
-// 		// Re-initialize icons when new row is added
-// 		setTimeout(() => {
-// 			if (jain_machine_tools && jain_machine_tools.grid_custom_icons) {
-// 				jain_machine_tools.grid_custom_icons.setup(frm);
-// 			}
-// 		}, 100);
-// 	}
-// });
+	items_add: function(frm, cdt, cdn) {
+		// Re-initialize icons when new row is added
+		setTimeout(() => {
+			if (jain_machine_tools && jain_machine_tools.grid_custom_icons) {
+				jain_machine_tools.grid_custom_icons.setup(frm);
+			}
+		}, 100);
+	}
+});
 
 // Auto-populate supplier item code in Purchase Order items child table
 frappe.ui.form.on('Purchase Order Item', {
