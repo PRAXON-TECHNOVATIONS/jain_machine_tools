@@ -54,7 +54,7 @@ frappe.ui.form.on('Purchase Order Item', {
     custom_handling_percentage: function(frm, cdt, cdn) { calculate_row(frm, cdt, cdn); },
     
     // Standard/Non-Standard change toggles the visblity
-    custom_is_standard: function(frm, cdt, cdn) {
+    custom_is_non_standard: function(frm, cdt, cdn) {
         calculate_row(frm, cdt, cdn);
     }
 });
@@ -103,7 +103,7 @@ var calculate_row = function(frm, cdt, cdn) {
 
     // Get Values
     let list_price = flt(row.price_list_rate);
-    let is_standard = row.custom_is_standard;
+    let is_non_standard = row.custom_is_non_standard;
     
     let ns_percent = flt(row.custom_non_standard_percentage);
     let discount_percent = flt(row.custom_discount_percent);
@@ -114,16 +114,7 @@ var calculate_row = function(frm, cdt, cdn) {
     let absolute_ns_price = 0.0;
     let final_rate = 0.0;
 
-    if (is_standard) {
-        // Standard Logic
-        let discount_amount = list_price * (discount_percent / 100);
-        discount_price = list_price - discount_amount;
-        
-        let handling_amount = discount_price * (handling_percent / 100);
-        final_rate = discount_price + handling_amount;
-        
-        absolute_ns_price = 0; 
-    } else {
+    if (is_non_standard) {
         // Non-Standard Logic
         let val_after_ns_percent = list_price + (list_price * (ns_percent / 100));
         
@@ -133,7 +124,16 @@ var calculate_row = function(frm, cdt, cdn) {
         absolute_ns_price = discount_price + extra_ns_amt;
 
         let handling_amount = absolute_ns_price * (handling_percent / 100);
-        final_rate = absolute_ns_price + handling_amount;
+        final_rate = absolute_ns_price + handling_amount;        
+    } else {
+        // Standard Logic
+        let discount_amount = list_price * (discount_percent / 100);
+        discount_price = list_price - discount_amount;
+        
+        let handling_amount = discount_price * (handling_percent / 100);
+        final_rate = discount_price + handling_amount;
+        
+        absolute_ns_price = 0; 
     }
 
     frappe.model.set_value(cdt, cdn, 'custom_discount_price', discount_price);
