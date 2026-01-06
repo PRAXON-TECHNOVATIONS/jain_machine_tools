@@ -5,14 +5,10 @@ frappe.provide('jain_machine_tools.grid_custom_icons');
 
 jain_machine_tools.grid_custom_icons = {
 	// List of doctypes where custom icons should appear
-	// UAT
-	applicable_doctypes: ['Quotation', 'Sales Order'],
-	// applicable_doctypes: ['Quotation', 'Purchase Order', 'Sales Order'],
+	applicable_doctypes: ['Quotation', 'Purchase Order', 'Sales Order'],
 
 	// List of child table doctypes
-	// UAT
-	child_table_doctypes: ['Quotation Item', 'Sales Order Item'],
-	// child_table_doctypes: ['Quotation Item', 'Purchase Order Item', 'Sales Order Item'],
+	child_table_doctypes: ['Quotation Item', 'Purchase Order Item', 'Sales Order Item'],
 
 	setup: function(frm) {
 		// Check if current doctype is applicable
@@ -2365,15 +2361,14 @@ frappe.ui.form.on('Quotation', {
 		jain_machine_tools.grid_custom_icons.setup(frm);
 	}
 });
-// UAT
-// frappe.ui.form.on('Purchase Order', {
-// 	refresh: function(frm) {
-// 		jain_machine_tools.grid_custom_icons.setup(frm);
-// 	},
-// 	onload_post_render: function(frm) {
-// 		jain_machine_tools.grid_custom_icons.setup(frm);
-// 	}
-// });
+frappe.ui.form.on('Purchase Order', {
+	refresh: function(frm) {
+		jain_machine_tools.grid_custom_icons.setup(frm);
+	},
+	onload_post_render: function(frm) {
+		jain_machine_tools.grid_custom_icons.setup(frm);
+	}
+});
 
 frappe.ui.form.on('Sales Order', {
 	refresh: function(frm) {
