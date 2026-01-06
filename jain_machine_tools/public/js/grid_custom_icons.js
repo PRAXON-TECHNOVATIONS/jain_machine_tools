@@ -2365,15 +2365,15 @@ frappe.ui.form.on('Quotation', {
 		jain_machine_tools.grid_custom_icons.setup(frm);
 	}
 });
-
-frappe.ui.form.on('Purchase Order', {
-	refresh: function(frm) {
-		jain_machine_tools.grid_custom_icons.setup(frm);
-	},
-	onload_post_render: function(frm) {
-		jain_machine_tools.grid_custom_icons.setup(frm);
-	}
-});
+// UAT
+// frappe.ui.form.on('Purchase Order', {
+// 	refresh: function(frm) {
+// 		jain_machine_tools.grid_custom_icons.setup(frm);
+// 	},
+// 	onload_post_render: function(frm) {
+// 		jain_machine_tools.grid_custom_icons.setup(frm);
+// 	}
+// });
 
 frappe.ui.form.on('Sales Order', {
 	refresh: function(frm) {
