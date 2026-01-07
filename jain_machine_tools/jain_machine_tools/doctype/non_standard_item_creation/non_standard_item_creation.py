@@ -438,17 +438,28 @@ class NonStandardItemCreation(Document):
                             </div>
                 `;
 
-                // Add each parameter item
-                data.items.forEach((item, idx) => {
-                    // Check if it's a percentage (always positive) or contains negative indicator
-                    const isPercentage = item.includes('%');
+                // Separate parameters into percentage and absolute
+                const percentageParams = [];
+                const absoluteParams = [];
+
+                data.items.forEach((item) => {
+                    // Check if it's a percentage parameter (contains % but not discount)
+                    if (item.includes('%') && !item.toLowerCase().includes('discount')) {
+                        percentageParams.push(item);
+                    } else if (!item.toLowerCase().includes('discount')) {
+                        absoluteParams.push(item);
+                    }
+                });
+
+                // Function to render a parameter item
+                const renderParam = (item) => {
                     const hasNegativeAmount = item.match(/-₹/) || item.startsWith('Discount -');
-                    const isPositive = isPercentage || !hasNegativeAmount;
+                    const isPositive = !hasNegativeAmount;
                     const color = isPositive ? '#2e7d32' : '#c62828';
                     const bgColor = isPositive ? '#e8f5e9' : '#ffebee';
                     const icon = isPositive ? 'fa-plus-circle' : 'fa-minus-circle';
 
-                    breakdown_html += `
+                    return `
                         <div style="background: ${bgColor}; padding: 12px 15px; border-radius: 6px; margin-bottom: 8px; border-left: 3px solid ${color};">
                             <div style="display: flex; align-items: center; gap: 10px;">
                                 <i class="fa ${icon}" style="color: ${color}; font-size: 16px;"></i>
@@ -456,7 +467,43 @@ class NonStandardItemCreation(Document):
                             </div>
                         </div>
                     `;
+                };
+
+                // Function to render discount
+                const renderDiscount = () => {
+                    if (data.discount_percentage > 0) {
+                        const discount_amount = data.valuation_price - data.final_price;
+                        return `
+                            <div style="background: #fff3cd; padding: 12px 15px; border-radius: 6px; margin-bottom: 8px; border-left: 3px solid #ffc107;">
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    <i class="fa fa-minus-circle" style="color: #f57c00; font-size: 16px;"></i>
+                                    <div style="flex: 1; font-size: 13px; font-weight: 500; color: #36414c;">Discount ${data.discount_percentage}% after ${data.discount_parameter || 'NS%'} -₹${format_currency(discount_amount, 'INR')}</div>
+                                </div>
+                            </div>
+                        `;
+                    }
+                    return '';
+                };
+
+                // Add percentage parameters first
+                percentageParams.forEach((item) => {
+                    breakdown_html += renderParam(item);
                 });
+
+                // Add discount after percentage values if discount_parameter is "Percentage Values"
+                if (data.discount_parameter === "Percentage Values") {
+                    breakdown_html += renderDiscount();
+                }
+
+                // Add absolute parameters
+                absoluteParams.forEach((item) => {
+                    breakdown_html += renderParam(item);
+                });
+
+                // Add discount after absolute amount if discount_parameter is "Absolute Amount"
+                if (data.discount_parameter === "Absolute Amount") {
+                    breakdown_html += renderDiscount();
+                }
 
                 breakdown_html += `
                         </div>
@@ -472,23 +519,6 @@ class NonStandardItemCreation(Document):
                             </div>
                         </div>
                 `;
-
-                // Add discount section if applicable
-                if (data.discount_percentage > 0) {
-                    const discount_amount = data.valuation_price - data.final_price;
-                    breakdown_html += `
-                        <!-- Discount Applied -->
-                        <div style="background: #fff3cd; padding: 15px; border-radius: 6px; margin-bottom: 15px; border-left: 4px solid #ffc107;">
-                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                                <div>
-                                    <div style="font-size: 10px; color: #856404; text-transform: uppercase; margin-bottom: 4px;">Discount Amount</div>
-                                    <div style="font-size: 14px; font-weight: 600; color: #856404;">Discount applied ${data.discount_percentage}% after NS%</div>
-                                </div>
-                                <div style="font-size: 18px; font-weight: 700; color: #f57c00;">-${format_currency(discount_amount, 'INR')}</div>
-                            </div>
-                        </div>
-                    `;
-                }
 
                 breakdown_html += `
                         <!-- Final Total -->

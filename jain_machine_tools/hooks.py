@@ -31,9 +31,9 @@ app_license = "mit"
 # include js, css files in header of desk.html
 app_include_css = [
     "https://cdn.form.io/formiojs/formio.full.min.css",
-    "/assets/jain_machine_tools/css/formio_custom.css?v=5",
+    "/assets/jain_machine_tools/css/formio_custom.css?v=5.1",
 ]
-app_include_js = ["/assets/jain_machine_tools/js/grid_custom_icons.js?v=1.0.1"]
+app_include_js = ["/assets/jain_machine_tools/js/grid_custom_icons.js?v=1.0.2"]
 
 # include js, css files in header of web template
 # web_include_css = "/assets/jain_machine_tools/css/jain_machine_tools.css"
