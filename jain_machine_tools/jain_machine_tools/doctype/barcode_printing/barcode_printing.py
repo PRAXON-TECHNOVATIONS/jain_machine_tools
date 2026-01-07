@@ -55,9 +55,9 @@ def get_barcode_image(serial_no, barcode_type="Code128"):
 		# Generate barcode to BytesIO buffer with optimized settings
 		buffer = BytesIO()
 		barcode_instance.write(buffer, options={
-			'module_height': 12.0,  # Height of barcode bars in mm
-			'module_width': 0.25,   # Width of narrowest bar in mm
-			'quiet_zone': 3.0,      # White space around barcode
+			'module_height': 10.0,  # Height of barcode bars in mm (reduced for 10 per page)
+			'module_width': 0.20,   # Width of narrowest bar in mm (slightly reduced)
+			'quiet_zone': 2.5,      # White space around barcode (reduced)
 			'font_size': 0,         # Don't render text below barcode (we'll show it separately)
 			'text_distance': 1.0,
 			'background': 'white',
