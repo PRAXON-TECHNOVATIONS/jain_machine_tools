@@ -144,7 +144,7 @@ jinja = {
 #
 
 permission_query_conditions = {
-    # "Material Request": "jain_machine_tools.permissions.material_request_permission.material_request_permission",
+    "Material Request": "jain_machine_tools.permissions.material_request_permission.material_request_permission",
     "Purchase Order":"jain_machine_tools.permissions.purchase_order_permission.purchase_order_permission"
 }
 
@@ -184,7 +184,6 @@ doc_events = {
     },
     "Purchase Order": {
         "validate": [
-            # "jain_machine_tools.api.purchase_order_discount.validate_items",
             "jain_machine_tools.api.auto_populate_supplier_code.populate_supplier_item_code"
         ]
     },
@@ -319,6 +318,6 @@ fixtures = [
     {"doctype": "Email Template", "filters": [["name" , "in" , ("Request for Quotation Email")]]},
     {"doctype": "Print Format","filters":[["module", "in", "Jain Machine Tools"]]},
     {"doctype": "Server Script", "filters": [["name" , "in" , ("Purchase User Role see only approved suppliers")]]},
-    {"doctype": "Workspace", "filters": [["name" , "in" , ("Purchase")]]},
-    {"doctype": "Custom DocPerm", "filters": [["role" , "in" , ("Store Manager","Purchase Manager","Accounts Manager","Purchase User")]]},
+    {"doctype": "Workspace", "filters": [["name" , "in" , ("Purchase","Sales")]]},
+    {"doctype": "Custom DocPerm", "filters": [["role" , "in" , ("Store Manager","Purchase Manager","Accounts Manager","Purchase User","Sales Executive")]]},
 ]
