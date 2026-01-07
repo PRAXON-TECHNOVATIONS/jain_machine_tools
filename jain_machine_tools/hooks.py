@@ -378,4 +378,17 @@ fixtures = [
             ]
         ],
     },
+    {
+        "doctype": "Role",
+        "filters": [
+            [
+                "name",
+                "in",
+                (
+                    "Store Manager",
+                    "Sales Executive",
+                ),
+            ]
+        ],
+    },
 ]
