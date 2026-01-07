@@ -47,7 +47,7 @@ def execute():
                 "fieldname": "warranty_start_from",
                 "label": "Warranty Start From",
                 "fieldtype": "Select",
-                "options": "Delivery Note Posting Date\nSales Invoice Posting Date",
+                "options": "Sales Invoice Posting Date",
                 "insert_after": "warranty_uom",
                 "mandatory_depends_on": "eval:doc.has_serial_no == 1",
                 "depends_on": "eval:doc.has_serial_no == 1"

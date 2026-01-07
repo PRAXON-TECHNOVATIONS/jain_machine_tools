@@ -437,15 +437,15 @@ def get_printed_serial_numbers_pr(purchase_receipt, item_code):
 
 def mark_serial_numbers_as_generated(barcode_printing_name, checked=True):
 	"""
-	Mark or unmark serial numbers as barcode_generated.
+	Mark or unmark serial numbers as barcode_generated and update vendor warranty dates.
 
 	Args:
 		barcode_printing_name: Barcode Printing document name
 		checked: True to mark as generated, False to unmark
 	"""
-	# Get all serial numbers from the Barcode Printing Table
+	# Get all serial numbers from the Barcode Printing Table with warranty dates
 	serial_entries = frappe.db.sql("""
-		SELECT serial_no
+		SELECT serial_no, vendor_manufacturing_date, warranty_expiry_date
 		FROM `tabBarcode Printing Table`
 		WHERE parent = %(parent)s
 		AND serial_no IS NOT NULL
@@ -456,7 +456,17 @@ def mark_serial_numbers_as_generated(barcode_printing_name, checked=True):
 
 	# Update each serial number
 	for entry in serial_entries:
-		frappe.db.set_value('Serial No', entry.serial_no, 'barcode_generated', 1 if checked else 0, update_modified=False)
+		if checked:
+			# When marking as generated, update barcode_generated flag and vendor warranty dates
+			frappe.db.set_value('Serial No', entry.serial_no, {
+				'barcode_generated': 1,
+				'vendor_manufacturing_date': entry.vendor_manufacturing_date,
+				'vendor_warranty_expiry_date': entry.warranty_expiry_date
+			}, update_modified=False)
+		else:
+			# When unmarking (on cancel), only unset the barcode_generated flag
+			# Keep the warranty dates as they were set
+			frappe.db.set_value('Serial No', entry.serial_no, 'barcode_generated', 0, update_modified=False)
 
 	frappe.db.commit()
 

@@ -422,8 +422,8 @@ jain_machine_tools.grid_custom_icons = {
 					fieldname: 'apply_discount_after',
 					label: __('Apply Discount After'),
 					fieldtype: 'Select',
-					options: '\nPercentage Values\nAbsolute Amount',
-					default: discount_after
+					options: ns_record.brand === 'Siemens' ? 'Absolute Amount' : '\nPercentage Values',
+					default: ns_record.brand === 'Siemens' ? 'Absolute Amount' : (discount_after || 'Percentage Values')
 				},
 				{
 					fieldname: 'discount_percentage',
@@ -1193,8 +1193,8 @@ jain_machine_tools.grid_custom_icons = {
 							fieldname: 'apply_discount_after',
 							label: __('Apply Discount After'),
 							fieldtype: 'Select',
-							options: ['\nPercentage Values\nAbsolute Amount'],
-							default: latest_discount_after
+							options: record.brand === 'Siemens' ? 'Absolute Amount' : '\nPercentage Values',
+							default: record.brand === 'Siemens' ? 'Absolute Amount' : (latest_discount_after || 'Percentage Values')
 						},
 						{
 							fieldname: 'discount_percentage',
@@ -1478,9 +1478,12 @@ jain_machine_tools.grid_custom_icons = {
 						<div>
 							<label style="font-size: 11px; color: #6c7680; margin-bottom: 4px; display: block; font-weight: 600;">Apply Discount After</label>
 							<select class="discount-after-select" style="width: 100%; padding: 8px 12px; border: 1px solid #d1d8dd; border-radius: 6px; font-size: 13px; background: white;">
-								<option value="">-- No Discount --</option>
-								<option value="Percentage Values" ${discount_after === 'Percentage Values' ? 'selected' : ''}>Percentage Values</option>
-								<option value="Absolute Amount" ${discount_after === 'Absolute Amount' ? 'selected' : ''}>Absolute Amount</option>
+								${selected_config.brand === 'Siemens' ? `
+									<option value="Absolute Amount" selected>Absolute Amount</option>
+								` : `
+									<option value="">-- No Discount --</option>
+									<option value="Percentage Values" ${discount_after === 'Percentage Values' ? 'selected' : ''}>Percentage Values</option>
+								`}
 							</select>
 						</div>
 						<div>
@@ -1812,9 +1815,12 @@ jain_machine_tools.grid_custom_icons = {
 								<div>
 									<label style="font-size: 11px; color: #6c7680; margin-bottom: 4px; display: block; font-weight: 600;">Apply Discount After</label>
 									<select class="discount-param-select" style="width: 100%; padding: 8px 12px; border: 1px solid #d1d8dd; border-radius: 6px; font-size: 13px; background: white;">
-										<option value="">-- No Discount --</option>
-										<option value="Percentage Values">Percentage Values</option>
-										<option value="Absolute Amount">Absolute Amount</option>
+										${item.brand === 'Siemens' ? `
+											<option value="Absolute Amount" selected>Absolute Amount</option>
+										` : `
+											<option value="">-- No Discount --</option>
+											<option value="Percentage Values">Percentage Values</option>
+										`}
 									</select>
 								</div>
 								<div>
@@ -1823,8 +1829,14 @@ jain_machine_tools.grid_custom_icons = {
 								</div>
 							</div>
 							<div class="discount-display" style="margin-top: 12px; text-align: center; opacity: 0; transition: opacity 0.3s;">
-								<div style="font-size: 10px; color: #ff9800; margin-bottom: 2px;">DISCOUNT AMOUNT</div>
-								<div class="discount-amount" style="font-size: 16px; font-weight: 700; color: #ff9800;">--</div>
+								<div style="margin-bottom: 8px;">
+									<div style="font-size: 10px; color: #ff9800; margin-bottom: 2px;">DISCOUNT AMOUNT</div>
+									<div class="discount-amount" style="font-size: 16px; font-weight: 700; color: #ff9800;">--</div>
+								</div>
+								<div>
+									<div style="font-size: 10px; color: #48bb78; margin-bottom: 2px;">FINAL NS PRICE</div>
+									<div class="final-price" style="font-size: 16px; font-weight: 700; color: #48bb78;">--</div>
+								</div>
 							</div>
 						</div>
 					</div>
@@ -1839,7 +1851,7 @@ jain_machine_tools.grid_custom_icons = {
 						<div class="new-item-code-preview" style="font-size: 13px; font-weight: 700; color: #36414c; font-family: monospace;">${item.item_code || item.name}</div>
 					</div>
 					<div style="text-align: right;">
-						<div style="font-size: 11px; color: #6c7680; margin-bottom: 4px;">COMPUTED PRICE</div>
+						<div style="font-size: 11px; color: #6c7680; margin-bottom: 4px;">ZD NS PRICE( Zero discount non standard price )</div>
 						<div class="computed-price-preview" style="font-size: 20px; font-weight: 800; color: #48bb78;">${format_currency(dialog.base_price || 0, 'INR')}</div>
 					</div>
 				</div>
@@ -2034,7 +2046,8 @@ jain_machine_tools.grid_custom_icons = {
 			final_price = Math.round(final_price * 100) / 100;
 
 			dialog.$wrapper.find('.discount-display').css('opacity', '1');
-			dialog.$wrapper.find('.discount-amount').text(`-${format_currency(discount_amount, 'INR')} (${dialog.discount_percentage}%) - Final: ${format_currency(final_price, 'INR')}`);
+			dialog.$wrapper.find('.discount-amount').text(`${format_currency(discount_amount, 'INR')} (${dialog.discount_percentage}%)`);
+			dialog.$wrapper.find('.final-price').text(`${format_currency(final_price, 'INR')}`);
 		} else {
 			dialog.$wrapper.find('.discount-display').css('opacity', '0');
 		}
@@ -2301,8 +2314,8 @@ jain_machine_tools.grid_custom_icons = {
 					fieldname: 'apply_discount_after',
 					label: __('Apply Discount After'),
 					fieldtype: 'Select',
-					options: '\nPercentage Values\nAbsolute Amount',
-					default: ns_record.apply_discount_after || ''
+					options: ns_record.brand === 'Siemens' ? 'Absolute Amount' : '\nPercentage Values',
+					default: ns_record.brand === 'Siemens' ? 'Absolute Amount' : (ns_record.apply_discount_after || 'Percentage Values')
 				},
 				{
 					fieldname: 'discount_percentage',
