@@ -104,6 +104,10 @@ class CustomTaxesAndTotals(calculate_taxes_and_totals):
 		item.base_amount = flt(item.amount * self.doc.conversion_rate, item.precision("base_amount"))
 		item.base_net_amount = item.base_amount
 
+		# Update taxable_value for India Compliance GST calculation
+		# This ensures GST is calculated on the rate WITH handling charges
+		item.taxable_value = item.base_net_amount
+
 
 def custom_calculate_taxes_and_totals(doc):
 	"""

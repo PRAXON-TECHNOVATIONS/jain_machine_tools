@@ -31,11 +31,9 @@ app_license = "mit"
 # include js, css files in header of desk.html
 app_include_css = [
     "https://cdn.form.io/formiojs/formio.full.min.css",
-    "/assets/jain_machine_tools/css/formio_custom.css?v=5"
+    "/assets/jain_machine_tools/css/formio_custom.css?v=5",
 ]
-app_include_js = [
-    "/assets/jain_machine_tools/js/grid_custom_icons.js?v=6.8"
-]
+app_include_js = ["/assets/jain_machine_tools/js/grid_custom_icons.js?v=1.0.1"]
 
 # include js, css files in header of web template
 # web_include_css = "/assets/jain_machine_tools/css/jain_machine_tools.css"
@@ -57,7 +55,7 @@ doctype_js = {
     "Supplier": "public/js/supplier_terms.js",
     "Supplier Quotation": "public/js/supplier_quot_terms.js",
     "Material Request": "public/js/mr_item_duplicate.js",
-    "Request for Quotation":"public/js/rfq_item_duplicate.js",
+    "Request for Quotation": "public/js/rfq_item_duplicate.js",
     "Purchase Order": "public/js/purchase_order_custom.js",
     "Quotation": "public/js/quotation_custom.js",
     "Sales Order": "public/js/sales_order_custom.js",
@@ -95,9 +93,9 @@ doctype_js = {
 
 # add methods and filters to jinja environment
 jinja = {
-	"methods": [
-		"jain_machine_tools.jain_machine_tools.doctype.barcode_printing.barcode_printing.get_barcode_image"
-	]
+    "methods": [
+        "jain_machine_tools.jain_machine_tools.doctype.barcode_printing.barcode_printing.get_barcode_image"
+    ]
 }
 
 # Installation
@@ -145,7 +143,7 @@ jinja = {
 
 permission_query_conditions = {
     # "Material Request": "jain_machine_tools.permissions.material_request_permission.material_request_permission",
-    "Purchase Order":"jain_machine_tools.permissions.purchase_order_permission.purchase_order_permission"
+    "Purchase Order": "jain_machine_tools.permissions.purchase_order_permission.purchase_order_permission"
 }
 
 # has_permission = {
@@ -176,7 +174,7 @@ doc_events = {
     "Supplier Quotation": {
         "validate": [
             "jain_machine_tools.api.supplier_quotation.validate_duplicate_sq",
-            "jain_machine_tools.api.auto_populate_supplier_code.populate_supplier_item_code"
+            "jain_machine_tools.api.auto_populate_supplier_code.populate_supplier_item_code",
         ]
     },
     "Request for Quotation": {
@@ -194,9 +192,7 @@ doc_events = {
     "Supplier": {
         "before_save": "jain_machine_tools.api.supplier_gstin_check.check_duplicate_gstin"
     },
-    "Serial No": {
-        "on_update": "jain_machine_tools.api.serial_no_hooks.on_update"
-    },
+    "Serial No": {"on_update": "jain_machine_tools.api.serial_no_hooks.on_update"},
     "Quotation": {
         "validate": "jain_machine_tools.overrides.quotation.validate_quotation"
     },
@@ -204,11 +200,12 @@ doc_events = {
         "validate": "jain_machine_tools.overrides.quotation.validate_sales_order"
     },
     "Sales Invoice": {
-        "validate": "jain_machine_tools.overrides.quotation.validate_sales_invoice"
+        "validate": "jain_machine_tools.overrides.quotation.validate_sales_invoice",
+        "on_submit": "jain_machine_tools.api.sales_invoice_warranty.update_serial_warranty_on_submit"
     },
     "Delivery Note": {
         "validate": "jain_machine_tools.overrides.quotation.validate_delivery_note"
-    }
+    },
 }
 
 
@@ -309,16 +306,64 @@ before_request = ["jain_machine_tools.overrides.quotation.patch_insert_item_pric
 # default_log_clearing_doctypes = {
 # 	"Logging DocType Name": 30  # days to retain logs
 # }
-standard_queries = {
-    "Supplier": "jain_machine_tools.api.supplier_filter.supplier_query"
-}
+standard_queries = {"Supplier": "jain_machine_tools.api.supplier_filter.supplier_query"}
 
 fixtures = [
-    {"doctype": "Workflow", "filters": [["name" , "in" , ("Purchase Order Approval","Supplier Approval", "Material Request Approval")]]},
-    {"doctype": "Notification", "filters": [["name" , "in" , ("PO Send to Supplier After Approval","Purchase Order Approval - Notify Purchase Manager","New Supplier Created – Approval Required Mail", "New Supplier Created – Approval Required Notification")]]},
-    {"doctype": "Email Template", "filters": [["name" , "in" , ("Request for Quotation Email")]]},
-    {"doctype": "Print Format","filters":[["module", "in", "Jain Machine Tools"]]},
-    {"doctype": "Server Script", "filters": [["name" , "in" , ("Purchase User Role see only approved suppliers")]]},
-    {"doctype": "Workspace", "filters": [["name" , "in" , ("Purchase")]]},
-    {"doctype": "Custom DocPerm", "filters": [["role" , "in" , ("Store Manager","Purchase Manager","Accounts Manager","Purchase User")]]},
+    {
+        "doctype": "Workflow",
+        "filters": [
+            [
+                "name",
+                "in",
+                (
+                    "Purchase Order Approval",
+                    "Supplier Approval",
+                    "Material Request Approval",
+                ),
+            ]
+        ],
+    },
+    {
+        "doctype": "Notification",
+        "filters": [
+            [
+                "name",
+                "in",
+                (
+                    "PO Send to Supplier After Approval",
+                    "Purchase Order Approval - Notify Purchase Manager",
+                    "New Supplier Created – Approval Required Mail",
+                    "New Supplier Created – Approval Required Notification",
+                ),
+            ]
+        ],
+    },
+    {
+        "doctype": "Email Template",
+        "filters": [["name", "=", "Request for Quotation Email"]],
+    },
+    {"doctype": "Print Format", "filters": [["module", "=", "Jain Machine Tools"]]},
+    {
+        "doctype": "Letter Head",
+        "filters": [["name", "=", "Default"]],
+    },
+    {
+        "doctype": "Server Script",
+        "filters": [["name", "=", "Purchase User Role see only approved suppliers"]],
+    },
+    {
+        "doctype": "Custom DocPerm",
+        "filters": [
+            [
+                "role",
+                "in",
+                (
+                    "Store Manager",
+                    "Purchase Manager",
+                    "Accounts Manager",
+                    "Purchase User",
+                ),
+            ]
+        ],
+    },
 ]

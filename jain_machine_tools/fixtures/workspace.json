@@ -536,7 +536,8 @@
    }
   ],
   "modified": "2025-12-31 18:08:24.270292",
-  "module": null,
+  "type": "Module",
+  "module": "Jain Machine Tools",
   "name": "Purchase",
   "number_cards": [],
   "parent_page": "",

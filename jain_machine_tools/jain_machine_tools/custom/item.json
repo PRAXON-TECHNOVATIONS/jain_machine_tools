@@ -557,7 +557,7 @@
    "name": "Item-warranty_start_from",
    "no_copy": 0,
    "non_negative": 0,
-   "options": "Delivery Note Posting Date\nSales Invoice Posting Date",
+   "options": "Sales Invoice Posting Date",
    "owner": "Administrator",
    "permlevel": 0,
    "placeholder": null,
