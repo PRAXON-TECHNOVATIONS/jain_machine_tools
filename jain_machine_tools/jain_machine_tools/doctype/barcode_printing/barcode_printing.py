@@ -110,6 +110,7 @@ def get_serial_numbers(record, item_code, doctype_name=None):
 def get_serial_numbers_from_stock_entry(record, item_code):
 	"""
 	Fetch serial numbers from Stock Entry Detail for the given item_code.
+	Excludes serial numbers that already have barcode_generated = 1.
 
 	Args:
 		record: Stock Entry name
@@ -144,13 +145,16 @@ def get_serial_numbers_from_stock_entry(record, item_code):
 	for item in items:
 		if item.serial_and_batch_bundle:
 			# Get serial numbers from Serial and Batch Bundle
+			# Exclude serial numbers that already have barcode_generated = 1
 			bundle_entries = frappe.db.sql("""
-				SELECT serial_no
-				FROM `tabSerial and Batch Entry`
-				WHERE parent = %(bundle)s
-				AND serial_no IS NOT NULL
-				AND serial_no != ''
-				ORDER BY idx
+				SELECT sbe.serial_no
+				FROM `tabSerial and Batch Entry` sbe
+				INNER JOIN `tabSerial No` sn ON sn.name = sbe.serial_no
+				WHERE sbe.parent = %(bundle)s
+				AND sbe.serial_no IS NOT NULL
+				AND sbe.serial_no != ''
+				AND (sn.barcode_generated IS NULL OR sn.barcode_generated = 0)
+				ORDER BY sbe.idx
 			""", {
 				'bundle': item.serial_and_batch_bundle
 			}, as_dict=True)
@@ -167,6 +171,7 @@ def get_serial_numbers_from_stock_entry(record, item_code):
 def get_serial_numbers_from_purchase_receipt(record, item_code):
 	"""
 	Fetch serial numbers from Purchase Receipt Item for the given item_code.
+	Excludes serial numbers that already have barcode_generated = 1.
 
 	Args:
 		record: Purchase Receipt name
@@ -200,13 +205,16 @@ def get_serial_numbers_from_purchase_receipt(record, item_code):
 	for item in items:
 		if item.serial_and_batch_bundle:
 			# Get serial numbers from Serial and Batch Bundle
+			# Exclude serial numbers that already have barcode_generated = 1
 			bundle_entries = frappe.db.sql("""
-				SELECT serial_no
-				FROM `tabSerial and Batch Entry`
-				WHERE parent = %(bundle)s
-				AND serial_no IS NOT NULL
-				AND serial_no != ''
-				ORDER BY idx
+				SELECT sbe.serial_no
+				FROM `tabSerial and Batch Entry` sbe
+				INNER JOIN `tabSerial No` sn ON sn.name = sbe.serial_no
+				WHERE sbe.parent = %(bundle)s
+				AND sbe.serial_no IS NOT NULL
+				AND sbe.serial_no != ''
+				AND (sn.barcode_generated IS NULL OR sn.barcode_generated = 0)
+				ORDER BY sbe.idx
 			""", {
 				'bundle': item.serial_and_batch_bundle
 			}, as_dict=True)
