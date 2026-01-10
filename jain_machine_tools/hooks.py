@@ -361,7 +361,7 @@ fixtures = [
                 ),
             ]
         ]
-#     },
+    },
     {
         "doctype": "Custom DocPerm",
         "filters": [
@@ -378,7 +378,7 @@ fixtures = [
             ]
         ],
     },
-#     {
+  {
         "doctype": "Role",
         "filters": [
             [
