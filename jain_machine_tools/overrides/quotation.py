@@ -88,6 +88,7 @@ class CustomTaxesAndTotals(calculate_taxes_and_totals):
 		elif handling_charges_type == "Amount" and handling_charges_amount > 0:
 			# Use fixed amount
 			handling_value = handling_charges_amount
+		item.handling_charges_value = flt(handling_value * item.qty, item.precision("handling_charges_value"))
 
 		# Always recalculate from base rate (even if handling_value is 0)
 		# This ensures removal of handling charges works correctly when set to 0

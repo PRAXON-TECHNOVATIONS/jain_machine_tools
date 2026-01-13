@@ -15,6 +15,7 @@ def execute():
 	2. handling_charges_type - Select (Percentage/Amount)
 	3. handling_charges_percentage - Percent field
 	4. handling_charges_amount - Currency field
+	5. handling_charges_value - Currency field
 	"""
 
 	# Define item doctypes
@@ -84,6 +85,18 @@ def execute():
 				"hidden": 1,
 				"print_hide": 1,
 				"read_only": 1,
+				"no_copy": 1
+			},
+   
+			# Handling Charges Value (Total, for Print)
+			{
+				"fieldname": "handling_charges_value",
+				"label": "Handling Charges",
+				"fieldtype": "Currency",
+				"options": "currency",
+				"insert_after": "base_rate_before_handling_charges",
+				"read_only": 0,
+				"print_hide": 0,
 				"no_copy": 1
 			}
 		]
