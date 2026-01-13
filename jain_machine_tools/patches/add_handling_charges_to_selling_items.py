@@ -3,6 +3,7 @@ from frappe.custom.doctype.custom_field.custom_field import create_custom_fields
 
 
 def execute():
+    
 	"""
 	Add handling charges custom fields to all selling item doctypes:
 	- Quotation Item
@@ -17,7 +18,6 @@ def execute():
 	4. handling_charges_amount - Currency field
 	5. handling_charges_value - Currency field
 	"""
-
 	# Define item doctypes
 	item_doctypes = [
 		"Quotation Item",
@@ -90,15 +90,15 @@ def execute():
    
 			# Handling Charges Value (Total, for Print)
 			{
-				"fieldname": "handling_charges_value",
-				"label": "Handling Charges",
-				"fieldtype": "Currency",
-				"options": "currency",
-				"insert_after": "base_rate_before_handling_charges",
-				"read_only": 0,
-				"print_hide": 0,
-				"no_copy": 1
-			}
+                "fieldname": "handling_charges_value",
+                "label": "Handling Charges",
+                "fieldtype": "Currency",
+                "options": "currency",
+                "insert_after": "base_rate_before_handling_charges",
+                "read_only": 1,
+                "print_hide": 0,
+                "no_copy": 1
+            }
 		]
 
 	# Create the custom fields
