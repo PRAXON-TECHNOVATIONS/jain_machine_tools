@@ -357,7 +357,8 @@ fixtures = [
                 "in", 
                 (
                     "Purchase",
-                    "Sales"
+                    "Sales",
+                    "JMT Stock"
                 ),
             ]
         ]
@@ -374,6 +375,7 @@ fixtures = [
                     "Accounts Manager",
                     "Purchase User",
                     "Sales Executive",
+                    "JMT Stock User"
                 ),
             ]
         ],
@@ -387,6 +389,7 @@ fixtures = [
                 (
                     "Store Manager",
                     "Sales Executive",
+                    "JMT Stock User"
                 ),
             ]
         ],
