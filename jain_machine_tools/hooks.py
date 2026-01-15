@@ -308,48 +308,48 @@ before_request = ["jain_machine_tools.overrides.quotation.patch_insert_item_pric
 standard_queries = {"Supplier": "jain_machine_tools.api.supplier_filter.supplier_query"}
 
 fixtures = [
-    {
-        "doctype": "Workflow",
-        "filters": [
-            [
-                "name",
-                "in",
-                (
-                    "Purchase Order Approval",
-                    "Supplier Approval",
-                    "Material Request Approval",
-                ),
-            ]
-        ],
-    },
-    {
-        "doctype": "Notification",
-        "filters": [
-            [
-                "name",
-                "in",
-                (
-                    "PO Send to Supplier After Approval",
-                    "Purchase Order Approval - Notify Purchase Manager",
-                    "New Supplier Created – Approval Required Mail",
-                    "New Supplier Created – Approval Required Notification",
-                ),
-            ]
-        ],
-    },
-    {
-        "doctype": "Email Template",
-        "filters": [["name", "=", "Request for Quotation Email"]],
-    },
-    {"doctype": "Print Format", "filters": [["module", "=", "Jain Machine Tools"]]},
-    {
-        "doctype": "Letter Head",
-        "filters": [["name", "=", "Default"]],
-    },
-    {
-        "doctype": "Server Script",
-        "filters": [["name", "=", "Purchase User Role see only approved suppliers"]],
-    },
+    # {
+    #     "doctype": "Workflow",
+    #     "filters": [
+    #         [
+    #             "name",
+    #             "in",
+    #             (
+    #                 "Purchase Order Approval",
+    #                 "Supplier Approval",
+    #                 "Material Request Approval",
+    #             ),
+    #         ]
+    #     ],
+    # },
+    # {
+    #     "doctype": "Notification",
+    #     "filters": [
+    #         [
+    #             "name",
+    #             "in",
+    #             (
+    #                 "PO Send to Supplier After Approval",
+    #                 "Purchase Order Approval - Notify Purchase Manager",
+    #                 "New Supplier Created – Approval Required Mail",
+    #                 "New Supplier Created – Approval Required Notification",
+    #             ),
+    #         ]
+    #     ],
+    # },
+    # {
+    #     "doctype": "Email Template",
+    #     "filters": [["name", "=", "Request for Quotation Email"]],
+    # },
+    # {"doctype": "Print Format", "filters": [["module", "=", "Jain Machine Tools"]]},
+    # {
+    #     "doctype": "Letter Head",
+    #     "filters": [["name", "=", "Default"]],
+    # },
+    # {
+    #     "doctype": "Server Script",
+    #     "filters": [["name", "=", "Purchase User Role see only approved suppliers"]],
+    # },
     {   "doctype": "Workspace",
         "filters": [
             [

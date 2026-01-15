@@ -188,9 +188,9 @@ class NonStandardItemCreation(Document):
             increment = (base_price * percent) / 100
             running_total += increment
 
-            # Add to item code
-            if row.parameter_code and row.selected_value:
-                item_code_parts.append(f"{row.parameter_code}-{row.selected_value}")
+            # Add to item code (only value, no parameter code prefix, spaces replaced with hyphens)
+            if row.selected_value:
+                item_code_parts.append(row.selected_value.replace(" ", "-"))
 
             # Add to description
             description_parts.append(f"{row.parameter} {percent}% - ₹{increment:,.2f}")
@@ -203,9 +203,9 @@ class NonStandardItemCreation(Document):
             increment = float(row.price_amount or 0)
             running_total += increment
 
-            # Add to item code
-            if row.parameter_code and row.selected_value:
-                item_code_parts.append(f"{row.parameter_code}-{row.selected_value}")
+            # Add to item code (only value, no parameter code prefix, spaces replaced with hyphens)
+            if row.selected_value:
+                item_code_parts.append(row.selected_value.replace(" ", "-"))
 
             # Add to description
             description_parts.append(f"{row.parameter} ₹{increment:,.2f}")
