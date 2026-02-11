@@ -109,6 +109,39 @@ class CustomTaxesAndTotals(calculate_taxes_and_totals):
 		# This ensures GST is calculated on the rate WITH handling charges
 		item.taxable_value = item.base_net_amount
 
+	def calculate_totals(self):
+		"""
+		Override to handle missing 'category' attribute in Sales Taxes and Charges
+		This is a compatibility fix for different ERPNext versions
+		"""
+		try:
+			# Try the parent method first
+			super(CustomTaxesAndTotals, self).calculate_totals()
+		except AttributeError as e:
+			# If 'category' attribute is missing, handle manually
+			if "'category'" in str(e) or "category" in str(e):
+				# Safe calculation without category attribute
+				from frappe.utils import flt
+
+				self.doc.grand_total = flt(self.doc.get("grand_total_export") or self.doc.net_total)
+				self.doc.grand_total += flt(self.doc.get("total_taxes_and_charges"))
+
+				self.doc.base_grand_total = flt(self.doc.grand_total * self.doc.conversion_rate, self.doc.precision("base_grand_total"))
+
+				# Round if needed
+				if self.doc.get("is_rounded_total_disabled"):
+					self.doc.rounded_total = self.doc.grand_total
+					self.doc.base_rounded_total = self.doc.base_grand_total
+				else:
+					from erpnext import get_default_cost_center
+					self.doc.rounded_total = round(self.doc.grand_total)
+					self.doc.base_rounded_total = round(self.doc.base_grand_total)
+					self.doc.rounding_adjustment = flt(self.doc.rounded_total - self.doc.grand_total, self.doc.precision("rounding_adjustment"))
+					self.doc.base_rounding_adjustment = flt(self.doc.base_rounded_total - self.doc.base_grand_total, self.doc.precision("base_rounding_adjustment"))
+			else:
+				# Re-raise if it's a different AttributeError
+				raise
+
 
 def custom_calculate_taxes_and_totals(doc):
 	"""
@@ -257,3 +290,86 @@ def validate_delivery_note(doc, method=None):
 	Hook for Delivery Note validation
 	"""
 	custom_calculate_taxes_and_totals(doc)
+
+
+def validate_proforma_invoice(doc, method=None):
+	"""
+	Hook for Proforma Invoice validation
+	"""
+	custom_calculate_taxes_and_totals(doc)
+
+
+# ========================================
+# Mapping Functions
+# ========================================
+
+@frappe.whitelist()
+def make_proforma_invoice(source_name, target_doc=None):
+	"""
+	Create Proforma Invoice from Quotation
+	Replaces direct Quotation → Sales Order flow
+	"""
+	return _make_proforma_invoice(source_name, target_doc)
+
+
+def _make_proforma_invoice(source_name, target_doc=None):
+	"""
+	Internal implementation for creating Proforma Invoice from Quotation
+	Follows ERPNext pattern similar to make_sales_order
+	"""
+	from frappe.model.mapper import get_mapped_doc
+
+	def set_missing_values(source, target):
+		"""Set missing values in target Proforma Invoice"""
+		# Store quotation reference
+		target.quotation = source.name
+
+		# Map customer from quotation's party_name if quotation_to is Customer
+		if source.quotation_to == "Customer" and source.party_name:
+			target.customer = source.party_name
+			target.customer_name = source.customer_name or frappe.get_cached_value("Customer", source.party_name, "customer_name")
+
+		# Set missing values using ERPNext standard methods
+		target.run_method("set_missing_values")
+
+		# Use custom calculation instead of standard ERPNext method
+		custom_calculate_taxes_and_totals(target)
+
+	def update_item(obj, target, source_parent):
+		"""Update item fields during mapping"""
+		# Store quotation item reference for traceability
+		target.quotation_item = obj.name
+
+	doclist = get_mapped_doc(
+		"Quotation",
+		source_name,
+		{
+			"Quotation": {
+				"doctype": "Proforma Invoice",
+				"validation": {"docstatus": ["=", 1]}  # Only submitted quotations
+			},
+			"Quotation Item": {
+				"doctype": "Proforma Invoice Item",
+				"field_map": {
+					"parent": "quotation"  # Store quotation reference
+				},
+				"postprocess": update_item
+			},
+			"Sales Taxes and Charges": {
+				"doctype": "Sales Taxes and Charges",
+				"reset_value": True  # Recalculate taxes
+			},
+			"Sales Team": {
+				"doctype": "Sales Team",
+				"add_if_empty": True
+			},
+			"Payment Schedule": {
+				"doctype": "Payment Schedule",
+				"add_if_empty": True
+			}
+		},
+		target_doc,
+		set_missing_values
+	)
+
+	return doclist
