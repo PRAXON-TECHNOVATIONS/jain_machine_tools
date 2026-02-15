@@ -3,15 +3,6 @@
   "docstatus": 0,
   "doctype": "Workflow State",
   "icon": "",
-  "modified": "2025-12-22 18:25:55.496740",
-  "name": "Cancelled",
-  "style": "Danger",
-  "workflow_state_name": "Cancelled"
- },
- {
-  "docstatus": 0,
-  "doctype": "Workflow State",
-  "icon": "",
   "modified": "2025-11-25 12:07:38.348363",
   "name": "Pending Approval",
   "style": "",
@@ -25,15 +16,6 @@
   "name": "Draft",
   "style": "",
   "workflow_state_name": "Draft"
- },
- {
-  "docstatus": 0,
-  "doctype": "Workflow State",
-  "icon": "question-sign",
-  "modified": "2025-11-20 19:40:09.574588",
-  "name": "Pending",
-  "style": "",
-  "workflow_state_name": "Pending"
  },
  {
   "docstatus": 0,
@@ -52,5 +34,23 @@
   "name": "Rejected",
   "style": "Danger",
   "workflow_state_name": "Rejected"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Workflow State",
+  "icon": "",
+  "modified": "2026-02-11 21:09:01.142097",
+  "name": "Pending Accounts Approval",
+  "style": "",
+  "workflow_state_name": "Pending Accounts Approval"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Workflow State",
+  "icon": "",
+  "modified": "2026-02-11 21:09:01.191325",
+  "name": "Pending Sales Approval",
+  "style": "",
+  "workflow_state_name": "Pending Sales Approval"
  }
 ]

@@ -10,9 +10,9 @@ app_license = "mit"
 
 # required_apps = []
 
-# boot_session = [
-#     "jain_machine_tools.patches.reorder_patch.apply_reorder_patch"
-# ]
+boot_session = [
+    "jain_machine_tools.patches.reorder_override.override_erpnext_reorder"
+]
 
 # Each item in the list will be shown as an app in the apps page
 # add_to_apps_screen = [
@@ -59,6 +59,7 @@ doctype_js = {
     "Material Request": "public/js/mr_item_duplicate.js",
     "Request for Quotation": "public/js/rfq_item_duplicate.js",
     "Purchase Order": "public/js/purchase_order_custom.js",
+    "Purchase Invoice": "public/js/purchase_invoice_custom.js",
     "Quotation": "public/js/quotation_custom.js",
     "Sales Order": "public/js/sales_order_custom.js",
     "Item": "public/js/item.js",
@@ -185,8 +186,15 @@ doc_events = {
     },
     "Purchase Order": {
         "validate": [
-            "jain_machine_tools.api.auto_populate_supplier_code.populate_supplier_item_code"
+            "jain_machine_tools.api.auto_populate_supplier_code.populate_supplier_item_code",
+            "jain_machine_tools.overrides.purchase_order.validate_purchase_order"
         ]
+    },
+    "Purchase Invoice": {
+        "validate": "jain_machine_tools.overrides.purchase_order.validate_purchase_invoice"
+    },
+    "Purchase Receipt": {
+        "validate": "jain_machine_tools.overrides.purchase_order.validate_purchase_receipt"
     },
     "Material Request": {
         "before_insert": "jain_machine_tools.patches.reorder_override.set_reorder_field"
@@ -208,29 +216,21 @@ doc_events = {
     "Delivery Note": {
         "validate": "jain_machine_tools.overrides.quotation.validate_delivery_note"
     },
+    "Proforma Invoice": {
+        "validate": "jain_machine_tools.overrides.quotation.validate_proforma_invoice"
+    },
 }
 
 
 # Scheduled Tasks
 # ---------------
 
-# scheduler_events = {
-# 	"all": [
-# 		"jain_machine_tools.tasks.all"
-# 	],
-# 	"daily": [
-# 		"jain_machine_tools.tasks.daily"
-# 	],
-# 	"hourly": [
-# 		"jain_machine_tools.tasks.hourly"
-# 	],
-# 	"weekly": [
-# 		"jain_machine_tools.tasks.weekly"
-# 	],
-# 	"monthly": [
-# 		"jain_machine_tools.tasks.monthly"
-# 	],
-# }
+scheduler_events = {
+	# Optimized Auto Reorder - runs every hour instead of daily
+	"hourly": [
+		"jain_machine_tools.stock.optimized_reorder.optimized_reorder_item"
+	],
+}
 
 
 # Testing
@@ -321,6 +321,40 @@ fixtures = [
                     "Purchase Order Approval",
                     "Supplier Approval",
                     "Material Request Approval",
+                    "Quotation Approval",
+                    "Sales Order Approval",
+                ),
+            ]
+        ],
+    },
+    {
+        "doctype": "Workflow Action Master",
+        "filters": [
+            [
+                "workflow_action_name",
+                "in",
+                (
+                    "Submit",
+                    "Approve",
+                    "Reject",
+                    "Resubmit",
+                ),
+            ]
+        ],
+    },
+    {
+        "doctype": "Workflow State",
+        "filters": [
+            [
+                "name",
+                "in",
+                (
+                    "Draft",
+                    "Pending Approval",
+                    "Pending Accounts Approval",
+                    "Pending Sales Approval",
+                    "Approved",
+                    "Rejected",
                 ),
             ]
         ],
@@ -372,8 +406,10 @@ fixtures = [
                     "Store Manager",
                     "Purchase Manager",
                     "Accounts Manager",
+                    "Accounts Head",
                     "Purchase User",
                     "Sales Executive",
+                    "Sales Head",
                     "JMT Stock User"
                 ),
             ]
@@ -388,6 +424,8 @@ fixtures = [
                 (
                     "Store Manager",
                     "Sales Executive",
+                    "Sales Head",
+                    "Accounts Head",
                     "JMT Stock User"
                 ),
             ]

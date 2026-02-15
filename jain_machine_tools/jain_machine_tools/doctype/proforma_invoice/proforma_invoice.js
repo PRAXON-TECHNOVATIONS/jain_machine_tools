@@ -1,19 +1,66 @@
-// Custom Quotation handlers
-frappe.ui.form.on('Quotation', {
+// Copyright (c) 2026, Jain Machine Tools and contributors
+// For license information, please see license.txt
+
+frappe.ui.form.on('Proforma Invoice', {
+	setup: function(frm) {
+		// Setup similar to Quotation/Sales Order
+		frm.custom_make_buttons = {
+			'Sales Order': 'Sales Order'
+		};
+
+		frm.set_query("customer", function() {
+			return {
+				filters: {
+					"disabled": 0
+				}
+			};
+		});
+	},
+
 	refresh: function(frm) {
-		// Initialize custom grid icons
+		// Initialize custom grid icons if available
 		if (jain_machine_tools && jain_machine_tools.grid_custom_icons) {
 			jain_machine_tools.grid_custom_icons.setup(frm);
 		}
 
-		// Add Proforma Invoice button for submitted quotations
-		if (frm.doc.docstatus === 1 && !["Lost", "Ordered"].includes(frm.doc.status)) {
-			frm.add_custom_button(__('Proforma Invoice'), function() {
+		// Add Sales Order button if submitted and no SO created yet
+		if (frm.doc.docstatus === 1 && !frm.doc.sales_order) {
+			frm.add_custom_button(__('Sales Order'), function() {
 				frappe.model.open_mapped_doc({
-					method: "jain_machine_tools.overrides.quotation.make_proforma_invoice",
-					frm: frm
+					method: "jain_machine_tools.jain_machine_tools.doctype.proforma_invoice.proforma_invoice.make_sales_order",
+					frm: frm,
+					callback: function(r) {
+						// Update Proforma Invoice with Sales Order reference
+						if (r.message) {
+							frappe.call({
+								method: "jain_machine_tools.jain_machine_tools.doctype.proforma_invoice.proforma_invoice.update_proforma_on_sales_order_submit",
+								args: {
+									proforma_invoice: frm.doc.name,
+									sales_order: r.message.name,
+									sales_order_date: r.message.transaction_date
+								},
+								callback: function() {
+									frm.reload_doc();
+								}
+							});
+						}
+					}
 				});
 			}, __('Create'));
+		}
+
+		// Show Sales Order link if created
+		if (frm.doc.sales_order) {
+			frm.add_custom_button(__('View Sales Order'), function() {
+				frappe.set_route("Form", "Sales Order", frm.doc.sales_order);
+			});
+		}
+
+		// Show Quotation link if exists
+		if (frm.doc.quotation) {
+			frm.add_custom_button(__('View Quotation'), function() {
+				frappe.set_route("Form", "Quotation", frm.doc.quotation);
+			});
 		}
 	},
 
@@ -27,8 +74,8 @@ frappe.ui.form.on('Quotation', {
 	}
 });
 
-// Custom Quotation Item handlers for handling charges
-frappe.ui.form.on('Quotation Item', {
+// Proforma Invoice Item handlers (for handling charges support)
+frappe.ui.form.on('Proforma Invoice Item', {
 	item_code: function(frm, cdt, cdn) {
 		// Clear handling charges when item changes
 		let row = locals[cdt][cdn];

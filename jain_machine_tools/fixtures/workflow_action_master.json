@@ -2,16 +2,9 @@
  {
   "docstatus": 0,
   "doctype": "Workflow Action Master",
-  "modified": "2025-11-20 19:40:09.595508",
-  "name": "Review",
-  "workflow_action_name": "Review"
- },
- {
-  "docstatus": 0,
-  "doctype": "Workflow Action Master",
-  "modified": "2025-12-22 18:32:06.353150",
-  "name": "Cancel",
-  "workflow_action_name": "Cancel"
+  "modified": "2025-12-16 13:32:14.082873",
+  "name": "Submit",
+  "workflow_action_name": "Submit"
  },
  {
   "docstatus": 0,
@@ -23,15 +16,15 @@
  {
   "docstatus": 0,
   "doctype": "Workflow Action Master",
-  "modified": "2025-11-25 12:03:16.692308",
-  "name": "Submit For Approval",
-  "workflow_action_name": "Submit For Approval"
+  "modified": "2025-11-20 19:40:09.593129",
+  "name": "Approve",
+  "workflow_action_name": "Approve"
  },
  {
   "docstatus": 0,
   "doctype": "Workflow Action Master",
-  "modified": "2025-11-20 19:40:09.593129",
-  "name": "Approve",
-  "workflow_action_name": "Approve"
+  "modified": "2026-02-11 21:04:11.917796",
+  "name": "Resubmit",
+  "workflow_action_name": "Resubmit"
  }
 ]

@@ -1,34 +1,5 @@
-// Custom Quotation handlers
-frappe.ui.form.on('Quotation', {
-	refresh: function(frm) {
-		// Initialize custom grid icons
-		if (jain_machine_tools && jain_machine_tools.grid_custom_icons) {
-			jain_machine_tools.grid_custom_icons.setup(frm);
-		}
-
-		// Add Proforma Invoice button for submitted quotations
-		if (frm.doc.docstatus === 1 && !["Lost", "Ordered"].includes(frm.doc.status)) {
-			frm.add_custom_button(__('Proforma Invoice'), function() {
-				frappe.model.open_mapped_doc({
-					method: "jain_machine_tools.overrides.quotation.make_proforma_invoice",
-					frm: frm
-				});
-			}, __('Create'));
-		}
-	},
-
-	items_add: function(frm, cdt, cdn) {
-		// Re-initialize icons when new row is added
-		setTimeout(() => {
-			if (jain_machine_tools && jain_machine_tools.grid_custom_icons) {
-				jain_machine_tools.grid_custom_icons.setup(frm);
-			}
-		}, 100);
-	}
-});
-
-// Custom Quotation Item handlers for handling charges
-frappe.ui.form.on('Quotation Item', {
+// Custom Purchase Invoice Item handlers for handling charges
+frappe.ui.form.on('Purchase Invoice Item', {
 	item_code: function(frm, cdt, cdn) {
 		// Clear handling charges when item changes
 		let row = locals[cdt][cdn];
