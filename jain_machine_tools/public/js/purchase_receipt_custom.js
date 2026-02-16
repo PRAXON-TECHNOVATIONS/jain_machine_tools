@@ -52,12 +52,6 @@ async function open_barcode_scan_dialog(frm) {
         primary_action_label: "Close",
         primary_action() {
             d.hide();
-            frappe.call({
-                method: "jain_machine_tools.api.pr_barcode_scan.save_pr",
-                args: {
-                    name: frm.doc.name
-                }
-            });
         },
     });
 
@@ -229,6 +223,7 @@ async function scan_item(d, frm, items, idx) {
         item.qty = scanned.length;
 
         frm.refresh_field("items");
+        frm.dirty();
 
         obj.completed = true;
         frappe.msgprint(`Scan completed for ${item.item_code}`);
@@ -239,12 +234,8 @@ async function scan_item(d, frm, items, idx) {
         if (!items.some(o => !o.completed)) {
             frappe.msgprint("All items scanned");
             d.hide();
-            frappe.call({
-                method: "jain_machine_tools.api.pr_barcode_scan.save_pr",
-                args: {
-                    name: frm.doc.name
-                }
-            });
         }
     });
 }
+
+
