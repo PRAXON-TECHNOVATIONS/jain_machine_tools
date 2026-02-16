@@ -337,8 +337,8 @@ def _make_proforma_invoice(source_name, target_doc=None):
 
 	def update_item(obj, target, source_parent):
 		"""Update item fields during mapping"""
-		# Store quotation item reference for traceability
-		target.quotation_item = obj.name
+		# Set prevdoc_doctype for proper linking
+		target.prevdoc_doctype = "Quotation"
 
 	doclist = get_mapped_doc(
 		"Quotation",
@@ -351,7 +351,8 @@ def _make_proforma_invoice(source_name, target_doc=None):
 			"Quotation Item": {
 				"doctype": "Proforma Invoice Item",
 				"field_map": {
-					"parent": "quotation"  # Store quotation reference
+					"parent": "prevdoc_docname",  # Store quotation name in prevdoc_docname
+					"name": "quotation_item"  # Store quotation item row reference
 				},
 				"postprocess": update_item
 			},

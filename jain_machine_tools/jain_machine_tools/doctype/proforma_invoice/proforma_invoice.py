@@ -69,9 +69,15 @@ def make_sales_order(source_name, target_doc=None):
 
 	def update_item(obj, target, source_parent):
 		"""Update item fields during mapping"""
-		# Carry forward quotation_item reference if exists
-		if hasattr(obj, 'quotation_item') and obj.quotation_item:
+		# Set quotation_item from PI Item's quotation_item field
+		if obj.get('quotation_item'):
 			target.quotation_item = obj.quotation_item
+
+		# Set prevdoc_docname to Quotation name (from PI Item's prevdoc_docname or PI parent's quotation field)
+		quotation_name = obj.get('prevdoc_docname') or source_parent.get('quotation')
+		if quotation_name:
+			target.prevdoc_docname = quotation_name
+			target.prevdoc_doctype = "Quotation"
 
 	doclist = get_mapped_doc(
 		"Proforma Invoice",
@@ -86,9 +92,7 @@ def make_sales_order(source_name, target_doc=None):
 			},
 			"Proforma Invoice Item": {
 				"doctype": "Sales Order Item",
-				"field_map": {
-					"parent": "prevdoc_docname"
-				},
+				"field_map": {},
 				"postprocess": update_item
 			},
 			"Sales Taxes and Charges": {
