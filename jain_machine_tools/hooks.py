@@ -53,7 +53,7 @@ app_include_js = ["/assets/jain_machine_tools/js/grid_custom_icons.js?v=1.0.2",
 # include js in doctype views
 # doctype_js = {"doctype" : "public/js/doctype.js"}
 doctype_js = {
-    "Purchase Receipt": ["public/js/purchase_receipt_custom.js","public/js/purchase_receipt_freight_taxes.js"],
+    "Purchase Receipt": "public/js/purchase_receipt_custom.js",
     "Supplier": "public/js/supplier_terms.js",
     "Supplier Quotation": "public/js/supplier_quot_terms.js",
     "Material Request": "public/js/mr_item_duplicate.js",
