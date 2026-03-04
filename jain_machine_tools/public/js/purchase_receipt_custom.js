@@ -243,7 +243,6 @@ frappe.ui.form.on("Purchase Receipt", {
         if (frm.doc.docstatus !== 0 || !frm.doc.name) return;
         if (!frm.doc.items || !frm.doc.items.length) return;
 
-        // Only run if PR is created from a Purchase Order
         let has_po = frm.doc.items.some(item => item.purchase_order);
         if (!has_po) return;
 
@@ -251,7 +250,6 @@ frappe.ui.form.on("Purchase Receipt", {
     },
 
     taxes_and_charges(frm) {
-        // Re-apply taxes when template changes
         let has_po = frm.doc.items && frm.doc.items.some(item => item.purchase_order);
         if (!has_po) return;
 
@@ -291,9 +289,9 @@ function setup_intrastate_taxes(frm) {
     freight_row.category = 'Valuation and Total';
     freight_row.add_deduct_tax = 'Add';
 
-    // Row 2 - CGST 9% on Previous Row Amount (reference row 1 - Freight)
+    // Row 2 - CGST 9% on Previous Row Total
     let cgst_row = frm.add_child('taxes');
-    cgst_row.charge_type = 'On Previous Row Amount';
+    cgst_row.charge_type = 'On Previous Row Total';
     cgst_row.account_head = 'Input Tax CGST - JMT';
     cgst_row.description = 'CGST @ 9%';
     cgst_row.rate = 9;
@@ -301,9 +299,9 @@ function setup_intrastate_taxes(frm) {
     cgst_row.add_deduct_tax = 'Add';
     cgst_row.row_id = 1;
 
-    // Row 3 - SGST 9% on Previous Row Amount (reference row 1 - Freight)
+    // Row 3 - SGST 9% on Previous Row Total
     let sgst_row = frm.add_child('taxes');
-    sgst_row.charge_type = 'On Previous Row Amount';
+    sgst_row.charge_type = 'On Previous Row Total';
     sgst_row.account_head = 'Input Tax SGST - JMT';
     sgst_row.description = 'SGST @ 9%';
     sgst_row.rate = 9;
@@ -328,9 +326,9 @@ function setup_interstate_taxes(frm) {
     freight_row.category = 'Valuation and Total';
     freight_row.add_deduct_tax = 'Add';
 
-    // Row 2 - IGST 18% on Previous Row Amount (reference row 1 - Freight)
+    // Row 2 - IGST 18% on Previous Row Total
     let igst_row = frm.add_child('taxes');
-    igst_row.charge_type = 'On Previous Row Amount';
+    igst_row.charge_type = 'On Previous Row Total';
     igst_row.account_head = 'Input Tax IGST - JMT';
     igst_row.description = 'IGST @ 18%';
     igst_row.rate = 18;
