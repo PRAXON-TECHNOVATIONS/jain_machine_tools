@@ -297,7 +297,7 @@ function setup_intrastate_taxes(frm) {
     cgst_row.rate = 9;
     cgst_row.category = 'Total';
     cgst_row.add_deduct_tax = 'Add';
-    cgst_row.row_id = 1;
+    cgst_row.row_id = "1";  
 
     // Row 3 - SGST 9% on Previous Row Total
     let sgst_row = frm.add_child('taxes');
@@ -307,7 +307,7 @@ function setup_intrastate_taxes(frm) {
     sgst_row.rate = 9;
     sgst_row.category = 'Total';
     sgst_row.add_deduct_tax = 'Add';
-    sgst_row.row_id = 1;
+    sgst_row.row_id = "1";  
 
     frm.refresh_field('taxes');
     frappe.show_alert({ message: 'Intra-state taxes applied (CGST + SGST)', indicator: 'green' });
@@ -334,7 +334,7 @@ function setup_interstate_taxes(frm) {
     igst_row.rate = 18;
     igst_row.category = 'Total';
     igst_row.add_deduct_tax = 'Add';
-    igst_row.row_id = 1;
+    igst_row.row_id = "1";  
 
     frm.refresh_field('taxes');
     frappe.show_alert({ message: 'Inter-state taxes applied (IGST)', indicator: 'blue' });
