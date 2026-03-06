@@ -96,6 +96,28 @@ function calculate_item_handling_charges(frm, cdt, cdn) {
 		return;
 	}
 
+	// Real-time calculation — mirrors server-side validate_quotation logic
+	let base_rate = flt(row.price_list_rate);
+
+	if (row.discount_percentage) {
+		base_rate = base_rate - (base_rate * flt(row.discount_percentage) / 100);
+	} else if (row.discount_amount) {
+		base_rate = base_rate - flt(row.discount_amount);
+	}
+
+	let handling_value = 0;
+
+	if (row.handling_charges_type === 'Percentage') {
+		handling_value = base_rate * flt(row.handling_charges_percentage) / 100;
+	} else if (row.handling_charges_type === 'Amount') {
+		handling_value = flt(row.handling_charges_amount);
+	}
+
+	frappe.model.set_value(cdt, cdn, 'handling_charges_value', flt(handling_value, 2));
+	frappe.model.set_value(cdt, cdn, 'base_rate_before_handling_charges', flt(base_rate, 2));
+
+	frm.refresh_field('items');
+
 	// The calculation will be done on the server side via validation hook
 	// Just trigger the recalculation
 	frm.script_manager.trigger('calculate_taxes_and_totals');
