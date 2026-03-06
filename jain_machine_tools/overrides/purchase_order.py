@@ -6,6 +6,31 @@ from frappe import _
 from frappe.utils import flt
 from erpnext.controllers.taxes_and_totals import calculate_taxes_and_totals
 
+# ─── Monkey Patch: Suppress India Compliance GST Mismatch Validation ──────────
+from india_compliance.gst_india.overrides.transaction import ItemGSTDetails
+
+_original_update = ItemGSTDetails.update
+
+def _patched_update(self, doc):
+	if doc.doctype in ("Purchase Receipt", "Purchase Invoice"):
+		self.doc = doc
+		if not self.doc.get("items"):
+			return
+		self.get_item_defaults()
+		self.set_tax_amount_precisions(doc.doctype)
+		if self.dont_recompute_tax_is_set():
+			self.set_item_code_wise_tax_details()
+			self.update_tax_details_by_item_code()
+		else:
+			self.set_item_name_wise_tax_details()
+		# validate_item_gst_details() intentionally skipped for Purchase Receipt
+		return
+
+	_original_update(self, doc)
+
+ItemGSTDetails.update = _patched_update
+# ─────────────────────────────────────────────────────────────────────────────
+
 
 class CustomPurchaseTaxesAndTotals(calculate_taxes_and_totals):
 	"""
