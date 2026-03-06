@@ -27,7 +27,7 @@ class CustomTaxesAndTotals(calculate_taxes_and_totals):
 			# This handles both: active handling charges AND when type is cleared to 0
 			if base_rate_stored > 0:
 				item.rate = base_rate_stored
-				item.amount = flt(item.rate * item.qty, item.precision("amount"))
+				item.amount = flt(item.rate * item.qty, _safe_precision(item, "amount"))
 
 		# Call parent method (handles margin and discount)
 		super(CustomTaxesAndTotals, self).calculate_item_values()
@@ -88,21 +88,21 @@ class CustomTaxesAndTotals(calculate_taxes_and_totals):
 		elif handling_charges_type == "Amount" and handling_charges_amount > 0:
 			# Use fixed amount
 			handling_value = handling_charges_amount
-		item.handling_charges_value = flt(handling_value * item.qty, item.precision("handling_charges_value"))
+		item.handling_charges_value = flt(handling_value * item.qty, _safe_precision(item, "handling_charges_value"))
 
 		# Always recalculate from base rate (even if handling_value is 0)
 		# This ensures removal of handling charges works correctly when set to 0
-		item.rate = flt(rate_before_handling + handling_value, item.precision("rate"))
+		item.rate = flt(rate_before_handling + handling_value, _safe_precision(item, "rate"))
 
 		# Recalculate amounts with updated rate
 		item.net_rate = item.rate
-		item.amount = flt(item.rate * item.qty, item.precision("amount"))
+		item.amount = flt(item.rate * item.qty, _safe_precision(item, "amount"))
 		item.net_amount = item.amount
 
 		# Update base currency values
-		item.base_rate = flt(item.rate * self.doc.conversion_rate, item.precision("base_rate"))
+		item.base_rate = flt(item.rate * self.doc.conversion_rate, _safe_precision(item, "base_rate"))
 		item.base_net_rate = item.base_rate
-		item.base_amount = flt(item.amount * self.doc.conversion_rate, item.precision("base_amount"))
+		item.base_amount = flt(item.amount * self.doc.conversion_rate, _safe_precision(item, "base_amount"))
 		item.base_net_amount = item.base_amount
 
 		# Update taxable_value for India Compliance GST calculation
@@ -141,6 +141,18 @@ class CustomTaxesAndTotals(calculate_taxes_and_totals):
 			else:
 				# Re-raise if it's a different AttributeError
 				raise
+
+
+def _safe_precision(item, fieldname, default=2):
+	"""
+	Safely get precision for a field — returns default if field doesn't exist in the doctype.
+	Needed when calculate_handling_charges runs on Proforma Invoice Item which may not have
+	all custom fields that Quotation Item has.
+	"""
+	try:
+		return item.precision(fieldname)
+	except AttributeError:
+		return default
 
 
 def custom_calculate_taxes_and_totals(doc):
@@ -324,13 +336,14 @@ def _make_proforma_invoice(source_name, target_doc=None):
 		# Store quotation reference
 		target.quotation = source.name
 
-		# Map customer from quotation's party_name if quotation_to is Customer
+		# Set missing values using ERPNext standard methods
+		target.run_method("set_missing_values")
+
+		# Set customer AFTER run_method to prevent it from being overridden.
+		# Quotation uses party_name for customer; Proforma Invoice uses customer.
 		if source.quotation_to == "Customer" and source.party_name:
 			target.customer = source.party_name
 			target.customer_name = source.customer_name or frappe.get_cached_value("Customer", source.party_name, "customer_name")
-
-		# Set missing values using ERPNext standard methods
-		target.run_method("set_missing_values")
 
 		# Use custom calculation instead of standard ERPNext method
 		custom_calculate_taxes_and_totals(target)
@@ -346,6 +359,10 @@ def _make_proforma_invoice(source_name, target_doc=None):
 		{
 			"Quotation": {
 				"doctype": "Proforma Invoice",
+				"field_map": {
+					"party_name": "customer",
+					"customer_name": "customer_name"
+				},
 				"validation": {"docstatus": ["=", 1]}  # Only submitted quotations
 			},
 			"Quotation Item": {
