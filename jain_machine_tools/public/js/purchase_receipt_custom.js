@@ -59,7 +59,7 @@ async function open_barcode_scan_dialog(frm) {
     render_item_table(d, frm, serial_items);
 }
 
-//  ITEM TABLE
+// ITEM TABLE
 
 function render_item_table(d, frm, items) {
     let html = `
@@ -276,10 +276,16 @@ function apply_taxes_based_on_template(frm) {
     }
 }
 
-function setup_intrastate_taxes(frm) {
+async function setup_intrastate_taxes(frm) {
+    const po_name = frm.doc.items.find(i => i.purchase_order)?.purchase_order;
+    if (!po_name) return;
+
+    const po = await frappe.db.get_doc('Purchase Order', po_name);
+    if (!po.taxes || !po.taxes.length) return;
+
     frm.clear_table('taxes');
 
-    // Row 1 - Freight (Actual amount - enter manually)
+    // Row 1 - Freight (hardcoded as before)
     let freight_row = frm.add_child('taxes');
     freight_row.charge_type = 'Actual';
     freight_row.account_head = 'Freight and Forwarding Charges - JMT';
@@ -289,34 +295,48 @@ function setup_intrastate_taxes(frm) {
     freight_row.category = 'Valuation and Total';
     freight_row.add_deduct_tax = 'Add';
 
-    // Row 2 - CGST 9% on Previous Row Total
-    let cgst_row = frm.add_child('taxes');
-    cgst_row.charge_type = 'On Previous Row Total';
-    cgst_row.account_head = 'Input Tax CGST - JMT';
-    cgst_row.description = 'CGST @ 9%';
-    cgst_row.rate = 9;
-    cgst_row.category = 'Total';
-    cgst_row.add_deduct_tax = 'Add';
-    cgst_row.row_id = "1";  
+    // Row 2 - CGST: account_head, description, rate, tax_amount, category, add_deduct_tax from PO
+    const cgst_po = po.taxes.find(r => r.account_head === 'Input Tax CGST - JMT');
+    if (cgst_po) {
+        let cgst_row = frm.add_child('taxes');
+        cgst_row.charge_type    = 'On Previous Row Total';
+        cgst_row.row_id         = "1";
+        cgst_row.account_head   = cgst_po.account_head;
+        cgst_row.description    = cgst_po.description;
+        cgst_row.rate           = cgst_po.rate;
+        cgst_row.tax_amount     = cgst_po.tax_amount;
+        cgst_row.category       = cgst_po.category;
+        cgst_row.add_deduct_tax = cgst_po.add_deduct_tax;
+    }
 
-    // Row 3 - SGST 9% on Previous Row Total
-    let sgst_row = frm.add_child('taxes');
-    sgst_row.charge_type = 'On Previous Row Total';
-    sgst_row.account_head = 'Input Tax SGST - JMT';
-    sgst_row.description = 'SGST @ 9%';
-    sgst_row.rate = 9;
-    sgst_row.category = 'Total';
-    sgst_row.add_deduct_tax = 'Add';
-    sgst_row.row_id = "1";  
+    // Row 3 - SGST: account_head, description, rate, tax_amount, category, add_deduct_tax from PO
+    const sgst_po = po.taxes.find(r => r.account_head === 'Input Tax SGST - JMT');
+    if (sgst_po) {
+        let sgst_row = frm.add_child('taxes');
+        sgst_row.charge_type    = 'On Previous Row Total';
+        sgst_row.row_id         = "1";
+        sgst_row.account_head   = sgst_po.account_head;
+        sgst_row.description    = sgst_po.description;
+        sgst_row.rate           = sgst_po.rate;
+        sgst_row.tax_amount     = sgst_po.tax_amount;
+        sgst_row.category       = sgst_po.category;
+        sgst_row.add_deduct_tax = sgst_po.add_deduct_tax;
+    }
 
     frm.refresh_field('taxes');
     frappe.show_alert({ message: 'Intra-state taxes applied (CGST + SGST)', indicator: 'green' });
 }
 
-function setup_interstate_taxes(frm) {
+async function setup_interstate_taxes(frm) {
+    const po_name = frm.doc.items.find(i => i.purchase_order)?.purchase_order;
+    if (!po_name) return;
+
+    const po = await frappe.db.get_doc('Purchase Order', po_name);
+    if (!po.taxes || !po.taxes.length) return;
+
     frm.clear_table('taxes');
 
-    // Row 1 - Freight (Actual amount - enter manually)
+    // Row 1 - Freight (hardcoded as before)
     let freight_row = frm.add_child('taxes');
     freight_row.charge_type = 'Actual';
     freight_row.account_head = 'Freight and Forwarding Charges - JMT';
@@ -326,15 +346,19 @@ function setup_interstate_taxes(frm) {
     freight_row.category = 'Valuation and Total';
     freight_row.add_deduct_tax = 'Add';
 
-    // Row 2 - IGST 18% on Previous Row Total
-    let igst_row = frm.add_child('taxes');
-    igst_row.charge_type = 'On Previous Row Total';
-    igst_row.account_head = 'Input Tax IGST - JMT';
-    igst_row.description = 'IGST @ 18%';
-    igst_row.rate = 18;
-    igst_row.category = 'Total';
-    igst_row.add_deduct_tax = 'Add';
-    igst_row.row_id = "1";  
+    // Row 2 - IGST: account_head, description, rate, tax_amount, category, add_deduct_tax from PO
+    const igst_po = po.taxes.find(r => r.account_head === 'Input Tax IGST - JMT');
+    if (igst_po) {
+        let igst_row = frm.add_child('taxes');
+        igst_row.charge_type    = 'On Previous Row Total';
+        igst_row.row_id         = "1";
+        igst_row.account_head   = igst_po.account_head;
+        igst_row.description    = igst_po.description;
+        igst_row.rate           = igst_po.rate;
+        igst_row.tax_amount     = igst_po.tax_amount;
+        igst_row.category       = igst_po.category;
+        igst_row.add_deduct_tax = igst_po.add_deduct_tax;
+    }
 
     frm.refresh_field('taxes');
     frappe.show_alert({ message: 'Inter-state taxes applied (IGST)', indicator: 'blue' });
