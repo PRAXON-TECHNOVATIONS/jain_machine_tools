@@ -330,6 +330,7 @@ fixtures = [
                     "Material Request Approval",
                     "Quotation Approval",
                     "Sales Order Approval",
+                    "Customer Approval"
                 ),
             ]
         ],
