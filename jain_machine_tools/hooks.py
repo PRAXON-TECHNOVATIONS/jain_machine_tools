@@ -63,6 +63,7 @@ doctype_js = {
     "Quotation": "public/js/quotation_custom.js",
     "Sales Order": "public/js/sales_order_custom.js",
     "Item": "public/js/item.js",
+    "Customer": "public/js/customer.js",
 }
 
 # doctype_list_js = {"doctype" : "public/js/doctype_list.js"}
@@ -219,6 +220,9 @@ doc_events = {
     "Proforma Invoice": {
         "validate": "jain_machine_tools.overrides.quotation.validate_proforma_invoice"
     },
+    "Customer": {
+        "before_save": "jain_machine_tools.api.customer_gstin_check.check_duplicate_customer_gstin",
+    },
 }
 
 
@@ -308,7 +312,10 @@ before_request = ["jain_machine_tools.overrides.quotation.patch_insert_item_pric
 # default_log_clearing_doctypes = {
 # 	"Logging DocType Name": 30  # days to retain logs
 # }
-standard_queries = {"Supplier": "jain_machine_tools.api.supplier_filter.supplier_query"}
+standard_queries = {
+                "Supplier": "jain_machine_tools.api.supplier_filter.supplier_query",
+                "Customer": "jain_machine_tools.api.customer_filter.customer_query"
+            }
 
 fixtures = [
     {
