@@ -345,8 +345,15 @@ def _make_proforma_invoice(source_name, target_doc=None):
 			target.customer = source.party_name
 			target.customer_name = source.customer_name or frappe.get_cached_value("Customer", source.party_name, "customer_name")
 
+		elif source.quotation_to == "Lead":
+			customer = frappe.db.get_value("Customer", {"lead_name": source.party_name}, "name")
+			if not customer:
+				frappe.throw(f"Please create Customer for Lead {source.party_name} before making Proforma Invoice")
+			target.customer = customer
+			target.customer_name = frappe.db.get_value("Customer", customer, "customer_name")
 		# Use custom calculation instead of standard ERPNext method
-		custom_calculate_taxes_and_totals(target)
+		if target.get("taxes"):
+			custom_calculate_taxes_and_totals(target)
 
 	def update_item(obj, target, source_parent):
 		"""Update item fields during mapping"""
@@ -360,7 +367,7 @@ def _make_proforma_invoice(source_name, target_doc=None):
 			"Quotation": {
 				"doctype": "Proforma Invoice",
 				"field_map": {
-					"party_name": "customer",
+					# "party_name": "customer",
 					"customer_name": "customer_name"
 				},
 				"validation": {"docstatus": ["=", 1]}  # Only submitted quotations
