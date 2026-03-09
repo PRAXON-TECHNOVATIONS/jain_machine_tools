@@ -46,9 +46,16 @@ async function open_barcode_scan_dialog(frm) {
         title: "Barcode Serial Scan",
         size: "extra-large",
         fields: [
-            { fieldname: "item_table", fieldtype: "HTML" },
-            { fieldname: "scan_area", fieldtype: "HTML" },
-        ],
+        {
+            fieldname: "use_camera",
+            fieldtype: "Check",
+            label: "Use Camera Scanner",
+            default: 0
+        },
+        { fieldname: "item_table", fieldtype: "HTML" },
+        { fieldname: "scan_area", fieldtype: "HTML" },
+
+    ],
         primary_action_label: "Close",
         primary_action() {
             d.hide();
@@ -107,18 +114,22 @@ function render_item_table(d, frm, items) {
     d.fields_dict.item_table.$wrapper
         .find("#start-scan")
         .on("click", () => {
-            const idx = d.fields_dict.item_table.$wrapper
-                .find(".scan-item:checked")
-                .first()
-                .data("idx");
-
-            if (idx === undefined) {
-                frappe.msgprint("Select a pending item to scan");
-                return;
-            }
-
+        const idx = d.fields_dict.item_table.$wrapper
+            .find(".scan-item:checked")
+            .first()
+            .data("idx");
+        if (idx === undefined) {
+            frappe.msgprint("Select a pending item to scan");
+            return;
+        }
+        if (d.get_value("use_camera")) {
+            // CAMERA MODE
             scan_item(d, frm, items, idx);
-        });
+        } else {
+            // BARCODE GUN MODE
+            start_gun_scan(d, frm, items, idx);
+        }
+    });
 }
 
 // SCAN SINGLE ITEM
@@ -238,6 +249,119 @@ async function scan_item(d, frm, items, idx) {
     });
 }
 
+function start_gun_scan(d, frm, items, idx) {
+
+    const obj = items[idx];
+    const item = obj.row;
+    const required_qty = item.qty;
+    const scanned = [];
+
+    d.fields_dict.scan_area.$wrapper.html(`
+        <div style="display:flex; gap:24px; margin-top:20px;">
+            <div style="flex:1;">
+                <h4>Scanning: ${item.item_code}</h4>
+                <p>Required Qty: <b>${required_qty}</b></p>
+                <p>Scanned: <b id="scan-count">0</b></p>
+
+                <input type="text"
+                    id="gun-input"
+                    placeholder="Scan barcode here"
+                    style="width:100%; padding:10px; font-size:16px; margin-top:10px;">
+
+                <button class="btn btn-success"
+                        id="complete"
+                        disabled
+                        style="margin-top:14px;">
+                    Complete Item
+                </button>
+            </div>
+
+            <div style="flex:1;">
+                <h5>Scanned Serials</h5>
+                <table class="table table-bordered" id="scanned-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Serial No</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+    `);
+
+    const count_el = d.fields_dict.scan_area.$wrapper.find("#scan-count");
+    const complete_btn = d.fields_dict.scan_area.$wrapper.find("#complete");
+    const table_body = d.fields_dict.scan_area.$wrapper.find("#scanned-table tbody");
+    const input = d.fields_dict.scan_area.$wrapper.find("#gun-input");
+
+    input.focus();
+
+    input.on("keydown", function(e) {
+
+        if (e.key === "Enter") {
+
+            e.preventDefault();
+
+            let serial = $(this).val().trim();
+
+            if (!serial) return;
+
+            if (scanned.includes(serial)) {
+                frappe.msgprint("Duplicate serial");
+                $(this).val("");
+                return;
+            }
+            // qty limit check
+            if (scanned.length >= required_qty) {
+                frappe.msgprint("Required quantity already scanned");
+                $(this).val("");
+                return;
+            }
+            scanned.push(serial);
+
+            count_el.text(scanned.length);
+
+            table_body.append(`
+                <tr>
+                    <td>${scanned.length}</td>
+                    <td>${serial}</td>
+                </tr>
+            `);
+
+            $(this).val("");
+
+            if (scanned.length === required_qty) {
+                complete_btn.prop("disabled", false);
+            }
+
+            $(this).focus();
+        }
+
+    });
+    complete_btn.on("click", () => {
+        item.use_serial_batch_fields = 1;
+        item.serial_no = scanned.join("\n");
+        item.qty = scanned.length;
+
+        frm.refresh_field("items");
+        frm.dirty();
+
+        obj.completed = true;
+
+        frappe.msgprint(`Scan completed for ${item.item_code}`);
+
+        d.fields_dict.scan_area.$wrapper.html("");
+        render_item_table(d, frm, items);
+
+        if (!items.some(o => !o.completed)) {
+            frappe.msgprint("All items scanned");
+            d.hide();
+        }
+
+    });
+}
 frappe.ui.form.on("Purchase Receipt", {
     onload(frm) {
         if (frm.doc.docstatus !== 0 || !frm.doc.name) return;
