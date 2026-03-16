@@ -571,7 +571,7 @@ jain_machine_tools.grid_custom_icons = {
 			secondary_action_label: __('← Back'),
 			secondary_action: function() {
 				if (dialog.current_step === 2) {
-					grid_custom.show_step_1(dialog, item, row.item_code);
+					grid_custom.show_step_1(dialog, item, row.item_code, frm);
 				}
 			}
 		});
@@ -602,7 +602,7 @@ jain_machine_tools.grid_custom_icons = {
 		dialog.$wrapper.find('.btn-modal-secondary').hide();
 
 		// Show Step 1 - Item Details
-		grid_custom.show_step_1(dialog, item, row.item_code);
+		grid_custom.show_step_1(dialog, item, row.item_code, frm);
 
 		dialog.show();
 	},
@@ -631,7 +631,7 @@ jain_machine_tools.grid_custom_icons = {
 		`;
 	},
 
-	show_step_1: function(dialog, item, item_code) {
+	show_step_1: function(dialog, item, item_code, frm) {
 		// Update step to 1
 		dialog.current_step = 1;
 
@@ -649,6 +649,12 @@ jain_machine_tools.grid_custom_icons = {
 			</div>
 		`);
 
+		// Determine price_list and buying/selling flag based on parent doctype
+		const current_frm = frm || dialog.parent_frm;
+		const is_purchase = current_frm && current_frm.doctype === 'Purchase Order';
+		const price_list_filter = is_purchase ? 'Standard Buying' : 'Standard Selling';
+		const price_type_filter = is_purchase ? { buying: 1 } : { selling: 1 };
+
 		// Fetch item price for the brand and item_code
 		frappe.call({
 			method: 'frappe.client.get_list',
@@ -656,7 +662,8 @@ jain_machine_tools.grid_custom_icons = {
 				doctype: 'Item Price',
 				filters: {
 					item_code: item_code,
-					buying: 1
+					price_list: price_list_filter,
+					...price_type_filter
 				},
 				fields: ['price_list_rate', 'price_list'],
 				limit: 1,
@@ -1637,7 +1644,7 @@ jain_machine_tools.grid_custom_icons = {
 					dialog.creation_item = item;
 
 					// Fetch brand configuration
-					jain_machine_tools.grid_custom_icons.load_brand_config_for_creation(dialog, item);
+					jain_machine_tools.grid_custom_icons.load_brand_config_for_creation(dialog, item, dialog.parent_frm);
 				} else {
 					frappe.msgprint(__('Error loading item details'));
 					jain_machine_tools.grid_custom_icons.show_step_2(dialog, base_item_code);
@@ -1646,7 +1653,7 @@ jain_machine_tools.grid_custom_icons = {
 		});
 	},
 
-	load_brand_config_for_creation: function(dialog, item) {
+	load_brand_config_for_creation: function(dialog, item, frm) {
 		// First, find the Brand Motor Configuration name
 		frappe.call({
 			method: 'frappe.client.get_list',
@@ -1684,16 +1691,23 @@ jain_machine_tools.grid_custom_icons = {
 								dialog.param_configs = brand_config.parameters || [];
 
 								// Fetch base price
+								const current_frm = frm || dialog.parent_frm;
+								const is_purchase = current_frm && current_frm.doctype === 'Purchase Order';
+								const price_list_filter = is_purchase ? 'Standard Buying' : 'Standard Selling';
+								const price_type_filter = is_purchase ? { buying: 1 } : { selling: 1 };
+								
 								frappe.call({
 									method: 'frappe.client.get_list',
 									args: {
 										doctype: 'Item Price',
 										filters: {
-											item_code : item.name,
-											brand: item.brand
+											item_code: item.name,
+											price_list: price_list_filter,
+											...price_type_filter
 										},
 										fields: ['price_list_rate', 'price_list'],
-										limit: 1
+										limit: 1,
+										order_by: 'modified desc'
 									},
 									callback: function(r3) {
 										dialog.base_price = (r3.message && r3.message.length > 0) ? r3.message[0].price_list_rate : 0;
@@ -2013,7 +2027,10 @@ jain_machine_tools.grid_custom_icons = {
 				running_total += increment;
 			});
 
-			if (dialog.apply_discount_after === 'Percentage Values') {
+			const is_siemens = dialog.creation_item && 
+			(dialog.creation_item.brand || '').toUpperCase() === 'SIEMENS';
+		
+			if (dialog.apply_discount_after === 'Percentage Values' && !is_siemens) {
 				// Apply discount after percentage params, before absolute params
 				discount_amount = (running_total * dialog.discount_percentage) / 100;
 				final_price = running_total - discount_amount;
@@ -2027,8 +2044,9 @@ jain_machine_tools.grid_custom_icons = {
 					}
 					final_price += increment;
 				});
-			} else if (dialog.apply_discount_after === 'Absolute Amount') {
-				// Add absolute params first, then apply discount
+			} else if (dialog.apply_discount_after === 'Absolute Amount' || is_siemens) {
+				// Add absolute params first, then apply discount on total
+				// (also used for Siemens regardless of apply_discount_after selection)
 				absolute_params.forEach(param => {
 					let increment = 0;
 					if (param.pricing_type === 'Fixed Amount') {
