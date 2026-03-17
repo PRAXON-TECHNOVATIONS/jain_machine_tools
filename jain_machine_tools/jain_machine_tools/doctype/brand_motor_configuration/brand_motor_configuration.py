@@ -103,9 +103,7 @@ class BrandMotorConfiguration(Document):
 						"label": "Frame Size",
 						"key": "frame_size",
 						"validate": {
-							"required": True,
-							"min": 63,
-							"max": 500
+							"required": True
 						},
 						"placeholder": "Enter frame size (e.g., 63, 71, 80...)"
 					})
