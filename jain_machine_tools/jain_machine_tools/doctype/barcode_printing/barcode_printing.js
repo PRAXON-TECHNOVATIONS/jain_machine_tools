@@ -111,6 +111,12 @@ frappe.ui.form.on("Barcode Printing", {
 						let child = frm.add_child('table_hjbk');
 						child.item_code = row.item_code;
 						child.serial_no = row.serial_no;
+						if (row.vendor_manufacturing_date) {
+							child.vendor_manufacturing_date = row.vendor_manufacturing_date;
+						}
+						if (row.warranty_expiry_date) {
+							child.warranty_expiry_date = row.warranty_expiry_date;
+						}
 					});
 
 					// Refresh the child table
@@ -125,5 +131,22 @@ frappe.ui.form.on("Barcode Printing", {
 				}
 			}
 		});
+	}
+});
+
+frappe.ui.form.on("Barcode Printing Table", {
+	vendor_manufacturing_date(frm, cdt, cdn) {
+		const row = locals[cdt][cdn];
+		if (!row.vendor_manufacturing_date) {
+			return;
+		}
+
+		// Keep expiry exactly 12 months after manufacturing date.
+		frappe.model.set_value(
+			cdt,
+			cdn,
+			'warranty_expiry_date',
+			frappe.datetime.add_months(row.vendor_manufacturing_date, 12)
+		);
 	}
 });
