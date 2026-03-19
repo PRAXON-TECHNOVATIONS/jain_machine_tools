@@ -64,6 +64,8 @@ doctype_js = {
     "Sales Order": "public/js/sales_order_custom.js",
     "Item": "public/js/item.js",
     "Customer": "public/js/customer.js",
+    "Sales Invoice": "public/js/sales_invoice_custom.js",
+    "Stock Entry": "public/js/stock_entry_custom.js",
 }
 
 # doctype_list_js = {"doctype" : "public/js/doctype_list.js"}
@@ -211,7 +213,7 @@ doc_events = {
         "validate": "jain_machine_tools.overrides.quotation.validate_sales_order"
     },
     "Sales Invoice": {
-        "validate": "jain_machine_tools.overrides.quotation.validate_sales_invoice",
+        "validate": "jain_machine_tools.overrides.sales_invoice.validate_sales_invoice",
         "on_submit": "jain_machine_tools.api.sales_invoice_warranty.update_serial_warranty_on_submit"
     },
     "Delivery Note": {
