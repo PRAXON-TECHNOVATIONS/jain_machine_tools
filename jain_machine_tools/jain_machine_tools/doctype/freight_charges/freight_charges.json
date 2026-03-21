@@ -1,0 +1,92 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "FC-.####",
+ "creation": "2026-03-21 17:17:09.873510",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "section_break_urqh",
+  "start_date",
+  "amended_from",
+  "get_sales_invoice",
+  "column_break_kmro",
+  "to_date",
+  "freight_charges_detailss_section",
+  "freight_charges_details"
+ ],
+ "fields": [
+  {
+   "fieldname": "section_break_urqh",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "Freight Charges",
+   "print_hide": 1,
+   "read_only": 1,
+   "search_index": 1
+  },
+  {
+   "fieldname": "start_date",
+   "fieldtype": "Date",
+   "label": "Start Date"
+  },
+  {
+   "fieldname": "column_break_kmro",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "to_date",
+   "fieldtype": "Date",
+   "label": "To Date"
+  },
+  {
+   "fieldname": "get_sales_invoice",
+   "fieldtype": "Button",
+   "label": "Get Sales Invoice"
+  },
+  {
+   "fieldname": "freight_charges_detailss_section",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "freight_charges_details",
+   "fieldtype": "Table",
+   "label": "Freight Charges Details",
+   "options": "Freight Charges Details"
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "is_submittable": 1,
+ "links": [],
+ "modified": "2026-03-21 17:29:51.372828",
+ "modified_by": "Administrator",
+ "module": "Jain Machine Tools",
+ "name": "Freight Charges",
+ "naming_rule": "Expression (old style)",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "submit": 1,
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}
