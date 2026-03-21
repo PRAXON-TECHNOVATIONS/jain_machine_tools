@@ -5,6 +5,7 @@ import frappe
 from frappe.model.document import Document
 import base64
 from io import BytesIO
+from frappe.utils import add_months, getdate
 
 
 class BarcodePrinting(Document):
@@ -201,6 +202,11 @@ def get_serial_numbers_from_purchase_receipt(record, item_code):
 
 	serial_numbers = []
 
+	# Use Purchase Receipt posting date as vendor manufacturing date.
+	posting_date = frappe.db.get_value("Purchase Receipt", record, "posting_date")
+	manufacturing_date = getdate(posting_date) if posting_date else None
+	expiry_date = add_months(manufacturing_date, 12) if manufacturing_date else None
+
 	# Get serial numbers from serial_and_batch_bundle
 	for item in items:
 		if item.serial_and_batch_bundle:
@@ -222,7 +228,9 @@ def get_serial_numbers_from_purchase_receipt(record, item_code):
 			for entry in bundle_entries:
 				serial_numbers.append({
 					'item_code': item.item_code,
-					'serial_no': entry.serial_no
+					'serial_no': entry.serial_no,
+					'vendor_manufacturing_date': manufacturing_date,
+					'warranty_expiry_date': expiry_date
 				})
 
 	return serial_numbers

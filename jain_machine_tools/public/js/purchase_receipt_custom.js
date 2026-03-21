@@ -412,7 +412,7 @@ async function setup_intrastate_taxes(frm) {
     // Row 1 - Freight (hardcoded as before)
     let freight_row = frm.add_child('taxes');
     freight_row.charge_type = 'Actual';
-    freight_row.account_head = 'Freight and Forwarding Charges - JMT';
+    freight_row.account_head = 'Freight Charges - JMT';
     freight_row.description = 'Freight Charges';
     freight_row.rate = 0;
     freight_row.tax_amount = 0;
@@ -463,7 +463,7 @@ async function setup_interstate_taxes(frm) {
     // Row 1 - Freight (hardcoded as before)
     let freight_row = frm.add_child('taxes');
     freight_row.charge_type = 'Actual';
-    freight_row.account_head = 'Freight and Forwarding Charges - JMT';
+    freight_row.account_head = 'Freight Charges - JMT';
     freight_row.description = 'Freight Charges';
     freight_row.rate = 0;
     freight_row.tax_amount = 0;
