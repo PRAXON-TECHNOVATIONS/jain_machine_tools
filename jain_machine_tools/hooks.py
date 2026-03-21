@@ -163,9 +163,21 @@ permission_query_conditions = {
 # ---------------
 # Override standard doctype classes
 
-# override_doctype_class = {
-# 	"ToDo": "custom_app.overrides.CustomToDo"
-# }
+override_doctype_class = {
+	"Material Request": "jain_machine_tools.overrides.naming.JMTMaterialRequest",
+	"Request for Quotation": "jain_machine_tools.overrides.naming.JMTRequestForQuotation",
+	"Supplier Quotation": "jain_machine_tools.overrides.naming.JMTSupplierQuotation",
+	"Purchase Order": "jain_machine_tools.overrides.naming.JMTPurchaseOrder",
+	"Lead": "jain_machine_tools.overrides.naming.JMTLead",
+	"Opportunity": "jain_machine_tools.overrides.naming.JMTOpportunity",
+	"Quotation": "jain_machine_tools.overrides.naming.JMTQuotation",
+	"Sales Order": "jain_machine_tools.overrides.naming.JMTSalesOrder",
+	"Sales Invoice": "jain_machine_tools.overrides.naming.JMTSalesInvoice",
+	"Delivery Note": "jain_machine_tools.overrides.naming.JMTDeliveryNote",
+	"Stock Entry": "jain_machine_tools.overrides.naming.JMTStockEntry",
+	"Purchase Receipt": "jain_machine_tools.overrides.naming.JMTPurchaseReceipt",
+	"Purchase Invoice": "jain_machine_tools.overrides.naming.JMTPurchaseInvoice",
+}
 
 # Document Events
 # ---------------

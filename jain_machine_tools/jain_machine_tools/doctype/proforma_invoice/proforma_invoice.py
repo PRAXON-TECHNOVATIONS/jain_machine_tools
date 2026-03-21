@@ -9,6 +9,10 @@ from erpnext.controllers.selling_controller import SellingController
 
 
 class ProformaInvoice(SellingController):
+	def autoname(self):
+		from jain_machine_tools.overrides.naming import _autoname
+		_autoname(self, "PI")
+
 	def calculate_taxes_and_totals(self):
 		"""Override to use custom calculation with handling charges support"""
 		from jain_machine_tools.overrides.quotation import custom_calculate_taxes_and_totals
