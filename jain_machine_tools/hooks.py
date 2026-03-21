@@ -150,8 +150,10 @@ jinja = {
 permission_query_conditions = {
     "Material Request": "jain_machine_tools.permissions.material_request_permission.material_request_permission",
     "Purchase Order":"jain_machine_tools.permissions.purchase_order_permission.purchase_order_permission",
-    "Supplier":"jain_machine_tools.permissions.supplier_permisions.supplier_permission"
+    "Supplier":"jain_machine_tools.permissions.supplier_permisions.supplier_permission",
+    "Customer": "jain_machine_tools.permissions.customer_permission.customer_query_conditions"
 }
+
 
 # has_permission = {
 # 	"Event": "frappe.desk.doctype.event.event.has_permission",

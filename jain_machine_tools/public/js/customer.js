@@ -54,29 +54,3 @@ frappe.ui.form.on('Customer', {
         });
     }
 });
-
-frappe.ui.form.on('Customer', {
-    after_save: function(frm) {
-
-        let employees = [];
-
-        if (frm.doc.custom_rm) {
-            employees.push(frm.doc.custom_rm);
-        }
-
-        if (frm.doc.custom_sales_coordinator) {
-            employees.push(frm.doc.custom_sales_coordinator);
-        }
-
-        frappe.call({
-            method: "jain_machine_tools.api.customer_assignment.link_assign_to",
-            args: {
-                name: frm.doc.name,
-                description: frm.doc.customer_name,
-                employees: employees,
-                doctype: "Customer"
-            }
-        });
-
-    }
-});
