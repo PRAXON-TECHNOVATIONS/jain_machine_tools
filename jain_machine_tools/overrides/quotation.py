@@ -119,7 +119,7 @@ class CustomTaxesAndTotals(calculate_taxes_and_totals):
 			super(CustomTaxesAndTotals, self).calculate_totals()
 		except AttributeError as e:
 			# If 'category' attribute is missing, handle manually
-			if "'category'" in str(e) or "category" in str(e):
+			if "'category'" in str(e) or "fieldtype" in str(e):
 				# Safe calculation without category attribute
 				from frappe.utils import flt
 
