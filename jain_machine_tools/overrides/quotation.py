@@ -341,9 +341,11 @@ def _make_proforma_invoice(source_name, target_doc=None):
 
 		# Set customer AFTER run_method to prevent it from being overridden.
 		# Quotation uses party_name for customer; Proforma Invoice uses customer.
+		customer = None
 		if source.quotation_to == "Customer" and source.party_name:
-			target.customer = source.party_name
-			target.customer_name = source.customer_name or frappe.get_cached_value("Customer", source.party_name, "customer_name")
+			customer = source.party_name
+			target.customer = customer
+			target.customer_name = source.customer_name or frappe.get_cached_value("Customer", customer, "customer_name")
 
 		elif source.quotation_to == "Lead":
 			customer = frappe.db.get_value("Customer", {"lead_name": source.party_name}, "name")
@@ -351,6 +353,11 @@ def _make_proforma_invoice(source_name, target_doc=None):
 				frappe.throw(f"Please create Customer for Lead {source.party_name} before making Proforma Invoice")
 			target.customer = customer
 			target.customer_name = frappe.db.get_value("Customer", customer, "customer_name")
+
+		if customer:
+			customer_workflow_state = frappe.db.get_value("Customer", customer, "workflow_state")
+			if customer_workflow_state != "Approved":
+				frappe.throw(_("Please approve Customer {0} before making Proforma Invoice").format(customer))
 		# Use custom calculation instead of standard ERPNext method
 		if target.get("taxes"):
 			custom_calculate_taxes_and_totals(target)

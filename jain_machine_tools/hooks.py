@@ -65,6 +65,7 @@ doctype_js = {
     "Item": "public/js/item.js",
     "Customer": "public/js/customer.js",
     "Sales Invoice": "public/js/sales_invoice_custom.js",
+    "Delivery Planning Schedule": "public/js/delivery_planning_schedule.js",
     "Stock Entry": "public/js/stock_entry_custom.js",
 }
 
