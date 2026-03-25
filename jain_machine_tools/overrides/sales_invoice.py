@@ -45,15 +45,15 @@ def validate_sales_invoice_order_qty(doc):
 		if invoice_qty - so_qty > 1e-9:
 			mismatches.append(
 				_(
-					"- {0}: Sales Invoice Qty = {1}, Sales Order Qty = {2}, Excess Qty = {3}"
-				).format(item_label, invoice_qty, so_qty, flt(invoice_qty - so_qty))
+					"- {0}: Sales Order Qty = {1}, Sales Invoice Qty = {2}"
+				).format(item_label, so_qty, invoice_qty)
 			)
 
-		if invoice_rate - so_rate > 1e-9:
+		if invoice_rate - so_rate >= 0.01:
 			mismatches.append(
 				_(
-					"- {0}: Sales Invoice Rate = {1}, Sales Order Rate = {2}, Excess Rate = {3}"
-				).format(item_label, invoice_rate, so_rate, flt(invoice_rate - so_rate))
+					"- {0}: Sales Order Rate = {1}, Sales Invoice Rate = {2}"
+				).format(item_label, so_rate, invoice_rate)
 			)
 
 	if mismatches:

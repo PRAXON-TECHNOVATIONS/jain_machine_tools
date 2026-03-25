@@ -29,6 +29,39 @@ frappe.ui.form.on('Sales Invoice Delivery Plan', {
     }
 });
 
+frappe.ui.form.on('Sales Invoice Item', {
+    item_code: function(frm, cdt, cdn) {
+        const row = locals[cdt][cdn];
+        if (!row.item_code) {
+            return;
+        }
+
+        frappe.model.set_value(cdt, cdn, 'handling_charges_type', '');
+        frappe.model.set_value(cdt, cdn, 'handling_charges_percentage', 0);
+        frappe.model.set_value(cdt, cdn, 'handling_charges_amount', 0);
+        frappe.model.set_value(cdt, cdn, 'base_rate_before_handling_charges', 0);
+    },
+
+    rate: function(frm, cdt, cdn) {
+        const row = locals[cdt][cdn];
+        if (!row.handling_charges_type) {
+            frappe.model.set_value(cdt, cdn, 'base_rate_before_handling_charges', flt(row.rate));
+        }
+    },
+
+    handling_charges_type: function(frm, cdt, cdn) {
+        sync_sales_invoice_item_base_rate(cdt, cdn);
+    },
+
+    handling_charges_percentage: function(frm, cdt, cdn) {
+        sync_sales_invoice_item_base_rate(cdt, cdn);
+    },
+
+    handling_charges_amount: function(frm, cdt, cdn) {
+        sync_sales_invoice_item_base_rate(cdt, cdn);
+    }
+});
+
 function toggle_delivery_plan_section(frm) {
     if (!frm.fields_dict.delivery_plan_details) {
         return;
@@ -139,4 +172,15 @@ function resolve_sales_order(frm) {
     }
 
     return null;
+}
+
+function sync_sales_invoice_item_base_rate(cdt, cdn) {
+    const row = locals[cdt][cdn];
+    if (!row) {
+        return;
+    }
+
+    if (!row.handling_charges_type) {
+        frappe.model.set_value(cdt, cdn, 'base_rate_before_handling_charges', flt(row.rate));
+    }
 }
