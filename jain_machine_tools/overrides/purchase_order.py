@@ -158,6 +158,7 @@ def validate_purchase_invoice(doc, method=None):
 	Hook for Purchase Invoice validation
 	"""
 	custom_calculate_taxes_and_totals(doc)
+	validate_purchase_invoice_against_po(doc)
 
 
 def validate_purchase_receipt(doc, method=None):
@@ -165,3 +166,60 @@ def validate_purchase_receipt(doc, method=None):
 	Hook for Purchase Receipt validation
 	"""
 	custom_calculate_taxes_and_totals(doc)
+
+
+def validate_purchase_invoice_against_po(doc):
+	"""
+	Allow Purchase Invoice qty/rate to be less than Purchase Order, but never more.
+	"""
+	mismatches = []
+
+	for row in doc.get("items", []):
+		if not row.get("po_detail"):
+			continue
+
+		po_item = frappe.db.get_value(
+			"Purchase Order Item",
+			row.po_detail,
+			["parent", "qty", "stock_qty", "rate"],
+			as_dict=True,
+		)
+		if not po_item:
+			continue
+
+		invoice_qty = flt(row.get("stock_qty") or row.get("qty"))
+		po_qty = flt(po_item.get("stock_qty") or po_item.get("qty"))
+		invoice_rate = flt(row.get("rate"))
+		po_rate = flt(po_item.get("rate"))
+		item_label = _format_item_label(row)
+
+		if invoice_qty - po_qty > 1e-9:
+			mismatches.append(
+				_(
+					"- {0}: Purchase Invoice Qty = {1}, Purchase Order Qty = {2}, Excess Qty = {3}"
+				).format(item_label, invoice_qty, po_qty, flt(invoice_qty - po_qty))
+			)
+
+		if invoice_rate - po_rate > 1e-9:
+			mismatches.append(
+				_(
+					"- {0}: Purchase Invoice Rate = {1}, Purchase Order Rate = {2}, Excess Rate = {3}"
+				).format(item_label, invoice_rate, po_rate, flt(invoice_rate - po_rate))
+			)
+
+	if mismatches:
+		frappe.throw(
+			_(
+				"Purchase Invoice cannot have Qty or Rate greater than the linked Purchase Order.\n\n"
+				"Please check these items:\n{0}\n\n"
+				"Rule: Purchase Invoice Qty and Rate may be less than Purchase Order, but never more."
+			).format("\n".join(mismatches))
+		)
+
+
+def _format_item_label(row):
+	item_code = row.get("item_code") or ""
+	item_name = row.get("item_name") or row.get("description") or ""
+	if item_code and item_name and item_name != item_code:
+		return f"{item_code} / {item_name}"
+	return item_code or item_name or _("Row #{0}").format(row.get("idx"))
