@@ -133,6 +133,47 @@ def _get_total_invoiced_qty_for_dps(dps_name):
 	return {row.delivery_planning_schedule_item: row.total_qty for row in result}
 
 
+@frappe.whitelist()
+def get_fifo_serial_nos_for_items(items):
+	"""
+	Fetch FIFO Serial Numbers for multiple items.
+	items: list of dicts with item_code, warehouse, qty
+	"""
+	import json
+	if isinstance(items, str):
+		items = json.loads(items)
+
+	res = {}
+	for entry in items:
+		item_code = entry.get("item_code")
+		warehouse = entry.get("warehouse")
+		qty = flt(entry.get("qty"))
+		so_detail = entry.get("so_detail")
+
+		if not item_code or not warehouse or qty <= 0:
+			continue
+
+		# Check if item is serial tracking enabled
+		if not frappe.get_cached_value("Item", item_code, "has_serial_no"):
+			continue
+
+		serial_nos = frappe.get_all(
+			"Serial No",
+			filters={
+				"item_code": item_code,
+				"warehouse": warehouse,
+				"status": "Active"
+			},
+			fields=["name"],
+			order_by="creation asc",
+			limit=int(qty)
+		)
+		if serial_nos:
+			res[so_detail] = "\n".join([sn.name for sn in serial_nos])
+
+	return res
+
+
 def validate_delivery_planning_schedule(doc):
 	"""
 	Validate Sales Invoice item quantities against selected Delivery Planning Schedule rows.
@@ -186,8 +227,18 @@ def validate_delivery_planning_schedule(doc):
 		if selected_qty - flt(available_row.available_qty) > 1e-9:
 			frappe.throw(
 				_(
-					"Selected Qty for Delivery Plan row {0} cannot exceed available qty {1}."
-				).format(row.get("delivery_planning_schedule_item"), flt(available_row.available_qty))
+					"<b>Insufficient Planned Quantity</b><br><br>"
+					"Item: <b>{0}</b><br>"
+					"Delivery Plan Row: <code>{1}</code><br><br>"
+					"Maximum Available: <b>{2}</b><br>"
+					"Requested: <b>{3}</b><br><br>"
+					"The quantity cannot exceed the available planned quantity for this row."
+				).format(
+					available_row.item_code,
+					row.get("delivery_planning_schedule_item"),
+					flt(available_row.available_qty),
+					selected_qty
+				)
 			)
 
 		selected_qty_by_so_item[row.get("sales_order_item")] += selected_qty
@@ -204,7 +255,7 @@ def validate_delivery_planning_schedule(doc):
 			item_label = item_label_map.get(item_name) or item_name
 			mismatches.append(
 				_(
-					"- {0}: Delivery Plan Qty = {1}, Sales Invoice Qty = {2}, Difference = {3}"
+					"&bull; <b>{0}</b>: Plan = {1}, Invoice = {2} (Diff: <b>{3}</b>)"
 				).format(
 					item_label, selected_qty, invoice_qty, flt(invoice_qty - selected_qty)
 				)
@@ -213,10 +264,11 @@ def validate_delivery_planning_schedule(doc):
 	if mismatches:
 		frappe.throw(
 			_(
-				"Delivery Plan qty does not match Sales Invoice qty.\n\n"
-				"Please check these items:\n{0}\n\n"
-				"Rule: Sales Invoice Qty must exactly match the total Qty selected in Delivery Plans for each item."
-			).format("\n".join(mismatches))
+				"<b>Delivery Plan Quantity Mismatch</b><br><br>"
+				"The total quantity in the Sales Invoice items does not match the quantities selected in the Delivery Plans.<br><br>"
+				"<b>Details:</b><br>{0}<br><br>"
+				"<i>Rule: Every item linked to a Sales Order must be fully accounted for in the Delivery Planning table.</i>"
+			).format("<br>".join(mismatches))
 		)
 
 
@@ -348,17 +400,29 @@ def _get_invoiced_qty_by_plan_row(sales_order, exclude_sales_invoice=None):
 
 
 @frappe.whitelist()
-def get_available_delivery_plan_rows(sales_order, sales_invoice=None):
+def get_available_delivery_plan_rows(sales_order, sales_invoice=None, posting_date=None):
 	"""
 	Return selectable Delivery Planning Schedule rows for a Sales Order with remaining qty.
+	Filters by delivery_date <= posting_date and status == "Pending".
 	"""
 	if not sales_order:
 		return []
 
 	invoiced_qty_map = _get_invoiced_qty_by_plan_row(sales_order, exclude_sales_invoice=sales_invoice)
 
+	conditions = ["dps.sales_order = %s", "dps.docstatus < 2", "dpsi.sales_order_item IS NOT NULL"]
+	values = [sales_order]
+
+	# Filter by Pending status
+	conditions.append("dpsi.status = 'Pending'")
+
+	# Filter by Posting Date
+	if posting_date:
+		conditions.append("dpsi.delivery_date <= %s")
+		values.append(posting_date)
+
 	rows = frappe.db.sql(
-		"""
+		f"""
 		SELECT
 			dps.name AS delivery_planning_schedule,
 			dpsi.name AS delivery_planning_schedule_item,
@@ -370,12 +434,10 @@ def get_available_delivery_plan_rows(sales_order, sales_invoice=None):
 		FROM `tabDelivery Planning Schedule Item` dpsi
 		INNER JOIN `tabDelivery Planning Schedule` dps
 			ON dps.name = dpsi.parent
-		WHERE dps.sales_order = %s
-			AND dps.docstatus < 2
-			AND dpsi.sales_order_item IS NOT NULL
+		WHERE {' AND '.join(conditions)}
 		ORDER BY dpsi.delivery_date, dps.name, dpsi.idx
 		""",
-		sales_order,
+		values,
 		as_dict=True,
 	)
 
