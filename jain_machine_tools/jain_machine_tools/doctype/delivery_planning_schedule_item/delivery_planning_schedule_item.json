@@ -8,11 +8,15 @@
  "field_order": [
   "item_code",
   "sales_order_item",
-  "planned_qty",
+  "qty_from_so",
+  "already_planned_qty",
   "delivery_date",
-  "qty",
+  "planned_qty",
   "uom",
   "column_break_1",
+  "warehouse",
+  "projected_qty",
+  "status",
   "description"
  ],
  "fields": [
@@ -34,7 +38,14 @@
    "reqd": 1
   },
   {
-   "fieldname": "planned_qty",
+   "fieldname": "qty_from_so",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Qty from SO",
+   "read_only": 1
+  },
+  {
+   "fieldname": "already_planned_qty",
    "fieldtype": "Float",
    "hidden": 1,
    "label": "Already Planned Qty",
@@ -49,10 +60,10 @@
    "reqd": 1
   },
   {
-   "fieldname": "qty",
+   "fieldname": "planned_qty",
    "fieldtype": "Float",
    "in_list_view": 1,
-   "label": "Qty",
+   "label": "Planned Qty",
    "non_negative": 1,
    "reqd": 1
   },
@@ -66,6 +77,30 @@
   {
    "fieldname": "column_break_1",
    "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "warehouse",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Warehouse",
+   "options": "Warehouse",
+   "read_only": 1
+  },
+  {
+   "fieldname": "projected_qty",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Projected Qty",
+   "read_only": 1
+  },
+  {
+   "default": "Pending",
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Status",
+   "options": "Pending\nCompleted",
+   "read_only": 1
   },
   {
    "fieldname": "description",

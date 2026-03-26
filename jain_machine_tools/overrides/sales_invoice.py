@@ -18,7 +18,8 @@ def validate_sales_invoice(doc, method=None):
 
 def validate_sales_invoice_order_qty(doc):
 	"""
-	Ensure Sales Invoice item qty/rate does not exceed the linked Sales Order item values.
+	Ensure Sales Invoice item rate does not exceed the linked Sales Order item values.
+	(Quantity validation against SO is removed as per new requirements)
 	"""
 	mismatches = []
 
@@ -29,25 +30,16 @@ def validate_sales_invoice_order_qty(doc):
 		so_item = frappe.db.get_value(
 			"Sales Order Item",
 			row.so_detail,
-			["parent", "qty", "stock_qty", "rate"],
+			["parent", "rate"],
 			as_dict=True,
 		)
 
 		if not so_item:
 			continue
 
-		invoice_qty = flt(row.get("stock_qty") or row.get("qty"))
-		so_qty = flt(so_item.get("stock_qty") or so_item.get("qty"))
 		invoice_rate = flt(row.get("rate"))
 		so_rate = flt(so_item.get("rate"))
 		item_label = _format_item_label(row)
-
-		if invoice_qty - so_qty > 1e-9:
-			mismatches.append(
-				_(
-					"- {0}: Sales Order Qty = {1}, Sales Invoice Qty = {2}"
-				).format(item_label, so_qty, invoice_qty)
-			)
 
 		if invoice_rate - so_rate >= 0.01:
 			mismatches.append(
@@ -59,11 +51,86 @@ def validate_sales_invoice_order_qty(doc):
 	if mismatches:
 		frappe.throw(
 			_(
-				"Sales Invoice cannot have Qty or Rate greater than the linked Sales Order.\n\n"
+				"Sales Invoice cannot have Rate greater than the linked Sales Order.\n\n"
 				"Please check these items:\n{0}\n\n"
-				"Rule: Sales Invoice Qty and Rate may be less than Sales Order, but never more."
+				"Rule: Sales Invoice Rate may be less than Sales Order, but never more."
 			).format("\n".join(mismatches))
 		)
+
+
+def update_delivery_planning_schedule_status(doc, method=None):
+	"""
+	Update the status of linked Delivery Planning Schedule and its items.
+	Triggered on on_submit and on_cancel of Sales Invoice.
+	"""
+	if not doc.get("delivery_plan_details"):
+		return
+
+	dps_names = set()
+	for row in doc.delivery_plan_details:
+		if row.delivery_planning_schedule:
+			dps_names.add(row.delivery_planning_schedule)
+
+	for dps_name in dps_names:
+		dps = frappe.get_doc("Delivery Planning Schedule", dps_name)
+		_update_dps_status(dps)
+
+
+def _update_dps_status(dps):
+	"""
+	Calculate and update status for DPS and its items.
+	"""
+	# Get already invoiced quantities for this DPS
+	invoiced_qty_map = _get_total_invoiced_qty_for_dps(dps.name)
+
+	all_completed = True
+	any_completed = False
+	any_partial = False
+
+	for item in dps.get("items"):
+		invoiced_qty = flt(invoiced_qty_map.get(item.name, 0))
+		planned_qty = flt(item.planned_qty)
+
+		if invoiced_qty >= planned_qty - 1e-9:
+			item.status = "Completed"
+			any_completed = True
+		else:
+			item.status = "Pending"
+			all_completed = False
+			if invoiced_qty > 1e-9:
+				any_partial = True
+
+		item.db_set("status", item.status, update_modified=False)
+
+	if all_completed:
+		overall_status = "Completed"
+	elif any_completed or any_partial:
+		overall_status = "Partial"
+	else:
+		overall_status = "Pending"
+
+	dps.db_set("status", overall_status, update_modified=False)
+
+
+def _get_total_invoiced_qty_for_dps(dps_name):
+	"""
+	Helper to get total invoiced quantity across all submitted SIs for a DPS.
+	"""
+	result = frappe.db.sql(
+		"""
+		SELECT
+			sii.delivery_planning_schedule_item,
+			SUM(sii.qty) as total_qty
+		FROM `tabSales Invoice Delivery Plan` sii
+		INNER JOIN `tabSales Invoice` si ON si.name = sii.parent
+		WHERE sii.delivery_planning_schedule = %s
+			AND si.docstatus = 1
+		GROUP BY sii.delivery_planning_schedule_item
+		""",
+		dps_name,
+		as_dict=True
+	)
+	return {row.delivery_planning_schedule_item: row.total_qty for row in result}
 
 
 def validate_delivery_planning_schedule(doc):
@@ -298,7 +365,7 @@ def get_available_delivery_plan_rows(sales_order, sales_invoice=None):
 			dpsi.sales_order_item,
 			dpsi.item_code,
 			dpsi.delivery_date,
-			dpsi.qty AS planned_qty,
+			dpsi.planned_qty,
 			dpsi.uom
 		FROM `tabDelivery Planning Schedule Item` dpsi
 		INNER JOIN `tabDelivery Planning Schedule` dps
