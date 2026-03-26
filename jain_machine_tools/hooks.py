@@ -229,7 +229,11 @@ doc_events = {
     },
     "Sales Invoice": {
         "validate": "jain_machine_tools.overrides.sales_invoice.validate_sales_invoice",
-        "on_submit": "jain_machine_tools.api.sales_invoice_warranty.update_serial_warranty_on_submit"
+        "on_submit": [
+            "jain_machine_tools.api.sales_invoice_warranty.update_serial_warranty_on_submit",
+            "jain_machine_tools.overrides.sales_invoice.update_delivery_planning_schedule_status"
+        ],
+        "on_cancel": "jain_machine_tools.overrides.sales_invoice.update_delivery_planning_schedule_status"
     },
     "Delivery Note": {
         "validate": "jain_machine_tools.overrides.quotation.validate_delivery_note"

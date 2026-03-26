@@ -41,16 +41,23 @@ function apply_sales_order_data(frm, data) {
 	if (data.schedule_date) {
 		frm.set_value('schedule_date', data.schedule_date);
 	}
+	if (data.status) {
+		frm.set_value('status', data.status);
+	}
 
 	frm.clear_table('items');
 	(data.items || []).forEach((row) => {
 		const child = frm.add_child('items');
 		child.sales_order_item = row.sales_order_item;
-		child.planned_qty = row.planned_qty;
 		child.item_code = row.item_code;
+		child.qty_from_so = row.qty_from_so;
+		child.warehouse = row.warehouse;
+		child.projected_qty = row.projected_qty;
 		child.delivery_date = row.delivery_date;
-		child.qty = row.qty;
+		child.planned_qty = row.planned_qty;
+		child.already_planned_qty = row.already_planned_qty;
 		child.uom = row.uom;
+		child.status = row.status || 'Pending';
 		child.description = row.description;
 	});
 
