@@ -23,6 +23,9 @@ frappe.ui.form.on('Sales Invoice', {
 
         frm.__barcode_scan_added = true;
     },
+    async before_save(frm) {
+        await sync_invoice_qty_from_delivery_plans(frm);
+    },
     sales_order: function(frm) {
         toggle_delivery_plan_section(frm);
         maybe_load_delivery_plans(frm);
@@ -30,8 +33,8 @@ frappe.ui.form.on('Sales Invoice', {
     items_add: function(frm) {
         maybe_load_delivery_plans(frm);
     },
-    delivery_plan_details_remove: function(frm) {
-        sync_invoice_qty_from_delivery_plans(frm);
+    async delivery_plan_details_remove(frm) {
+        await sync_invoice_qty_from_delivery_plans(frm);
     }
 });
 
@@ -119,7 +122,8 @@ function load_delivery_plans(frm, notify) {
         method: 'jain_machine_tools.overrides.sales_invoice.get_available_delivery_plan_rows',
         args: {
             sales_order: sales_order,
-            sales_invoice: frm.doc.name || null
+            sales_invoice: frm.doc.name || null,
+            posting_date: frm.doc.posting_date
         },
         callback(r) {
             const rows = r.message || [];
@@ -152,7 +156,7 @@ function load_delivery_plans(frm, notify) {
     });
 }
 
-function sync_invoice_qty_from_delivery_plans(frm) {
+async function sync_invoice_qty_from_delivery_plans(frm) {
     const qtyBySoItem = {};
     (frm.doc.delivery_plan_details || []).forEach((row) => {
         if (!row.sales_order_item) {
@@ -162,14 +166,55 @@ function sync_invoice_qty_from_delivery_plans(frm) {
         qtyBySoItem[row.sales_order_item] = (qtyBySoItem[row.sales_order_item] || 0) + flt(row.qty);
     });
 
+    const items_to_fetch_serials = [];
+    const items_to_remove = [];
+
     (frm.doc.items || []).forEach((row) => {
         if (!row.so_detail) {
             return;
         }
 
         const qty = qtyBySoItem[row.so_detail] || 0;
+        
+        if (qty <= 0) {
+            items_to_remove.push(row.name);
+            return;
+        }
+
         frappe.model.set_value(row.doctype, row.name, 'qty', qty);
+
+        if (qty > 0 && row.item_code && row.warehouse) {
+            items_to_fetch_serials.push({
+                item_code: row.item_code,
+                warehouse: row.warehouse,
+                qty: qty,
+                so_detail: row.name
+            });
+        }
     });
+
+    // Remove items that are no longer in delivery plans
+    if (items_to_remove.length > 0) {
+        items_to_remove.forEach(name => {
+            frm.get_field('items').grid.grid_rows_by_docname[name].remove();
+        });
+        frm.refresh_field('items');
+    }
+
+    if (items_to_fetch_serials.length > 0) {
+        const r = await frappe.call({
+            method: 'jain_machine_tools.overrides.sales_invoice.get_fifo_serial_nos_for_items',
+            args: {
+                items: items_to_fetch_serials
+            }
+        });
+
+        if (r.message) {
+            for (const item_name in r.message) {
+                frappe.model.set_value('Sales Invoice Item', item_name, 'serial_no', r.message[item_name]);
+            }
+        }
+    }
 }
 
 function resolve_sales_order(frm) {

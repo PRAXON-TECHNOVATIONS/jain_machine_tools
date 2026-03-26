@@ -5,6 +5,12 @@ frappe.ui.form.on('Sales Order', {
 		if (jain_machine_tools && jain_machine_tools.grid_custom_icons) {
 			jain_machine_tools.grid_custom_icons.setup(frm);
 		}
+
+		if (frm.doc.docstatus === 1) {
+			frm.add_custom_button(__('Delivery Plan'), () => {
+				frappe.set_route('List', 'Delivery Planning Schedule', {sales_order: frm.doc.name});
+			}, __('View'));
+		}
 	},
 
 	items_add: function(frm, cdt, cdn) {
