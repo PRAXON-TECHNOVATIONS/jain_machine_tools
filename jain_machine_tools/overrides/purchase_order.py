@@ -171,55 +171,134 @@ def validate_purchase_receipt(doc, method=None):
 def validate_purchase_invoice_against_po(doc):
 	"""
 	Allow Purchase Invoice qty/rate to be less than Purchase Order, but never more.
+	Also ensures cumulative Purchase Invoice qty across multiple submitted invoices
+	never exceeds the linked Purchase Order item qty.
 	"""
 	mismatches = []
+	po_detail_names = list({row.po_detail for row in doc.get("items", []) if row.get("po_detail")})
+	po_item_map = _get_po_item_map_with_billed_qty(po_detail_names, doc.name)
+	current_invoice_qty_by_po_detail = {}
 
 	for row in doc.get("items", []):
 		if not row.get("po_detail"):
 			continue
 
-		po_item = frappe.db.get_value(
-			"Purchase Order Item",
-			row.po_detail,
-			["parent", "qty", "stock_qty", "rate"],
-			as_dict=True,
-		)
+		po_item = po_item_map.get(row.po_detail)
 		if not po_item:
 			continue
 
-		invoice_qty = flt(row.get("stock_qty") or row.get("qty"))
+		invoice_qty = _get_row_stock_qty(row)
 		po_qty = flt(po_item.get("stock_qty") or po_item.get("qty"))
 		invoice_rate = flt(row.get("rate"))
 		po_rate = flt(po_item.get("rate"))
-		item_label = _format_item_label(row)
+		item_code = _format_item_code(row)
 
 		if invoice_qty - po_qty > 1e-9:
 			mismatches.append(
-				_(
-					"- {0}: Purchase Invoice Qty = {1}, Purchase Order Qty = {2}, Excess Qty = {3}"
-				).format(item_label, invoice_qty, po_qty, flt(invoice_qty - po_qty))
+				_("{0}: current qty {1}, remaining qty {2}").format(item_code, invoice_qty, po_qty)
 			)
 
 		if invoice_rate - po_rate > 1e-9:
 			mismatches.append(
-				_(
-					"- {0}: Purchase Invoice Rate = {1}, Purchase Order Rate = {2}, Excess Rate = {3}"
-				).format(item_label, invoice_rate, po_rate, flt(invoice_rate - po_rate))
+				_("{0}: current rate {1}, allowed rate {2}").format(item_code, invoice_rate, po_rate)
+			)
+
+		current_invoice_qty_by_po_detail.setdefault(
+			row.po_detail,
+			{"item_code": item_code, "current_qty": 0.0},
+		)
+		current_invoice_qty_by_po_detail[row.po_detail]["current_qty"] += invoice_qty
+
+	for po_detail, qty_data in current_invoice_qty_by_po_detail.items():
+		po_item = po_item_map.get(po_detail)
+		if not po_item:
+			continue
+
+		po_qty = flt(po_item.get("stock_qty") or po_item.get("qty"))
+		already_billed_qty = flt(po_item.get("already_billed_qty"))
+		current_qty = flt(qty_data.get("current_qty"))
+		remaining_qty = flt(po_qty - already_billed_qty)
+
+		if current_qty - remaining_qty > 1e-9:
+			mismatches.append(
+				_("{0}: current qty {1}, remaining qty {2}").format(
+					qty_data.get("item_code"),
+					current_qty,
+					max(remaining_qty, 0),
+				)
 			)
 
 	if mismatches:
 		frappe.throw(
 			_(
-				"Purchase Invoice cannot have Qty or Rate greater than the linked Purchase Order.\n\n"
-				"Please check these items:\n{0}\n\n"
-				"Rule: Purchase Invoice Qty and Rate may be less than Purchase Order, but never more."
-			).format("\n".join(mismatches))
+				"PO limit exceeded.<br><br>{0}"
+			).format("<br>".join(mismatches))
 		)
 
 
-def _format_item_label(row):
-	item_code = row.get("item_code") or ""
-	item_name = row.get("item_name") or row.get("description") or ""
-	if item_code and item_name and item_name != item_code:
-		return f"{item_code} / {item_name}"
-	return item_code or item_name or _("Row #{0}").format(row.get("idx"))
+@frappe.whitelist()
+def get_purchase_order_item_invoice_status(po_detail, purchase_invoice=None):
+	po_item_map = _get_po_item_map_with_billed_qty([po_detail], purchase_invoice)
+	po_item = po_item_map.get(po_detail)
+
+	if not po_item:
+		return {}
+
+	po_qty = flt(po_item.get("stock_qty") or po_item.get("qty"))
+	already_billed_qty = flt(po_item.get("already_billed_qty"))
+
+	return {
+		"po_detail": po_detail,
+		"po_qty": po_qty,
+		"already_billed_qty": already_billed_qty,
+		"remaining_qty": flt(po_qty - already_billed_qty),
+		"rate": flt(po_item.get("rate")),
+		"purchase_order": po_item.get("parent"),
+	}
+
+
+def _get_po_item_map_with_billed_qty(po_detail_names, exclude_purchase_invoice=None):
+	if not po_detail_names:
+		return {}
+
+	exclude_clause = ""
+	params = {"po_detail_names": tuple(po_detail_names)}
+
+	if exclude_purchase_invoice:
+		exclude_clause = "and pii.parent != %(exclude_purchase_invoice)s"
+		params["exclude_purchase_invoice"] = exclude_purchase_invoice
+
+	rows = frappe.db.sql(
+		f"""
+		select
+			poi.name,
+			poi.parent,
+			poi.qty,
+			poi.stock_qty,
+			poi.rate,
+			coalesce(sum(
+				case
+					when pi.docstatus = 1 then coalesce(pii.stock_qty, pii.qty * coalesce(pii.conversion_factor, 1), pii.qty)
+					else 0
+				end
+			), 0) as already_billed_qty
+		from `tabPurchase Order Item` poi
+		left join `tabPurchase Invoice Item` pii on pii.po_detail = poi.name
+		left join `tabPurchase Invoice` pi on pi.name = pii.parent
+		where poi.name in %(po_detail_names)s
+			{exclude_clause}
+		group by poi.name, poi.parent, poi.qty, poi.stock_qty, poi.rate
+		""",
+		params,
+		as_dict=True,
+	)
+
+	return {row.name: row for row in rows}
+
+
+def _get_row_stock_qty(row):
+	return flt(row.get("stock_qty")) or flt(row.get("qty")) * flt(row.get("conversion_factor") or 1)
+
+
+def _format_item_code(row):
+	return row.get("item_code") or _("Row #{0}").format(row.get("idx"))
