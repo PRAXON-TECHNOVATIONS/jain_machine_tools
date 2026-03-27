@@ -94,6 +94,13 @@ window.jmt_barcode_scanner = {
 
         d.fields_dict.item_table.$wrapper.html(html);
 
+        d.fields_dict.item_table.$wrapper.find(".scan-item").on("change", function() {
+            d.fields_dict.item_table.$wrapper
+                .find(".scan-item")
+                .not(this)
+                .prop("checked", false);
+        });
+
         d.fields_dict.item_table.$wrapper.find("#start-scan").on("click", () => {
             const idx = d.fields_dict.item_table.$wrapper
                 .find(".scan-item:checked")
