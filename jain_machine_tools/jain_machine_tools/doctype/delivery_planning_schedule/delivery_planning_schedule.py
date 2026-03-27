@@ -109,10 +109,18 @@ def get_items_from_sales_order(sales_order):
 		if remaining_qty <= 0:
 			continue
 
-		# Fetch Projected Qty from Bin
+		# Fetch Projected Qty and Actual Qty from Bin
 		projected_qty = 0
+		actual_qty = 0
 		if row.item_code and row.warehouse:
-			projected_qty = frappe.db.get_value("Bin", {"item_code": row.item_code, "warehouse": row.warehouse}, "projected_qty") or 0
+			bin_data = frappe.db.get_value(
+				"Bin",
+				{"item_code": row.item_code, "warehouse": row.warehouse},
+				["projected_qty", "actual_qty"],
+				as_dict=True
+			) or {}
+			projected_qty = bin_data.get("projected_qty", 0)
+			actual_qty = bin_data.get("actual_qty", 0)
 
 		items.append(
 			{
@@ -121,6 +129,7 @@ def get_items_from_sales_order(sales_order):
 				"qty_from_so": row.qty,
 				"warehouse": row.warehouse,
 				"projected_qty": projected_qty,
+				"actual_qty": actual_qty,
 				"delivery_date": default_delivery_date,
 				"planned_qty": remaining_qty,
 				"uom": row.uom,

@@ -53,6 +53,7 @@ function apply_sales_order_data(frm, data) {
 		child.qty_from_so = row.qty_from_so;
 		child.warehouse = row.warehouse;
 		child.projected_qty = row.projected_qty;
+		child.actual_qty = row.actual_qty;
 		child.delivery_date = row.delivery_date;
 		child.planned_qty = row.planned_qty;
 		child.already_planned_qty = row.already_planned_qty;
