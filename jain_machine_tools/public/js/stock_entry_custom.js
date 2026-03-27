@@ -26,6 +26,9 @@ function add_barcode_scan_button(frm) {
             () => window.jmt_barcode_scanner.open_dialog(frm, {
                 title: __('Stock Entry Barcode Scan'),
                 items_field: 'items',
+                get_warehouse(frm, item) {
+                    return item.s_warehouse || frm.doc.from_warehouse || null;
+                },
                 async on_complete(frm, item, scanned) {
                     item.use_serial_batch_fields = 1;
                     item.serial_no = scanned.join('\n');
