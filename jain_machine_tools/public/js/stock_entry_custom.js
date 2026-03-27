@@ -27,7 +27,14 @@ function add_barcode_scan_button(frm) {
                 title: __('Stock Entry Barcode Scan'),
                 items_field: 'items',
                 get_warehouse(frm, item) {
-                    return item.s_warehouse || frm.doc.from_warehouse || null;
+                    return resolve_stock_entry_scan_warehouse(frm, item);
+                },
+                async validate_serial(item, serial_no, frm, warehouse) {
+                    return window.jmt_barcode_scanner.validate_serial_scan(
+                        item.item_code,
+                        serial_no,
+                        warehouse || resolve_stock_entry_scan_warehouse(frm, item)
+                    );
                 },
                 async on_complete(frm, item, scanned) {
                     item.use_serial_batch_fields = 1;
@@ -65,4 +72,8 @@ function setup_destination_warehouse_dropdown(frm) {
             query: 'jain_machine_tools.api.stock_entry.get_warehouse_names_query'
         };
     });
+}
+
+function resolve_stock_entry_scan_warehouse(frm, item) {
+    return item.s_warehouse || frm.doc.from_warehouse || frm.doc.set_warehouse || null;
 }

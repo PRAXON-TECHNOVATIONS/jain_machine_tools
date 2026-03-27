@@ -25,7 +25,14 @@ frappe.ui.form.on('Sales Invoice', {
                 title: __("Sales Invoice Barcode Scan"),
                 items_field: "items",
                 get_warehouse(frm, item) {
-                    return item.warehouse || frm.doc.set_warehouse || null;
+                    return resolve_sales_invoice_scan_warehouse(frm, item);
+                },
+                async validate_serial(item, serial_no, frm, warehouse) {
+                    return window.jmt_barcode_scanner.validate_serial_scan(
+                        item.item_code,
+                        serial_no,
+                        warehouse || resolve_sales_invoice_scan_warehouse(frm, item)
+                    );
                 },
                 async on_complete(frm, item, scanned) {
                     item.use_serial_batch_fields = 1;
@@ -263,4 +270,8 @@ function sync_sales_invoice_item_base_rate(cdt, cdn) {
     if (!row.handling_charges_type) {
         frappe.model.set_value(cdt, cdn, 'base_rate_before_handling_charges', flt(row.rate));
     }
+}
+
+function resolve_sales_invoice_scan_warehouse(frm, item) {
+    return item.warehouse || frm.doc.set_warehouse || null;
 }
