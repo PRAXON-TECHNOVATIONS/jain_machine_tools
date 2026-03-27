@@ -1,3 +1,22 @@
+frappe.ui.form.on('Purchase Invoice', {
+	setup: function(frm) {
+		jain_machine_tools.address_filters.setup_supplier_address_filters(frm);
+	},
+
+	supplier: function(frm) {
+		jain_machine_tools.address_filters.clear_party_addresses(frm, [
+			'supplier_address',
+			'shipping_address',
+			'dispatch_address',
+			'billing_address'
+		]);
+		jain_machine_tools.address_filters.clear_party_contacts(frm, [
+			'contact_person',
+			'customer_contact_person'
+		]);
+	}
+});
+
 // Custom Purchase Invoice Item handlers for handling charges
 frappe.ui.form.on('Purchase Invoice', {
 	async refresh(frm) {

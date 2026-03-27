@@ -358,6 +358,26 @@ def _make_proforma_invoice(source_name, target_doc=None):
 			customer_workflow_state = frappe.db.get_value("Customer", customer, "workflow_state")
 			if customer_workflow_state != "Approved":
 				frappe.throw(_("Please approve Customer {0} before making Proforma Invoice").format(customer))
+
+		address_fields = [
+			"customer_address",
+			"address_display",
+			"contact_person",
+			"contact_display",
+			"contact_mobile",
+			"contact_email",
+			"shipping_address_name",
+			"shipping_address",
+			"company_address",
+			"company_address_display",
+			"company_contact_person",
+			"territory",
+			"customer_group",
+		]
+		for fieldname in address_fields:
+			if source.get(fieldname):
+				target.set(fieldname, source.get(fieldname))
+
 		# Use custom calculation instead of standard ERPNext method
 		if target.get("taxes"):
 			custom_calculate_taxes_and_totals(target)
@@ -374,8 +394,20 @@ def _make_proforma_invoice(source_name, target_doc=None):
 			"Quotation": {
 				"doctype": "Proforma Invoice",
 				"field_map": {
-					# "party_name": "customer",
-					"customer_name": "customer_name"
+					"customer_name": "customer_name",
+					"customer_address": "customer_address",
+					"address_display": "address_display",
+					"contact_person": "contact_person",
+					"contact_display": "contact_display",
+					"contact_mobile": "contact_mobile",
+					"contact_email": "contact_email",
+					"shipping_address_name": "shipping_address_name",
+					"shipping_address": "shipping_address",
+					"company_address": "company_address",
+					"company_address_display": "company_address_display",
+					"company_contact_person": "company_contact_person",
+					"territory": "territory",
+					"customer_group": "customer_group"
 				},
 				"validation": {"docstatus": ["=", 1]}  # Only submitted quotations
 			},

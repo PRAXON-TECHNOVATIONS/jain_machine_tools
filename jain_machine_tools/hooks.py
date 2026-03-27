@@ -35,6 +35,7 @@ app_include_css = [
 ]
 
 app_include_js = ["/assets/jain_machine_tools/js/grid_custom_icons.js?v=1.0.2",
+                  "/assets/jain_machine_tools/js/address_filters.js?v=1.0.0",
                   "/assets/jain_machine_tools/js/html5-qrcode.min.js",
                   "/assets/jain_machine_tools/js/barcode_scanner_utils.js"
 ]
@@ -68,6 +69,7 @@ doctype_js = {
     "Sales Invoice": "public/js/sales_invoice_custom.js",
     "Delivery Planning Schedule": "public/js/delivery_planning_schedule.js",
     "Stock Entry": "public/js/stock_entry_custom.js",
+    "Proforma Invoice": "jain_machine_tools/doctype/proforma_invoice/proforma_invoice.js",
 }
 
 # doctype_list_js = {"doctype" : "public/js/doctype_list.js"}
