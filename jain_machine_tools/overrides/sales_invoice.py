@@ -133,8 +133,8 @@ def _get_total_invoiced_qty_for_dps(dps_name):
 	return {row.delivery_planning_schedule_item: row.total_qty for row in result}
 
 
-@frappe.whitelist()
-def get_fifo_serial_nos_for_items(items):
+# @frappe.whitelist()
+# def get_fifo_serial_nos_for_items(items):
 	"""
 	Fetch FIFO Serial Numbers for multiple items.
 	items: list of dicts with item_code, warehouse, qty

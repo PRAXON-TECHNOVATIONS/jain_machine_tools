@@ -178,7 +178,6 @@ async function sync_invoice_qty_from_delivery_plans(frm) {
         qtyBySoItem[row.sales_order_item] = (qtyBySoItem[row.sales_order_item] || 0) + flt(row.qty);
     });
 
-    const items_to_fetch_serials = [];
     const items_to_remove = [];
 
     (frm.doc.items || []).forEach((row) => {
@@ -195,14 +194,8 @@ async function sync_invoice_qty_from_delivery_plans(frm) {
 
         frappe.model.set_value(row.doctype, row.name, 'qty', qty);
 
-        if (qty > 0 && row.item_code && row.warehouse) {
-            items_to_fetch_serials.push({
-                item_code: row.item_code,
-                warehouse: row.warehouse,
-                qty: qty,
-                so_detail: row.name
-            });
-        }
+        // Serial no auto-fetch disabled for testing.
+        // Keep serial_no empty until barcode scan is done manually.
     });
 
     // Remove items that are no longer in delivery plans
@@ -213,20 +206,21 @@ async function sync_invoice_qty_from_delivery_plans(frm) {
         frm.refresh_field('items');
     }
 
-    if (items_to_fetch_serials.length > 0) {
-        const r = await frappe.call({
-            method: 'jain_machine_tools.overrides.sales_invoice.get_fifo_serial_nos_for_items',
-            args: {
-                items: items_to_fetch_serials
-            }
-        });
+    // Serial no auto-fetch intentionally commented for testing.
+    // if (items_to_fetch_serials.length > 0) {
+    //     const r = await frappe.call({
+    //         method: 'jain_machine_tools.overrides.sales_invoice.get_fifo_serial_nos_for_items',
+    //         args: {
+    //             items: items_to_fetch_serials
+    //         }
+    //     });
 
-        if (r.message) {
-            for (const item_name in r.message) {
-                frappe.model.set_value('Sales Invoice Item', item_name, 'serial_no', r.message[item_name]);
-            }
-        }
-    }
+    //     if (r.message) {
+    //         for (const item_name in r.message) {
+    //             frappe.model.set_value('Sales Invoice Item', item_name, 'serial_no', r.message[item_name]);
+    //         }
+    //     }
+    // }
 }
 
 function resolve_sales_order(frm) {
