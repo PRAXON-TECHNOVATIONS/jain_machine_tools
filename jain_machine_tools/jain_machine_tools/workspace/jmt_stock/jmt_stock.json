@@ -1,0 +1,317 @@
+{
+ "charts": [
+  {
+   "chart_name": "Warehouse wise Stock Value",
+   "label": "Warehouse wise Stock Value"
+  }
+ ],
+ "content": "[{\"id\":\"H-oG1n9bB6\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\">JMT Stock</span>\",\"col\":12}},{\"id\":\"ZGfv4byeFM\",\"type\":\"chart\",\"data\":{\"chart_name\":\"Warehouse wise Stock Value\",\"col\":12}},{\"id\":\"uCFRkXmuX2\",\"type\":\"number_card\",\"data\":{\"number_card_name\":\"Total Stock Value\",\"col\":4}},{\"id\":\"rOz2KhbXfJ\",\"type\":\"number_card\",\"data\":{\"number_card_name\":\"Total Active Items\",\"col\":4}},{\"id\":\"b5wf-tVgQq\",\"type\":\"number_card\",\"data\":{\"number_card_name\":\"Serial Nos (Barcode generated)\",\"col\":4}},{\"id\":\"17tFyazRlF\",\"type\":\"number_card\",\"data\":{\"number_card_name\":\"Total Warehouses\",\"col\":3}},{\"id\":\"NIE-aEWr2i\",\"type\":\"number_card\",\"data\":{\"number_card_name\":\"Standard items\",\"col\":3}},{\"id\":\"2XxZFPbp3-\",\"type\":\"number_card\",\"data\":{\"number_card_name\":\"Non Standard items\",\"col\":3}},{\"id\":\"f8bs4kVY4h\",\"type\":\"number_card\",\"data\":{\"number_card_name\":\"Internal Transfer Stock Entries\",\"col\":3}},{\"id\":\"kwl9IdkK2X\",\"type\":\"spacer\",\"data\":{\"col\":12}},{\"id\":\"YX1x3EEdmY\",\"type\":\"card\",\"data\":{\"card_name\":\"Masters\",\"col\":4}},{\"id\":\"fwPJcvnIHS\",\"type\":\"card\",\"data\":{\"card_name\":\"Stock Reports\",\"col\":4}},{\"id\":\"7yPQ1nIMbZ\",\"type\":\"card\",\"data\":{\"card_name\":\"Non Standard Item Catalogue\",\"col\":4}},{\"id\":\"YOzw24Q4vt\",\"type\":\"card\",\"data\":{\"card_name\":\"Reports\",\"col\":4}}]",
+ "creation": "2026-03-26 23:00:07.770631",
+ "custom_blocks": [],
+ "docstatus": 0,
+ "doctype": "Workspace",
+ "for_user": "",
+ "hide_custom": 0,
+ "idx": 0,
+ "indicator_color": "green",
+ "is_hidden": 0,
+ "label": "JMT Stock",
+ "links": [
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Masters",
+   "link_count": 7,
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Item",
+   "link_count": 0,
+   "link_to": "Item",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Non Standard Item Creation",
+   "link_count": 0,
+   "link_to": "Non Standard Item Creation",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Non Standard Price Log Entry",
+   "link_count": 0,
+   "link_to": "Non Standard Price Log Entry",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Barcode Printing",
+   "link_count": 0,
+   "link_to": "Barcode Printing",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Stock Entry",
+   "link_count": 0,
+   "link_to": "Stock Entry",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Purchase Receipt",
+   "link_count": 0,
+   "link_to": "Purchase Receipt",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Sales Invoice",
+   "link_count": 0,
+   "link_to": "Sales Invoice",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Stock Reports",
+   "link_count": 6,
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "Stock Ledger",
+   "link_count": 0,
+   "link_to": "Stock Ledger",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "Stock Balance",
+   "link_count": 0,
+   "link_to": "Stock Balance",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "Stock Projected Qty",
+   "link_count": 0,
+   "link_to": "Stock Projected Qty",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "Stock Ageing",
+   "link_count": 0,
+   "link_to": "Stock Ageing",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "Item Price Stock",
+   "link_count": 0,
+   "link_to": "Item Price Stock",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "Warehouse Wise Stock Balance",
+   "link_count": 0,
+   "link_to": "Warehouse Wise Stock Balance",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Non Standard Item Catalogue",
+   "link_count": 2,
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Motor Parameter Master",
+   "link_count": 0,
+   "link_to": "Motor Parameter Master",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Brand Motor Configuration",
+   "link_count": 0,
+   "link_to": "Brand Motor Configuration",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Reports",
+   "link_count": 6,
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Stock Ledger",
+   "link_count": 0,
+   "link_to": "Stock Ledger",
+   "link_type": "Report",
+   "onboard": 0,
+   "report_ref_doctype": "Stock Ledger Entry",
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Stock Balance",
+   "link_count": 0,
+   "link_to": "Stock Balance",
+   "link_type": "Report",
+   "onboard": 0,
+   "report_ref_doctype": "Stock Ledger Entry",
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Stock Projected Qty",
+   "link_count": 0,
+   "link_to": "Asset Depreciation Ledger",
+   "link_type": "Report",
+   "onboard": 0,
+   "report_ref_doctype": "Asset",
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Stock Ageing",
+   "link_count": 0,
+   "link_to": "Stock Ageing",
+   "link_type": "Report",
+   "onboard": 0,
+   "report_ref_doctype": "Item",
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "Item Price Stock\"",
+   "link_count": 0,
+   "link_to": "Item Price Stock",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "Warehouse Wise Stock Balance",
+   "link_count": 0,
+   "link_to": "Warehouse Wise Stock Balance",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  }
+ ],
+ "modified": "2026-03-27 08:29:28.030586",
+ "modified_by": "Administrator",
+ "module": "Jain Machine Tools",
+ "name": "JMT Stock",
+ "number_cards": [
+  {
+   "label": "Standard items",
+   "number_card_name": "Standard items"
+  },
+  {
+   "label": "Total Active Items",
+   "number_card_name": "Total Active Items"
+  },
+  {
+   "label": "Total Stock Value",
+   "number_card_name": "Total Stock Value"
+  },
+  {
+   "label": "Non Standard items",
+   "number_card_name": "Non Standard items"
+  },
+  {
+   "label": "Total Warehouses",
+   "number_card_name": "Total Warehouses"
+  },
+  {
+   "label": "Serial Nos (Barcode generated)",
+   "number_card_name": "Serial Nos (Barcode generated)"
+  },
+  {
+   "label": "Internal Transfer Stock Entries",
+   "number_card_name": "Internal Transfer Stock Entries"
+  }
+ ],
+ "owner": "Administrator",
+ "parent_page": "",
+ "public": 1,
+ "quick_lists": [],
+ "roles": [
+  {
+   "role": "JMT Stock User"
+  }
+ ],
+ "sequence_id": 28.0,
+ "shortcuts": [],
+ "title": "JMT Stock"
+}
