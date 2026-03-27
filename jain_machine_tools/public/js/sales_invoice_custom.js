@@ -24,6 +24,9 @@ frappe.ui.form.on('Sales Invoice', {
             () => window.jmt_barcode_scanner.open_dialog(frm, {
                 title: __("Sales Invoice Barcode Scan"),
                 items_field: "items",
+                get_warehouse(frm, item) {
+                    return item.warehouse || frm.doc.set_warehouse || null;
+                },
                 async on_complete(frm, item, scanned) {
                     item.use_serial_batch_fields = 1;
                     item.serial_no = scanned.join("\n");

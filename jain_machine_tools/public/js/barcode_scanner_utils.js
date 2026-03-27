@@ -71,7 +71,8 @@ window.jmt_barcode_scanner = {
             html += `
                 <tr>
                     <td>
-                        <input type="checkbox" 
+                        <input type="radio" 
+                            name="scan-item-select"
                             class="scan-item" 
                             data-idx="${i}" 
                             ${obj.completed ? "disabled" : ""}>
@@ -163,13 +164,16 @@ window.jmt_barcode_scanner = {
             async (decodedText) => {
                 if (is_validating_scan || scanned.includes(decodedText) || scanned.length >= required_qty) return;
 
-                if (this.is_duplicate_serial_for_same_item(frm, options.items_field, item, decodedText)) {
-                    frappe.msgprint(__("This serial number is already used for the same item"));
+                if (this.is_duplicate_serial_in_document(frm, options.items_field, item, decodedText)) {
+                    frappe.msgprint(__("Duplicate serial number. This serial is already scanned in this document"));
                     return;
                 }
 
                 is_validating_scan = true;
-                const is_valid = await (options.validate_serial ? options.validate_serial(item.item_code, decodedText) : this.validate_serial_scan(item.item_code, decodedText));
+                const warehouse = options.get_warehouse ? options.get_warehouse(frm, item) : null;
+                const is_valid = await (options.validate_serial
+                    ? options.validate_serial(item, decodedText, frm, warehouse)
+                    : this.validate_serial_scan(item.item_code, decodedText, warehouse));
                 is_validating_scan = false;
 
                 if (!is_valid) return;
@@ -255,8 +259,8 @@ window.jmt_barcode_scanner = {
                     input.val("").focus();
                     return;
                 }
-                if (this.is_duplicate_serial_for_same_item(frm, options.items_field, item, serial)) {
-                    frappe.msgprint(__("This serial number is already used for the same item"));
+                if (this.is_duplicate_serial_in_document(frm, options.items_field, item, serial)) {
+                    frappe.msgprint(__("Duplicate serial number. This serial is already scanned in this document"));
                     input.val("").focus();
                     return;
                 }
@@ -266,7 +270,10 @@ window.jmt_barcode_scanner = {
                     return;
                 }
 
-                const is_valid = await (options.validate_serial ? options.validate_serial(item.item_code, serial) : this.validate_serial_scan(item.item_code, serial));
+                const warehouse = options.get_warehouse ? options.get_warehouse(frm, item) : null;
+                const is_valid = await (options.validate_serial
+                    ? options.validate_serial(item, serial, frm, warehouse)
+                    : this.validate_serial_scan(item.item_code, serial, warehouse));
                 if (!is_valid) {
                     input.val("").focus();
                     return;
@@ -310,10 +317,10 @@ window.jmt_barcode_scanner = {
         return (serial_no || "").split("\n").map(v => v.trim()).filter(Boolean);
     },
 
-    is_duplicate_serial_for_same_item(frm, items_field, current_item, serial_no) {
+    is_duplicate_serial_in_document(frm, items_field, current_item, serial_no) {
         const item_rows = frm.doc[items_field || "items"] || [];
         return item_rows.some((row) => {
-            if (!row || row.name === current_item.name || row.item_code !== current_item.item_code) {
+            if (!row || row.name === current_item.name) {
                 return false;
             }
 
@@ -321,8 +328,8 @@ window.jmt_barcode_scanner = {
         });
     },
 
-    async validate_serial_scan(item_code, serial_no) {
-        const r = await frappe.db.get_value("Serial No", { name: serial_no }, ["name", "item_code"]);
+    async validate_serial_scan(item_code, serial_no, warehouse = null) {
+        const r = await frappe.db.get_value("Serial No", { name: serial_no }, ["name", "item_code", "warehouse", "status"]);
         const serial_doc = r?.message;
 
         if (!serial_doc?.name || serial_doc.item_code !== item_code) {
@@ -333,6 +340,25 @@ window.jmt_barcode_scanner = {
             });
             return false;
         }
+
+        if (serial_doc.status !== "Active") {
+            frappe.msgprint({
+                title: __("Inactive Serial"),
+                indicator: "red",
+                message: __("Serial No {0} is not Active", [serial_no]),
+            });
+            return false;
+        }
+
+        if (warehouse && serial_doc.warehouse !== warehouse) {
+            frappe.msgprint({
+                title: __("Invalid Warehouse"),
+                indicator: "red",
+                message: __("Serial No {0} is not available in warehouse {1}", [serial_no, warehouse]),
+            });
+            return false;
+        }
+
         return true;
     }
 };

@@ -87,30 +87,14 @@ function get_serial_list(serial_no) {
     return (serial_no || "").split("\n").map((value) => value.trim()).filter(Boolean);
 }
 
-function is_duplicate_serial_for_same_item(frm, current_item, serial_no) {
+function is_duplicate_serial_in_document(frm, current_item, serial_no) {
     return (frm.doc.items || []).some((row) => {
-        if (!row || row.name === current_item.name || row.item_code !== current_item.item_code) {
+        if (!row || row.name === current_item.name) {
             return false;
         }
 
         return get_serial_list(row.serial_no).includes(serial_no);
     });
-}
-
-async function validate_serial_scan(item_code, serial_no) {
-    const r = await frappe.db.get_value("Serial No", { name: serial_no }, ["name", "item_code"]);
-    const serial_doc = r?.message;
-
-    if (!serial_doc?.name || serial_doc.item_code !== item_code) {
-        frappe.msgprint({
-            title: __("Invalid Scan"),
-            indicator: "red",
-            message: __("Enter valid Serial number"),
-        });
-        return false;
-    }
-
-    return true;
 }
 
 // ITEM TABLE
@@ -133,7 +117,8 @@ function render_item_table(d, frm, items) {
         html += `
             <tr>
                 <td>
-                    <input type="checkbox"
+                    <input type="radio"
+                        name="scan-item-select"
                         class="scan-item"
                         data-idx="${i}"
                         ${obj.completed ? "disabled" : ""}>
@@ -263,23 +248,19 @@ async function scan_item(d, frm, items, idx) {
         (decodedText) => {
             if (scanned.includes(decodedText)) return;
             if (scanned.length >= required_qty) return;
-            if (is_duplicate_serial_for_same_item(frm, item, decodedText)) {
-                frappe.msgprint(__("This serial number is already used for the same item"));
+            if (is_duplicate_serial_in_document(frm, item, decodedText)) {
+                frappe.msgprint(__("Duplicate serial number. This serial is already scanned in this document"));
                 return;
             }
 
-            validate_serial_scan(item.item_code, decodedText).then((is_valid) => {
-                if (!is_valid) return;
+            scanned.push(decodedText);
+            count_el.text(scanned.length);
+            render_scanned();
 
-                scanned.push(decodedText);
-                count_el.text(scanned.length);
-                render_scanned();
-
-                if (scanned.length === required_qty) {
-                    complete_btn.prop("disabled", false);
-                    scanner.stop();
-                }
-            });
+            if (scanned.length === required_qty) {
+                complete_btn.prop("disabled", false);
+                scanner.stop();
+            }
         }
     );
 
@@ -353,7 +334,7 @@ function start_gun_scan(d, frm, items, idx) {
 
     input.focus();
 
-    input.on("keydown", async function(e) {
+    input.on("keydown", function(e) {
 
         if (e.key === "Enter") {
 
@@ -368,19 +349,14 @@ function start_gun_scan(d, frm, items, idx) {
                 $(this).val("");
                 return;
             }
-            if (is_duplicate_serial_for_same_item(frm, item, serial)) {
-                frappe.msgprint(__("This serial number is already used for the same item"));
+            if (is_duplicate_serial_in_document(frm, item, serial)) {
+                frappe.msgprint(__("Duplicate serial number. This serial is already scanned in this document"));
                 $(this).val("");
                 return;
             }
             // qty limit check
             if (scanned.length >= required_qty) {
                 frappe.msgprint("Required quantity already scanned");
-                $(this).val("");
-                return;
-            }
-            const is_valid = await validate_serial_scan(item.item_code, serial);
-            if (!is_valid) {
                 $(this).val("");
                 return;
             }

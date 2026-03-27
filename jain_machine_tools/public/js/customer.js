@@ -1,15 +1,15 @@
 frappe.ui.form.on('Customer', {
-    onload: function(frm) {
+    onload: function (frm) {
 
-        frm.set_query("custom_rm", function() {
+        frm.set_query("custom_rm", function () {
             return {
                 filters: {
-                    designation: "Relationship Manager"
+                    designation: ["in", ["Relationship Manager", "Sales Head"]]
                 }
             };
         });
 
-        frm.set_query("custom_sales_coordinator", function() {
+        frm.set_query("custom_sales_coordinator", function () {
             return {
                 filters: {
                     designation: "Sales Coordinator"
