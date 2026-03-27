@@ -163,6 +163,11 @@ window.jmt_barcode_scanner = {
             async (decodedText) => {
                 if (is_validating_scan || scanned.includes(decodedText) || scanned.length >= required_qty) return;
 
+                if (this.is_duplicate_serial_for_same_item(frm, options.items_field, item, decodedText)) {
+                    frappe.msgprint(__("This serial number is already used for the same item"));
+                    return;
+                }
+
                 is_validating_scan = true;
                 const is_valid = await (options.validate_serial ? options.validate_serial(item.item_code, decodedText) : this.validate_serial_scan(item.item_code, decodedText));
                 is_validating_scan = false;
@@ -250,6 +255,11 @@ window.jmt_barcode_scanner = {
                     input.val("").focus();
                     return;
                 }
+                if (this.is_duplicate_serial_for_same_item(frm, options.items_field, item, serial)) {
+                    frappe.msgprint(__("This serial number is already used for the same item"));
+                    input.val("").focus();
+                    return;
+                }
                 if (scanned.length >= required_qty) {
                     frappe.msgprint(__("Required quantity already scanned"));
                     input.val("").focus();
@@ -300,6 +310,17 @@ window.jmt_barcode_scanner = {
         return (serial_no || "").split("\n").map(v => v.trim()).filter(Boolean);
     },
 
+    is_duplicate_serial_for_same_item(frm, items_field, current_item, serial_no) {
+        const item_rows = frm.doc[items_field || "items"] || [];
+        return item_rows.some((row) => {
+            if (!row || row.name === current_item.name || row.item_code !== current_item.item_code) {
+                return false;
+            }
+
+            return this.get_serial_list(row.serial_no).includes(serial_no);
+        });
+    },
+
     async validate_serial_scan(item_code, serial_no) {
         const r = await frappe.db.get_value("Serial No", { name: serial_no }, ["name", "item_code"]);
         const serial_doc = r?.message;
@@ -308,7 +329,7 @@ window.jmt_barcode_scanner = {
             frappe.msgprint({
                 title: __("Invalid Scan"),
                 indicator: "red",
-                message: __("Scan actual item code"),
+                message: __("Enter valid Serial number"),
             });
             return false;
         }
