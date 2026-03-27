@@ -1,4 +1,21 @@
 frappe.ui.form.on("Purchase Receipt", {
+    setup(frm) {
+        jain_machine_tools.address_filters.setup_supplier_address_filters(frm);
+    },
+
+    supplier(frm) {
+        jain_machine_tools.address_filters.clear_party_addresses(frm, [
+            'supplier_address',
+            'shipping_address',
+            'dispatch_address',
+            'billing_address'
+        ]);
+        jain_machine_tools.address_filters.clear_party_contacts(frm, [
+            'contact_person',
+            'customer_contact_person'
+        ]);
+    },
+
     refresh(frm) {
         if (frm.doc.docstatus !== 0 || !frm.doc.name) return;
         if (frm.__barcode_scan_added) return;

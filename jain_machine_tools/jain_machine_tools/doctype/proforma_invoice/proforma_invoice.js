@@ -8,10 +8,30 @@ frappe.ui.form.on('Proforma Invoice', {
 			'Sales Order': 'Sales Order'
 		};
 
+		jain_machine_tools.address_filters.setup_customer_address_filters(frm);
+
 		frm.set_query("customer", function() {
 			return {
 				filters: {
 					"disabled": 0
+				}
+			};
+		});
+
+		frm.set_query("contact_person", function() {
+			if (!frm.doc.customer) {
+				return {
+					filters: {
+						name: ['in', []]
+					}
+				};
+			}
+
+			return {
+				query: 'frappe.contacts.doctype.contact.contact.contact_query',
+				filters: {
+					link_doctype: 'Customer',
+					link_name: frm.doc.customer
 				}
 			};
 		});
@@ -62,6 +82,21 @@ frappe.ui.form.on('Proforma Invoice', {
 				frappe.set_route("Form", "Quotation", frm.doc.quotation);
 			});
 		}
+	},
+
+	onload: async function(frm) {
+		await jain_machine_tools.address_filters.copy_quotation_addresses_to_proforma(frm);
+	},
+
+	customer: function(frm) {
+		jain_machine_tools.address_filters.clear_party_addresses(frm, [
+			'customer_address',
+			'shipping_address_name',
+			'dispatch_address_name'
+		]);
+		jain_machine_tools.address_filters.clear_party_contacts(frm, [
+			'contact_person'
+		]);
 	},
 
 	items_add: function(frm, cdt, cdn) {

@@ -1,4 +1,8 @@
 frappe.ui.form.on('Sales Invoice', {
+    setup: function(frm) {
+        jain_machine_tools.address_filters.setup_customer_address_filters(frm);
+    },
+
     onload: function(frm) {
         frm.set_value('update_stock', 1);
         toggle_delivery_plan_section(frm);
@@ -41,6 +45,16 @@ frappe.ui.form.on('Sales Invoice', {
     sales_order: function(frm) {
         toggle_delivery_plan_section(frm);
         maybe_load_delivery_plans(frm);
+    },
+    customer: function(frm) {
+        jain_machine_tools.address_filters.clear_party_addresses(frm, [
+            'customer_address',
+            'shipping_address_name',
+            'dispatch_address_name'
+        ]);
+        jain_machine_tools.address_filters.clear_party_contacts(frm, [
+            'contact_person'
+        ]);
     },
     items_add: function(frm) {
         maybe_load_delivery_plans(frm);
