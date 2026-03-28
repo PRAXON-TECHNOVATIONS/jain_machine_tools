@@ -125,35 +125,56 @@ class NonStandardItemCreation(Document):
 
     def create_item(self):
         """Create a new Item from the Non Standard Item Creation"""
-        # Check if item already exists
         if frappe.db.exists("Item", self.new_item_code):
             frappe.msgprint(f"Item {self.new_item_code} already exists")
             return
 
-        # Get HSN/SAC code from base item
-        base_item_doc = frappe.get_doc("Item", self.base_item)
-        gst_hsn_code = base_item_doc.gst_hsn_code if hasattr(base_item_doc, 'gst_hsn_code') else None
+        base = frappe.get_doc("Item", self.base_item)
 
-        # Create new Item
         item = frappe.new_doc("Item")
         item.item_code = self.new_item_code
         item.item_name = self.new_item_code
-        item.item_group = self.item_group
+        item.is_non_standard = 1
+        item.valuation_rate = self.valuation_price
+
+        # JMT-specific fields
         item.brand = self.brand
         item.frame_size = self.frame_size
         item.is_flameproof = self.is_flameproof_flp
-        item.is_non_standard = 1
-        item.stock_uom = "Nos"  # Default UOM
-        item.is_stock_item = 1
-        item.valuation_rate = self.valuation_price
 
-        # Set HSN/SAC code from base item
-        if gst_hsn_code:
-            item.gst_hsn_code = gst_hsn_code
+        # --- Copy from base item ---
+        item.item_group      = base.item_group
+        item.stock_uom       = base.stock_uom
+        item.gst_hsn_code    = base.gst_hsn_code
+        item.has_batch_no    = base.has_batch_no
+        item.has_serial_no   = base.has_serial_no
+        item.is_stock_item   = base.is_stock_item
+        item.is_sales_item   = base.is_sales_item
+        item.is_purchase_item = base.is_purchase_item
 
-        # Insert the item
+        for row in base.get("item_defaults") or []:
+            item.append("item_defaults", {
+                "company":                    row.company,
+                "default_warehouse":          row.default_warehouse,
+                "default_price_list":         row.default_price_list,
+                "buying_cost_center":         row.buying_cost_center,
+                "selling_cost_center":        row.selling_cost_center,
+                "expense_account":            row.expense_account,
+                "income_account":             row.income_account,
+                "default_supplier":           row.default_supplier,
+                "default_discount_account":   row.default_discount_account,
+            })
+
+        for row in base.get("taxes") or []:
+            item.append("taxes", {
+                "item_tax_template": row.item_tax_template,
+                "tax_category":      row.tax_category,
+                "valid_from":        row.valid_from,
+                "maximum_net_rate":  row.maximum_net_rate,
+                "minimum_net_rate":  row.minimum_net_rate,
+            })
+
         item.insert(ignore_permissions=True)
-
         frappe.msgprint(f"Item {self.new_item_code} created successfully", indicator="green")
 
     # ---------------------------------------------------------

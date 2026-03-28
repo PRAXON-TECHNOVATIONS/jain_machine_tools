@@ -252,13 +252,41 @@ class NonStandardItemConfigurator(Document):
             new_item = frappe.new_doc("Item")
             new_item.item_code = new_code
             new_item.item_name = f"{base_doc.item_name} (Non-Std)"
-            new_item.item_group = base_doc.item_group
-            new_item.gst_hsn_code = base_doc.gst_hsn_code
-            new_item.stock_uom = base_doc.stock_uom
-            # Description wo HTML wala use hoga jo fix kiya tha
             new_item.description = self.final_description
             new_item.brand = self.manufacturer
-            new_item.is_stock_item = 1
+
+            # --- Copy from base item ---
+            new_item.item_group       = base_doc.item_group
+            new_item.stock_uom        = base_doc.stock_uom
+            new_item.gst_hsn_code     = base_doc.gst_hsn_code
+            new_item.has_batch_no     = base_doc.has_batch_no
+            new_item.has_serial_no    = base_doc.has_serial_no
+            new_item.is_stock_item    = base_doc.is_stock_item
+            new_item.is_sales_item    = base_doc.is_sales_item
+            new_item.is_purchase_item = base_doc.is_purchase_item
+
+            for row in base_doc.get("item_defaults") or []:
+                new_item.append("item_defaults", {
+                    "company":                    row.company,
+                    "default_warehouse":          row.default_warehouse,
+                    "default_price_list":         row.default_price_list,
+                    "buying_cost_center":         row.buying_cost_center,
+                    "selling_cost_center":        row.selling_cost_center,
+                    "expense_account":            row.expense_account,
+                    "income_account":             row.income_account,
+                    "default_supplier":           row.default_supplier,
+                    "default_discount_account":   row.default_discount_account,
+                })
+
+            for row in base_doc.get("taxes") or []:
+                new_item.append("taxes", {
+                    "item_tax_template": row.item_tax_template,
+                    "tax_category":      row.tax_category,
+                    "valid_from":        row.valid_from,
+                    "maximum_net_rate":  row.maximum_net_rate,
+                    "minimum_net_rate":  row.minimum_net_rate,
+                })
+
             new_item.insert(ignore_permissions=True)
             frappe.msgprint(f"Created New Item: <b>{new_code}</b>")
 
