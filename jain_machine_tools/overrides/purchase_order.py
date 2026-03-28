@@ -39,45 +39,23 @@ class CustomPurchaseTaxesAndTotals(calculate_taxes_and_totals):
 
 	def calculate_item_values(self):
 		"""
-		Override to add handling charges calculation after discount
+		Override to add handling charges calculation after discount.
 		Sequence: price_list_rate → margin → discount → handling_charges → rate
+
+		Fix: ERPNext only recalculates item.rate from price_list_rate when item.rate
+		is falsy (taxes_and_totals.py: `if not item.rate`). Pre-setting item.rate
+		causes discounts to be silently skipped. Clear item.rate first so ERPNext
+		always applies price_list_rate + discount correctly.
 		"""
-		# First, temporarily remove handling charges from rate if they exist
-		# This ensures parent calculation works with the base rate
 		for item in self.doc.get("items"):
-			handling_charges_type = item.get("handling_charges_type")
-			base_rate_stored = flt(item.get("base_rate_before_handling_charges"))
+			if item.price_list_rate:
+				item.rate = 0
 
-			# If base rate is stored, always restore it before calculation
-			# This handles both: active handling charges AND when type is cleared to 0
-			if base_rate_stored > 0:
-				item.rate = base_rate_stored
-				item.amount = flt(item.rate * item.qty, item.precision("amount"))
-
-		# Call parent method (handles margin and discount)
 		super(CustomPurchaseTaxesAndTotals, self).calculate_item_values()
 
-		# Store rate before handling charges for each item
 		for item in self.doc.get("items"):
-			handling_charges_type = item.get("handling_charges_type")
-			base_rate_stored = flt(item.get("base_rate_before_handling_charges"))
+			item.base_rate_before_handling_charges = flt(item.rate)
 
-			# Determine if we should update the stored base rate
-			should_update_base = False
-
-			if not base_rate_stored:
-				# First time or field is empty - store the rate
-				should_update_base = True
-			elif not handling_charges_type:
-				# No handling charges configured - update base rate
-				# This allows manual rate changes to work properly
-				should_update_base = True
-
-			# Update the base rate if needed
-			if should_update_base:
-				item.base_rate_before_handling_charges = flt(item.rate)
-
-		# Now apply handling charges to each item
 		for item in self.doc.get("items"):
 			self.calculate_handling_charges(item)
 
