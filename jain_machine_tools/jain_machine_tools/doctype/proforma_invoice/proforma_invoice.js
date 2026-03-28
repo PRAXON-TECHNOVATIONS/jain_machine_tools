@@ -89,6 +89,13 @@ frappe.ui.form.on('Proforma Invoice', {
 	},
 
 	customer: function(frm) {
+		if (frm.doc.customer) {
+			frappe.db.get_value('Customer', frm.doc.customer, 'custom_rm', (r) => {
+				frm.set_value('custom_rm', r && r.custom_rm ? r.custom_rm : '');
+			});
+		} else {
+			frm.set_value('custom_rm', '');
+		}
 		jain_machine_tools.address_filters.clear_party_addresses(frm, [
 			'customer_address',
 			'shipping_address_name',

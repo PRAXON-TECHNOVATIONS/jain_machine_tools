@@ -63,12 +63,10 @@ def make_sales_order(source_name, target_doc=None):
 
 	def set_missing_values(source, target):
 		"""Set missing values in target Sales Order"""
-		# Import custom calculation method
 		from jain_machine_tools.overrides.quotation import custom_calculate_taxes_and_totals
 
 		target.run_method("set_missing_values")
-
-		# Use custom calculation for handling charges support
+		target.custom_pi_created = 1
 		custom_calculate_taxes_and_totals(target)
 
 	def update_item(obj, target, source_parent):
@@ -91,7 +89,8 @@ def make_sales_order(source_name, target_doc=None):
 				"doctype": "Sales Order",
 				"validation": {"docstatus": ["=", 1]},
 				"field_map": {
-					"quotation": "quotation"  # Carry forward quotation reference
+					"quotation": "quotation",   # Carry forward quotation reference
+					"custom_rm": "custom_rm"    # Carry forward RM
 				}
 			},
 			"Proforma Invoice Item": {

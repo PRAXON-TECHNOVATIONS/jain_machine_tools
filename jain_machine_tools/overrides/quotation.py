@@ -273,13 +273,32 @@ def _insert_item_price_for_standard_items(args):
 		)
 
 
+# RM helper
+def _fetch_rm_from_customer(doc):
+	"""
+	Fetch custom_rm (Relation Manager) from Customer master and set it on the doc.
+	Quotation uses party_name; all others use customer.
+	"""
+	customer = None
+	if doc.doctype == "Quotation":
+		if doc.get("quotation_to") == "Customer":
+			customer = doc.get("party_name")
+	else:
+		customer = doc.get("customer")
+
+	if customer:
+		doc.custom_rm = frappe.db.get_value("Customer", customer, "custom_rm") or None
+	else:
+		doc.custom_rm = None
+
+
 # Validation hooks
 def validate_quotation(doc, method=None):
 	"""
 	Hook for Quotation validation
 	Replaces standard taxes_and_totals calculation with custom one
 	"""
-	# Use custom calculation class
+	_fetch_rm_from_customer(doc)
 	custom_calculate_taxes_and_totals(doc)
 
 
@@ -287,6 +306,7 @@ def validate_sales_order(doc, method=None):
 	"""
 	Hook for Sales Order validation
 	"""
+	_fetch_rm_from_customer(doc)
 	custom_calculate_taxes_and_totals(doc)
 
 
@@ -308,6 +328,7 @@ def validate_proforma_invoice(doc, method=None):
 	"""
 	Hook for Proforma Invoice validation
 	"""
+	_fetch_rm_from_customer(doc)
 	custom_calculate_taxes_and_totals(doc)
 
 
@@ -407,7 +428,8 @@ def _make_proforma_invoice(source_name, target_doc=None):
 					"company_address_display": "company_address_display",
 					"company_contact_person": "company_contact_person",
 					"territory": "territory",
-					"customer_group": "customer_group"
+					"customer_group": "customer_group",
+					"custom_rm": "custom_rm"
 				},
 				"validation": {"docstatus": ["=", 1]}  # Only submitted quotations
 			},

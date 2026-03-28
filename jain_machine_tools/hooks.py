@@ -343,6 +343,25 @@ standard_queries = {
 
 fixtures = [
     {
+        "doctype": "Number Card",
+        "filters": [
+            ["name", "in", (
+                "JMT Sales Today",
+                "JMT Sales This Week",
+                "JMT Sales This Month",
+                "JMT Sales This Year",
+            )],
+        ],
+    },
+    {
+        "doctype": "Property Setter",
+        "filters": [
+            ["doc_type", "=", "Sales Order"],
+            ["field_name", "in", ("billing_status", "delivery_status")],
+            ["property", "=", "in_list_view"],
+        ],
+    },
+    {
         "doctype": "Workflow",
         "filters": [
             [

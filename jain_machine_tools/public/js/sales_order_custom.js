@@ -18,6 +18,7 @@ frappe.ui.form.on('Sales Order', {
 	},
 
 	customer: function(frm) {
+		jmt_fetch_rm_so(frm, frm.doc.customer);
 		jain_machine_tools.address_filters.clear_party_addresses(frm, [
 			'customer_address',
 			'shipping_address_name',
@@ -86,3 +87,13 @@ frappe.ui.form.on('Sales Order Item', {
 		frm.script_manager.trigger('calculate_taxes_and_totals');
 	}
 });
+
+function jmt_fetch_rm_so(frm, customer) {
+	if (!customer) {
+		frm.set_value('custom_rm', '');
+		return;
+	}
+	frappe.db.get_value('Customer', customer, 'custom_rm', (r) => {
+		frm.set_value('custom_rm', r && r.custom_rm ? r.custom_rm : '');
+	});
+}
