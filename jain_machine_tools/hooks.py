@@ -215,7 +215,11 @@ doc_events = {
         "validate": "jain_machine_tools.overrides.purchase_order.validate_purchase_invoice"
     },
     "Purchase Receipt": {
-        "validate": "jain_machine_tools.overrides.purchase_order.validate_purchase_receipt"
+        "validate": [
+            "jain_machine_tools.api.serial_case_hooks.normalize_item_serial_fields",
+            "jain_machine_tools.api.serial_case_hooks.validate_purchase_receipt_serial_conflicts",
+            "jain_machine_tools.overrides.purchase_order.validate_purchase_receipt"
+        ]
     },
     "Material Request": {
         "before_insert": "jain_machine_tools.patches.reorder_override.set_reorder_field"
@@ -223,7 +227,11 @@ doc_events = {
     "Supplier": {
         "before_save": "jain_machine_tools.api.supplier_gstin_check.check_duplicate_gstin"
     },
-    "Serial No": {"on_update": "jain_machine_tools.api.serial_no_hooks.on_update"},
+    "Serial No": {
+        "validate": "jain_machine_tools.api.serial_case_hooks.normalize_serial_doc",
+        "before_insert": "jain_machine_tools.api.serial_case_hooks.normalize_serial_doc",
+        "on_update": "jain_machine_tools.api.serial_no_hooks.on_update"
+    },
     "Quotation": {
         "validate": "jain_machine_tools.overrides.quotation.validate_quotation"
     },
@@ -231,12 +239,18 @@ doc_events = {
         "validate": "jain_machine_tools.overrides.quotation.validate_sales_order"
     },
     "Sales Invoice": {
-        "validate": "jain_machine_tools.overrides.sales_invoice.validate_sales_invoice",
+        "validate": [
+            "jain_machine_tools.api.serial_case_hooks.normalize_item_serial_fields",
+            "jain_machine_tools.overrides.sales_invoice.validate_sales_invoice"
+        ],
         "on_submit": [
             "jain_machine_tools.api.sales_invoice_warranty.update_serial_warranty_on_submit",
             "jain_machine_tools.overrides.sales_invoice.update_delivery_planning_schedule_status"
         ],
         "on_cancel": "jain_machine_tools.overrides.sales_invoice.update_delivery_planning_schedule_status"
+    },
+    "Stock Entry": {
+        "validate": "jain_machine_tools.api.serial_case_hooks.normalize_item_serial_fields"
     },
     "Delivery Note": {
         "validate": "jain_machine_tools.overrides.quotation.validate_delivery_note"

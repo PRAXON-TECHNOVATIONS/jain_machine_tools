@@ -84,7 +84,14 @@ async function open_barcode_scan_dialog(frm) {
 }
 
 function get_serial_list(serial_no) {
-    return (serial_no || "").split("\n").map((value) => value.trim()).filter(Boolean);
+    return (serial_no || "")
+        .split("\n")
+        .map((value) => normalize_serial_no(value))
+        .filter(Boolean);
+}
+
+function normalize_serial_no(serial_no) {
+    return (serial_no || "").trim().toUpperCase();
 }
 
 function is_duplicate_serial_in_document(frm, current_item, serial_no) {
@@ -95,6 +102,11 @@ function is_duplicate_serial_in_document(frm, current_item, serial_no) {
 
         return get_serial_list(row.serial_no).includes(serial_no);
     });
+}
+
+async function get_existing_serial_item_code(serial_no) {
+    const response = await frappe.db.get_value("Serial No", { name: serial_no }, ["item_code"]);
+    return response?.message?.item_code || null;
 }
 
 // ITEM TABLE
@@ -245,15 +257,25 @@ async function scan_item(d, frm, items, idx) {
             qrbox: { width: 280, height: 120 },
             disableFlip: true,
         },
-        (decodedText) => {
-            if (scanned.includes(decodedText)) return;
+        async (decodedText) => {
+            const serial = normalize_serial_no(decodedText);
+
+            if (!serial) return;
+            if (scanned.includes(serial)) return;
             if (scanned.length >= required_qty) return;
-            if (is_duplicate_serial_in_document(frm, item, decodedText)) {
+            if (is_duplicate_serial_in_document(frm, item, serial)) {
                 frappe.msgprint(__("Duplicate serial number. This serial is already scanned in this document"));
                 return;
             }
+            const existingItemCode = await get_existing_serial_item_code(serial);
+            if (existingItemCode) {
+                frappe.msgprint(
+                    __("Serial No {0} already exists in system for Item {1}", [serial, existingItemCode])
+                );
+                return;
+            }
 
-            scanned.push(decodedText);
+            scanned.push(serial);
             count_el.text(scanned.length);
             render_scanned();
 
@@ -334,13 +356,13 @@ function start_gun_scan(d, frm, items, idx) {
 
     input.focus();
 
-    input.on("keydown", function(e) {
+    input.on("keydown", async function(e) {
 
         if (e.key === "Enter") {
 
             e.preventDefault();
 
-            let serial = $(this).val().trim();
+            let serial = normalize_serial_no($(this).val());
 
             if (!serial) return;
 
@@ -351,6 +373,14 @@ function start_gun_scan(d, frm, items, idx) {
             }
             if (is_duplicate_serial_in_document(frm, item, serial)) {
                 frappe.msgprint(__("Duplicate serial number. This serial is already scanned in this document"));
+                $(this).val("");
+                return;
+            }
+            const existingItemCode = await get_existing_serial_item_code(serial);
+            if (existingItemCode) {
+                frappe.msgprint(
+                    __("Serial No {0} already exists in system for Item {1}", [serial, existingItemCode])
+                );
                 $(this).val("");
                 return;
             }
