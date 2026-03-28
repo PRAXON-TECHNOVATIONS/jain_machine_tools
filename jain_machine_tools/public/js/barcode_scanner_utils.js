@@ -3,6 +3,10 @@
  */
 
 window.jmt_barcode_scanner = {
+    normalize_serial_no(serial_no) {
+        return (serial_no || "").trim().toUpperCase();
+    },
+
     async open_dialog(frm, options) {
         if (typeof Html5Qrcode === "undefined") {
             frappe.throw(__("html5-qrcode not loaded. Run bench build."));
@@ -169,9 +173,11 @@ window.jmt_barcode_scanner = {
             { facingMode: "environment" },
             { fps: 10, qrbox: { width: 280, height: 120 }, disableFlip: true },
             async (decodedText) => {
-                if (is_validating_scan || scanned.includes(decodedText) || scanned.length >= required_qty) return;
+                const normalizedSerial = this.normalize_serial_no(decodedText);
 
-                if (this.is_duplicate_serial_in_document(frm, options.items_field, item, decodedText)) {
+                if (is_validating_scan || !normalizedSerial || scanned.includes(normalizedSerial) || scanned.length >= required_qty) return;
+
+                if (this.is_duplicate_serial_in_document(frm, options.items_field, item, normalizedSerial)) {
                     frappe.msgprint(__("Duplicate serial number. This serial is already scanned in this document"));
                     return;
                 }
@@ -179,13 +185,13 @@ window.jmt_barcode_scanner = {
                 is_validating_scan = true;
                 const warehouse = options.get_warehouse ? options.get_warehouse(frm, item) : null;
                 const is_valid = await (options.validate_serial
-                    ? options.validate_serial(item, decodedText, frm, warehouse)
-                    : this.validate_serial_scan(item.item_code, decodedText, warehouse));
+                    ? options.validate_serial(item, normalizedSerial, frm, warehouse)
+                    : this.validate_serial_scan(item.item_code, normalizedSerial, warehouse));
                 is_validating_scan = false;
 
                 if (!is_valid) return;
 
-                scanned.push(decodedText);
+                scanned.push(normalizedSerial);
                 count_el.text(scanned.length);
                 render_scanned();
 
@@ -258,7 +264,7 @@ window.jmt_barcode_scanner = {
         input.on("keydown", async (e) => {
             if (e.key === "Enter") {
                 e.preventDefault();
-                const serial = input.val().trim();
+                const serial = this.normalize_serial_no(input.val());
                 if (!serial) return;
 
                 if (scanned.includes(serial)) {
@@ -321,7 +327,10 @@ window.jmt_barcode_scanner = {
     },
 
     get_serial_list(serial_no) {
-        return (serial_no || "").split("\n").map(v => v.trim()).filter(Boolean);
+        return (serial_no || "")
+            .split("\n")
+            .map((value) => this.normalize_serial_no(value))
+            .filter(Boolean);
     },
 
     is_duplicate_serial_in_document(frm, items_field, current_item, serial_no) {
@@ -336,6 +345,7 @@ window.jmt_barcode_scanner = {
     },
 
     async validate_serial_scan(item_code, serial_no, warehouse = null) {
+        serial_no = this.normalize_serial_no(serial_no);
         const r = await frappe.db.get_value("Serial No", { name: serial_no }, ["name", "item_code", "warehouse", "status"]);
         const serial_doc = r?.message;
 
