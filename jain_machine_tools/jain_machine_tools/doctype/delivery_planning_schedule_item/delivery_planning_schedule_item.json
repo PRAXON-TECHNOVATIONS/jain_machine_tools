@@ -90,6 +90,7 @@
    "fieldname": "projected_qty",
    "fieldtype": "Float",
    "in_list_view": 1,
+   "in_standard_filter": 1,
    "label": "Projected Qty",
    "read_only": 1
   },
@@ -110,6 +111,8 @@
   {
    "fieldname": "actual_qty",
    "fieldtype": "Float",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
    "label": "Actual Qty",
    "read_only": 1
   }
@@ -117,7 +120,7 @@
  "grid_page_length": 50,
  "istable": 1,
  "links": [],
- "modified": "2026-03-27 12:19:26.231780",
+ "modified": "2026-03-29 19:31:03.594359",
  "modified_by": "Administrator",
  "module": "Jain Machine Tools",
  "name": "Delivery Planning Schedule Item",
