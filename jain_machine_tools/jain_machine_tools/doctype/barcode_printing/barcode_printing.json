@@ -1,50 +1,41 @@
 {
  "actions": [],
  "allow_rename": 1,
- "creation": "2025-11-23 19:27:40.340331",
+ "creation": "2026-03-29 20:13:24.541465",
  "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
   "type",
   "record",
-  "item_code",
   "get_serial_no",
-  "column_break_gorz",
-  "item_name",
   "company",
-  "section_break_aerv",
   "table_hjbk",
-  "amended_from"
+  "item_name",
+  "amended_from",
+  "item_code"
  ],
  "fields": [
   {
    "fieldname": "item_code",
    "fieldtype": "Link",
+   "hidden": 1,
    "in_list_view": 1,
    "label": "Item Code",
-   "options": "Item",
-   "reqd": 1
+   "options": "Item"
   },
   {
-   "depends_on": "eval:doc.item_code",
+   "depends_on": "eval:doc.record",
    "fieldname": "get_serial_no",
    "fieldtype": "Button",
-   "label": "Get Serial No"
-  },
-  {
-   "fieldname": "column_break_gorz",
-   "fieldtype": "Column Break"
+   "label": "Get Item"
   },
   {
    "fetch_from": "item_code.item_name",
    "fieldname": "item_name",
    "fieldtype": "Data",
+   "hidden": 1,
    "label": "Item Name",
    "read_only": 1
-  },
-  {
-   "fieldname": "section_break_aerv",
-   "fieldtype": "Section Break"
   },
   {
    "fieldname": "table_hjbk",
@@ -60,18 +51,18 @@
   },
   {
    "fieldname": "type",
-   "fieldtype": "Link",
+   "fieldtype": "Select",
    "label": "Type",
-   "link_filters": "[[\"DocType\", \"name\", \"in\", [\"Stock Entry\", \"Purchase Receipt\"]]]",
-   "options": "DocType"
+   "options": "\nStock Entry\nPurchase Receipt\nOpening Stock"
   },
   {
+   "depends_on": "eval:doc.type!='Opening Stock'",
    "fieldname": "record",
    "fieldtype": "Dynamic Link",
    "in_list_view": 1,
    "label": "Record",
-   "options": "type",
-   "reqd": 1
+   "mandatory_depends_on": "eval:doc.type!='Opening Stock'",
+   "options": "type"
   },
   {
    "fieldname": "amended_from",
@@ -88,7 +79,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2025-12-29 12:03:00.607725",
+ "modified": "2026-03-29 20:14:37.391230",
  "modified_by": "Administrator",
  "module": "Jain Machine Tools",
  "name": "Barcode Printing",

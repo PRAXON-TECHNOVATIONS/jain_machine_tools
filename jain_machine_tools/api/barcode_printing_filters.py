@@ -5,24 +5,18 @@ import frappe
 @frappe.validate_and_sanitize_search_inputs
 def get_stock_entry_repack(doctype, txt, searchfield, start, page_len, filters):
     """
-    Get Stock Entry records where:
-    1. purpose = 'Repack' (direct)
-    2. OR stock_entry_type has purpose = 'Repack' (custom stock entry types)
+    Get Stock Entry records for Barcode Printing.
     """
 
     return frappe.db.sql("""
         SELECT DISTINCT se.name, se.stock_entry_type, se.purpose
         FROM `tabStock Entry` se
-        LEFT JOIN `tabStock Entry Type` setype ON se.stock_entry_type = setype.name
         WHERE
             se.docstatus < 2
             AND (
-                se.purpose = 'Repack'
-                OR setype.purpose = 'Repack'
-            )
-            AND (
                 se.name LIKE %(txt)s
                 OR se.stock_entry_type LIKE %(txt)s
+                OR se.purpose LIKE %(txt)s
             )
         ORDER BY se.modified DESC
         LIMIT %(start)s, %(page_len)s
