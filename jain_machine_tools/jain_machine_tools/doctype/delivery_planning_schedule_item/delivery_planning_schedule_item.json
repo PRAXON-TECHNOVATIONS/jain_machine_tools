@@ -35,6 +35,7 @@
    "hidden": 1,
    "label": "Sales Order Item",
    "options": "Sales Order Item",
+   "print_hide": 1,
    "read_only": 1
   },
   {
@@ -49,6 +50,7 @@
    "fieldtype": "Float",
    "hidden": 1,
    "label": "Already Planned Qty",
+   "print_hide": 1,
    "read_only": 1
   },
   {
@@ -106,7 +108,8 @@
   {
    "fieldname": "description",
    "fieldtype": "Small Text",
-   "label": "Description"
+   "label": "Description",
+   "print_hide": 1
   },
   {
    "fieldname": "actual_qty",
