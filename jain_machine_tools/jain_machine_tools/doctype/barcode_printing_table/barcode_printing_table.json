@@ -13,6 +13,7 @@
  ],
  "fields": [
   {
+   "columns": 3,
    "fieldname": "item_code",
    "fieldtype": "Link",
    "in_list_view": 1,
@@ -20,6 +21,7 @@
    "options": "Item"
   },
   {
+   "columns": 3,
    "fieldname": "serial_no",
    "fieldtype": "Link",
    "in_list_view": 1,
@@ -27,6 +29,7 @@
    "options": "Serial No"
   },
   {
+   "columns": 2,
    "fieldname": "vendor_manufacturing_date",
    "fieldtype": "Date",
    "in_list_view": 1,
@@ -34,6 +37,7 @@
    "reqd": 1
   },
   {
+   "columns": 2,
    "fieldname": "warranty_expiry_date",
    "fieldtype": "Date",
    "in_list_view": 1,
