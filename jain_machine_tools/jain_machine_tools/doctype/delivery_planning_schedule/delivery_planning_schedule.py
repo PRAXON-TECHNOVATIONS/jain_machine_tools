@@ -73,6 +73,7 @@ def sales_order_query(doctype, txt, searchfield, start, page_len, filters):
 		SELECT so.name, so.customer, so.customer_name
 		FROM `tabSales Order` so
 		WHERE so.docstatus = 1
+			AND so.workflow_state = 'Approved'
 			AND (
 				so.name LIKE %(txt)s
 				OR so.customer_name LIKE %(txt)s
