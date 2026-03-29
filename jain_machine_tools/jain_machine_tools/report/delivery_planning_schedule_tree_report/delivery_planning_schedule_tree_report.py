@@ -37,7 +37,7 @@ def get_columns():
         },
         {
             "fieldname": "overall_status",
-            "label": _("Overall Status"),
+            "label": _("Delivery plan status"),
             "fieldtype": "Data",
             "width": 130,
         },
@@ -55,9 +55,15 @@ def get_columns():
         },
         {
             "fieldname": "status",
-            "label": _("Status"),
+            "label": _("Item delivery status"),
             "fieldtype": "Data",
             "width": 130,
+        },
+        {
+            "fieldname": "action",
+            "label": _("Action"),
+            "fieldtype": "Data",
+            "width": 150,
         },
     ]
 
@@ -168,16 +174,22 @@ def get_data(filters=None):
 
         for doc in docs:
             # Delivery Planning Schedule row
+            create_btn = (
+                f'<button class="btn btn-xs btn-primary jmt-create-invoice-btn" '
+                f'data-dps="{doc.name}" data-so="{doc.sales_order}">'
+                f'Create Invoice</button>'
+            )
             data.append(
                 {
                     "name": f'<a href="/app/delivery-planning-schedule/{doc.name}">{doc.name}</a>',
                     "customer": "",
                     "item_code": "",
                     "delivery_date": "",
-                    "overall_status": get_status_html(doc.status), # <-- Colored pill here
+                    "overall_status": get_status_html(doc.status),
                     "so_qty": "",
                     "planned_qty": "",
                     "status": "",
+                    "action": create_btn,
                     "indent": 1,
                 }
             )
@@ -199,3 +211,34 @@ def get_data(filters=None):
                 )
 
     return data
+
+
+@frappe.whitelist()
+def make_sales_invoice(dps_name):
+    """
+    Map Sales Order → Sales Invoice and pre-fill the Delivery Plans
+    connection table with items from the given Delivery Planning Schedule.
+    Returns the unsaved doc so the JS can open it in the form view.
+    """
+    from erpnext.selling.doctype.sales_order.sales_order import make_sales_invoice as _make_si
+
+    dps = frappe.get_doc("Delivery Planning Schedule", dps_name)
+
+    # Map Sales Order → Sales Invoice using ERPNext standard mapper
+    doc = _make_si(dps.sales_order)
+
+    # Pre-fill the Delivery Plans child table (Connections tab)
+    doc.set("delivery_plan_details", [])
+    for item in dps.get("items") or []:
+        doc.append("delivery_plan_details", {
+            "delivery_planning_schedule":      dps_name,
+            "delivery_planning_schedule_item": item.name,
+            "sales_order_item":                item.sales_order_item,
+            "item_code":                       item.item_code,
+            "delivery_date":                   item.delivery_date,
+            "planned_qty":                     item.planned_qty,
+            "qty":                             item.planned_qty,
+            "uom":                             item.uom,
+        })
+
+    return doc
