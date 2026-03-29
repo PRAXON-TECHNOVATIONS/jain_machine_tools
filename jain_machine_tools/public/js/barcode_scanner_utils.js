@@ -25,6 +25,7 @@ window.jmt_barcode_scanner = {
                 serial_items.push({
                     row,
                     completed: existing_serials.length >= row.qty,
+                    scanned_count: existing_serials.length,
                 });
             }
         }
@@ -65,6 +66,7 @@ window.jmt_barcode_scanner = {
                         <th>${__("Select")}</th>
                         <th>${__("Item Code")}</th>
                         <th>${__("Qty")}</th>
+                        <th>${__("Scanned")}</th>
                         <th>${__("Status")}</th>
                     </tr>
                 </thead>
@@ -83,7 +85,8 @@ window.jmt_barcode_scanner = {
                     </td>
                     <td>${obj.row.item_code}</td>
                     <td>${obj.row.qty}</td>
-                    <td>${obj.completed ? __("Completed") : __("Pending")}</td>
+                    <td>${obj.scanned_count || 0}</td>
+                    <td>${this.get_item_status_label(obj)}</td>
                 </tr>
             `;
         });
@@ -124,6 +127,18 @@ window.jmt_barcode_scanner = {
         });
     },
 
+    get_item_status_label(obj) {
+        if (obj.completed) {
+            return __("Completed");
+        }
+
+        if (obj.scanned_count > 0) {
+            return __("Partial");
+        }
+
+        return __("Pending");
+    },
+
     async start_camera_scan(d, frm, items, idx, options) {
         const obj = items[idx];
         const item = obj.row;
@@ -142,11 +157,14 @@ window.jmt_barcode_scanner = {
                     <button class="btn btn-success" id="complete" ${scanned.length === required_qty ? "" : "disabled"} style="margin-top:14px;">
                         ${__("Complete Item")}
                     </button>
+                    <button class="btn btn-secondary" id="save-progress" ${scanned.length ? "" : "disabled"} style="margin-top:14px; margin-left:8px;">
+                        ${__("Save")}
+                    </button>
                 </div>
                 <div style="flex:1;">
                     <h5>${__("Scanned Serials")}</h5>
                     <table class="table table-bordered" id="scanned-table">
-                        <thead><tr><th style="width:50px;">#</th><th>${__("Serial No")}</th></tr></thead>
+                        <thead><tr><th style="width:50px;">#</th><th>${__("Serial No")}</th><th style="width:70px;">${__("Remove")}</th></tr></thead>
                         <tbody></tbody>
                     </table>
                 </div>
@@ -155,13 +173,27 @@ window.jmt_barcode_scanner = {
 
         const count_el = d.fields_dict.scan_area.$wrapper.find("#scan-count");
         const complete_btn = d.fields_dict.scan_area.$wrapper.find("#complete");
+        const save_btn = d.fields_dict.scan_area.$wrapper.find("#save-progress");
         const table_body = d.fields_dict.scan_area.$wrapper.find("#scanned-table tbody");
+        const update_complete_button = () => {
+            complete_btn.prop("disabled", scanned.length !== required_qty);
+            save_btn.prop("disabled", !scanned.length);
+        };
 
         const render_scanned = () => {
             table_body.html("");
             scanned.forEach((serial, i) => {
-                table_body.append(`<tr><td>${i + 1}</td><td>${serial}</td></tr>`);
+                table_body.append(`
+                    <tr>
+                        <td>${i + 1}</td>
+                        <td>${serial}</td>
+                        <td>
+                            <button type="button" class="btn btn-xs btn-danger remove-scanned-serial" data-serial="${frappe.utils.escape_html(serial)}">x</button>
+                        </td>
+                    </tr>
+                `);
             });
+            update_complete_button();
         };
 
         render_scanned();
@@ -194,20 +226,39 @@ window.jmt_barcode_scanner = {
                 scanned.push(normalizedSerial);
                 count_el.text(scanned.length);
                 render_scanned();
-
-                if (scanned.length === required_qty) {
-                    complete_btn.prop("disabled", false);
-                    scanner.stop();
-                }
             }
         );
 
+        table_body.on("click", ".remove-scanned-serial", (e) => {
+            const serial = $(e.currentTarget).data("serial");
+            const serial_idx = scanned.indexOf(serial);
+            if (serial_idx === -1) {
+                return;
+            }
+
+            scanned.splice(serial_idx, 1);
+            count_el.text(scanned.length);
+            render_scanned();
+        });
+
+        save_btn.on("click", async () => {
+            await scanner.stop().catch(() => null);
+            await this.persist_scan_progress(frm, item, scanned, options);
+            obj.scanned_count = scanned.length;
+            obj.completed = scanned.length >= required_qty;
+            frappe.show_alert({ message: __("Saved scanned serials for {0}", [item.item_code]), indicator: "green" });
+            d.fields_dict.scan_area.$wrapper.html("");
+            this.render_item_table(d, frm, items, options);
+        });
+
         complete_btn.on("click", async () => {
+            await scanner.stop().catch(() => null);
             if (options.on_complete) {
                 await options.on_complete(frm, item, scanned);
             } else {
                 await this.finalize_scan(frm, item, scanned);
             }
+            obj.scanned_count = scanned.length;
             obj.completed = true;
             frappe.show_alert({ message: __("Scan completed for {0}", [item.item_code]), indicator: "green" });
             d.fields_dict.scan_area.$wrapper.html("");
@@ -235,11 +286,14 @@ window.jmt_barcode_scanner = {
                     <button class="btn btn-success" id="complete" ${scanned.length === required_qty ? "" : "disabled"} style="margin-top:14px;">
                         ${__("Complete Item")}
                     </button>
+                    <button class="btn btn-secondary" id="save-progress" ${scanned.length ? "" : "disabled"} style="margin-top:14px; margin-left:8px;">
+                        ${__("Save")}
+                    </button>
                 </div>
                 <div style="flex:1;">
                     <h5>${__("Scanned Serials")}</h5>
                     <table class="table table-bordered" id="scanned-table">
-                        <thead><tr><th>#</th><th>${__("Serial No")}</th></tr></thead>
+                        <thead><tr><th>#</th><th>${__("Serial No")}</th><th style="width:70px;">${__("Remove")}</th></tr></thead>
                         <tbody></tbody>
                     </table>
                 </div>
@@ -248,14 +302,28 @@ window.jmt_barcode_scanner = {
 
         const count_el = d.fields_dict.scan_area.$wrapper.find("#scan-count");
         const complete_btn = d.fields_dict.scan_area.$wrapper.find("#complete");
+        const save_btn = d.fields_dict.scan_area.$wrapper.find("#save-progress");
         const table_body = d.fields_dict.scan_area.$wrapper.find("#scanned-table tbody");
         const input = d.fields_dict.scan_area.$wrapper.find("#gun-input");
+        const update_complete_button = () => {
+            complete_btn.prop("disabled", scanned.length !== required_qty);
+            save_btn.prop("disabled", !scanned.length);
+        };
 
         const render_scanned = () => {
             table_body.html("");
             scanned.forEach((serial, i) => {
-                table_body.append(`<tr><td>${i + 1}</td><td>${serial}</td></tr>`);
+                table_body.append(`
+                    <tr>
+                        <td>${i + 1}</td>
+                        <td>${serial}</td>
+                        <td>
+                            <button type="button" class="btn btn-xs btn-danger remove-scanned-serial" data-serial="${frappe.utils.escape_html(serial)}">x</button>
+                        </td>
+                    </tr>
+                `);
             });
+            update_complete_button();
         };
 
         render_scanned();
@@ -296,8 +364,29 @@ window.jmt_barcode_scanner = {
                 count_el.text(scanned.length);
                 render_scanned();
                 input.val("").focus();
-                if (scanned.length === required_qty) complete_btn.prop("disabled", false);
             }
+        });
+
+        table_body.on("click", ".remove-scanned-serial", (e) => {
+            const serial = $(e.currentTarget).data("serial");
+            const serial_idx = scanned.indexOf(serial);
+            if (serial_idx === -1) {
+                return;
+            }
+
+            scanned.splice(serial_idx, 1);
+            count_el.text(scanned.length);
+            render_scanned();
+            input.focus();
+        });
+
+        save_btn.on("click", async () => {
+            await this.persist_scan_progress(frm, item, scanned, options);
+            obj.scanned_count = scanned.length;
+            obj.completed = scanned.length >= required_qty;
+            frappe.show_alert({ message: __("Saved scanned serials for {0}", [item.item_code]), indicator: "green" });
+            d.fields_dict.scan_area.$wrapper.html("");
+            this.render_item_table(d, frm, items, options);
         });
 
         complete_btn.on("click", async () => {
@@ -306,6 +395,7 @@ window.jmt_barcode_scanner = {
             } else {
                 await this.finalize_scan(frm, item, scanned);
             }
+            obj.scanned_count = scanned.length;
             obj.completed = true;
             frappe.show_alert({ message: __("Scan completed for {0}", [item.item_code]), indicator: "green" });
             d.fields_dict.scan_area.$wrapper.html("");
@@ -324,6 +414,18 @@ window.jmt_barcode_scanner = {
         frm.refresh_field("items");
         frm.dirty();
         if (frm.trigger) await frm.trigger("calculate_taxes_and_totals");
+    },
+
+    async persist_scan_progress(frm, item, scanned, options) {
+        if (options.on_save_progress) {
+            await options.on_save_progress(frm, item, scanned);
+            return;
+        }
+
+        item.use_serial_batch_fields = 1;
+        item.serial_no = scanned.join("\n");
+        frm.refresh_field(options.items_field || "items");
+        frm.dirty();
     },
 
     get_serial_list(serial_no) {
