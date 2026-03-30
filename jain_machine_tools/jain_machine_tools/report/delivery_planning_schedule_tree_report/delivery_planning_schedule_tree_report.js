@@ -13,6 +13,7 @@ frappe.query_reports["Delivery Planning Schedule Tree Report"] = {
             "fieldname": "to_date",
             "fieldtype": "Date",
             "label": "To Date",
+            "default": "Today",
             "reqd": 0
         },
         {
