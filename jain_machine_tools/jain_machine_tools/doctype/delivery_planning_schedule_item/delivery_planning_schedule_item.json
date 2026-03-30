@@ -85,8 +85,7 @@
    "fieldtype": "Link",
    "in_list_view": 1,
    "label": "Warehouse",
-   "options": "Warehouse",
-   "read_only": 1
+   "options": "Warehouse"
   },
   {
    "fieldname": "projected_qty",
