@@ -1,7 +1,6 @@
 import frappe
 from frappe import _
 from frappe.utils import getdate
-import json
 
 
 def execute(filters=None):
@@ -85,8 +84,8 @@ def get_columns():
             "width": 130,
         },
         {
-            "fieldname": "store_manager_remark",
-            "label": _("Store Manager Remark"),
+            "fieldname": "store_manager_remarks",
+            "label": _("Store Manager Remarks"),
             "fieldtype": "Data",
             "width": 220,
         },
@@ -112,11 +111,21 @@ def get_status_html(status):
     return f'<span class="indicator-pill {color}">{status}</span>'
 
 
+def get_store_manager_remark_select():
+    if frappe.db.has_column("Delivery Planning Schedule", "store_manager_remarks"):
+        return "dps.store_manager_remarks"
+
+    if frappe.db.has_column("Delivery Planning Schedule", "store_manager_remark"):
+        return "dps.store_manager_remark AS store_manager_remarks"
+
+    return "'' AS store_manager_remarks"
+
+
 def get_data(filters=None):
     filters = filters or {}
     conditions = ""
     values = {}
-    selected_dps = get_selected_dps(filters.get("delivery_planning_schedule"))
+    store_manager_remark_select = get_store_manager_remark_select()
 
     if filters.get("from_date"):
         conditions += " AND dps.schedule_date >= %(from_date)s"
@@ -137,7 +146,7 @@ def get_data(filters=None):
             dps.sales_order,
             dps.customer,
             dps.status,
-            dps.store_manager_remark
+            {store_manager_remark_select}
         FROM
             `tabDelivery Planning Schedule` dps
         WHERE 1=1 {conditions}
@@ -198,7 +207,7 @@ def get_data(filters=None):
                 "planned_qty": "",
                 "actual_qty": "",
                 "projected_qty": "",
-                "store_manager_remark": "",
+                "store_manager_remarks": "",
                 "status": "",
                 "print_action": "",
                 "indent": 0,
@@ -231,16 +240,13 @@ def get_data(filters=None):
                     "planned_qty": "",
                     "actual_qty": "",
                     "projected_qty": "",
-                    "store_manager_remark": doc.store_manager_remark or "",
+                    "store_manager_remarks": doc.store_manager_remarks or "",
                     "status": "",
                     "action": create_btn,
                     "print_action": print_btn,
                     "indent": 1,
                 }
             )
-
-            if selected_dps and doc.name not in selected_dps:
-                continue
 
             # Child item rows
             for item in children_map.get(doc.name, []):
@@ -255,7 +261,7 @@ def get_data(filters=None):
                         "planned_qty": item.planned_qty,
                         "actual_qty": item.actual_qty,
                         "projected_qty": item.projected_qty,
-                        "store_manager_remark": "",
+                        "store_manager_remarks": "",
                         "status": get_status_html(item.status), # <-- Colored pill here
                         "print_action": "",
                         "indent": 2,
@@ -263,26 +269,6 @@ def get_data(filters=None):
                 )
 
     return data
-
-
-def get_selected_dps(raw_value):
-    if not raw_value:
-        return set()
-
-    if isinstance(raw_value, (list, tuple, set)):
-        return {value for value in raw_value if value}
-
-    if isinstance(raw_value, str):
-        try:
-            parsed = json.loads(raw_value)
-            if isinstance(parsed, list):
-                return {value for value in parsed if value}
-        except Exception:
-            pass
-
-        return {value.strip() for value in raw_value.split(",") if value.strip()}
-
-    return set()
 
 
 @frappe.whitelist()
