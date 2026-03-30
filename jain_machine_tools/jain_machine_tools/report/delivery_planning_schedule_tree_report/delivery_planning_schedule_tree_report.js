@@ -21,13 +21,6 @@ frappe.query_reports["Delivery Planning Schedule Tree Report"] = {
             "label": "Sales Order",
             "options": "Sales Order",
             "reqd": 0
-        },
-        {
-            "fieldname": "delivery_planning_schedule",
-            "fieldtype": "Link",
-            "label": "Select DPS For Print",
-            "options": "Delivery Planning Schedule",
-            "reqd": 0,
         }
     ],
 

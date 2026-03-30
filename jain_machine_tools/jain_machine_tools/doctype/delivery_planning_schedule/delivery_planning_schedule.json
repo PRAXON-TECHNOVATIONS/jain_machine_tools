@@ -90,8 +90,7 @@
   {
    "fieldname": "store_manager_remarks",
    "fieldtype": "Small Text",
-   "label": "Store Manager Remarks",
-   "permlevel": 1
+   "label": "Store Manager Remarks"
   }
  ],
  "grid_page_length": 50,
