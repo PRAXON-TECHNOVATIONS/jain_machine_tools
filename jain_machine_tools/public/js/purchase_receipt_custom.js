@@ -92,6 +92,15 @@ function get_serial_list(serial_no) {
         .filter(Boolean);
 }
 
+function get_saved_scanned_serials(item, obj) {
+    const serials = get_serial_list(item.serial_no);
+    if (serials.length) {
+        obj.scanned_count = serials.length;
+        obj.completed = serials.length >= item.qty;
+    }
+    return serials;
+}
+
 function normalize_serial_no(serial_no) {
     return (serial_no || "").trim().toUpperCase();
 }
@@ -198,7 +207,7 @@ async function scan_item(d, frm, items, idx) {
     const obj = items[idx];
     const item = obj.row;
     const required_qty = item.qty;
-    const scanned = [];
+    const scanned = get_saved_scanned_serials(item, obj);
 
     d.fields_dict.scan_area.$wrapper.html(`
         <div style="display:flex; gap:24px; margin-top:20px;">
@@ -207,7 +216,7 @@ async function scan_item(d, frm, items, idx) {
             <div style="flex:1;">
                 <h4>Scanning: ${item.item_code}</h4>
                 <p>Required Qty: <b>${required_qty}</b></p>
-                <p>Scanned: <b id="scan-count">0</b></p>
+                <p>Scanned: <b id="scan-count">${scanned.length}</b></p>
 
                 <!-- SIMPLE CAMERA BOX -->
                 <div id="scanner-box"
@@ -224,13 +233,13 @@ async function scan_item(d, frm, items, idx) {
 
                 <button class="btn btn-success"
                         id="complete"
-                        disabled
+                        ${scanned.length === required_qty ? "" : "disabled"}
                         style="margin-top:14px;">
                     Complete Item
                 </button>
                 <button class="btn btn-secondary"
                         id="save-progress"
-                        disabled
+                        ${scanned.length ? "" : "disabled"}
                         style="margin-top:14px; margin-left:8px;">
                     Save
                 </button>
@@ -365,14 +374,14 @@ function start_gun_scan(d, frm, items, idx) {
     const obj = items[idx];
     const item = obj.row;
     const required_qty = item.qty;
-    const scanned = [];
+    const scanned = get_saved_scanned_serials(item, obj);
 
     d.fields_dict.scan_area.$wrapper.html(`
         <div style="display:flex; gap:24px; margin-top:20px;">
             <div style="flex:1;">
                 <h4>Scanning: ${item.item_code}</h4>
                 <p>Required Qty: <b>${required_qty}</b></p>
-                <p>Scanned: <b id="scan-count">0</b></p>
+                <p>Scanned: <b id="scan-count">${scanned.length}</b></p>
 
                 <input type="text"
                     id="gun-input"
@@ -381,13 +390,13 @@ function start_gun_scan(d, frm, items, idx) {
 
                 <button class="btn btn-success"
                         id="complete"
-                        disabled
+                        ${scanned.length === required_qty ? "" : "disabled"}
                         style="margin-top:14px;">
                     Complete Item
                 </button>
                 <button class="btn btn-secondary"
                         id="save-progress"
-                        disabled
+                        ${scanned.length ? "" : "disabled"}
                         style="margin-top:14px; margin-left:8px;">
                     Save
                 </button>

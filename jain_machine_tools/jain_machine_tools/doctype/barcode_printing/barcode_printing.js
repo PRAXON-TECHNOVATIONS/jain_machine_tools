@@ -10,7 +10,11 @@ frappe.ui.form.on("Barcode Printing", {
 					query: 'jain_machine_tools.api.barcode_printing_filters.get_stock_entry_repack'
 				};
 			}
-			// No filter for other doctypes like Purchase Receipt
+			if (frm.doc.type === 'Purchase Receipt') {
+				return {
+					query: 'jain_machine_tools.api.barcode_printing_filters.get_purchase_receipt_by_supplier_invoice'
+				};
+			}
 			return {};
 		});
 	},
@@ -24,6 +28,11 @@ frappe.ui.form.on("Barcode Printing", {
 			if (frm.doc.type === 'Stock Entry') {
 				return {
 					query: 'jain_machine_tools.api.barcode_printing_filters.get_stock_entry_repack'
+				};
+			}
+			if (frm.doc.type === 'Purchase Receipt') {
+				return {
+					query: 'jain_machine_tools.api.barcode_printing_filters.get_purchase_receipt_by_supplier_invoice'
 				};
 			}
 			return {};
