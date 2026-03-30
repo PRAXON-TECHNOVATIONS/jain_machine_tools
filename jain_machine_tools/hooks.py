@@ -269,7 +269,7 @@ doc_events = {
 
 scheduler_events = {
 	# Optimized Auto Reorder - runs every hour instead of daily
-	"hourly": [
+	"daily": [
 		"jain_machine_tools.stock.optimized_reorder.optimized_reorder_item"
 	],
 }
@@ -283,9 +283,9 @@ scheduler_events = {
 # Overriding Methods
 # ------------------------------
 #
-# override_whitelisted_methods = {
-# 	"frappe.desk.doctype.event.event.get_events": "jain_machine_tools.event.get_events"
-# }
+override_whitelisted_methods = {
+	"erpnext.stock.get_item_details.get_item_details": "jain_machine_tools.api.sales_invoice_item_details.get_item_details"
+}
 #
 # each overriding function accepts a `data` argument;
 # generated from the base implementation of the doctype dashboard,

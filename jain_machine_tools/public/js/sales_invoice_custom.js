@@ -37,8 +37,7 @@ frappe.ui.form.on('Sales Invoice', {
                 async on_complete(frm, item, scanned) {
                     item.use_serial_batch_fields = 1;
                     item.serial_no = scanned.join("\n");
-                    item.qty = scanned.length;
-                    
+
                     frm.refresh_field("items");
                     frm.dirty();
                     await frm.trigger("calculate_taxes_and_totals");
@@ -73,6 +72,19 @@ frappe.ui.form.on('Sales Invoice', {
         await sync_invoice_qty_from_delivery_plans(frm);
     }
 });
+
+if (erpnext?.accounts?.SalesInvoiceController && !erpnext.accounts.SalesInvoiceController.prototype.__jmt_preserve_manual_qty) {
+    erpnext.accounts.SalesInvoiceController.prototype.__jmt_preserve_manual_qty = true;
+    erpnext.accounts.SalesInvoiceController.prototype.update_qty = function(cdt, cdn) {
+        const item = frappe.get_doc(cdt, cdn);
+        if (!item) {
+            return;
+        }
+
+        const conversion_factor = flt(item.conversion_factor) || 1;
+        frappe.model.set_value(item.doctype, item.name, "stock_qty", flt(item.qty) * conversion_factor);
+    };
+}
 
 frappe.ui.form.on('Sales Invoice Delivery Plan', {
     qty: function(frm) {
