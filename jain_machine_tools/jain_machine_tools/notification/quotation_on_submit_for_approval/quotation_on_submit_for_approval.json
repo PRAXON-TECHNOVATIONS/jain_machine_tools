@@ -1,0 +1,32 @@
+{
+ "attach_files": "",
+ "attach_print": 0,
+ "channel": "Email",
+ "creation": "2026-03-30 12:03:22.854988",
+ "days_in_advance": 0,
+ "docstatus": 0,
+ "doctype": "Notification",
+ "document_type": "Quotation",
+ "enabled": 1,
+ "event": "Submit",
+ "idx": 0,
+ "is_standard": 1,
+ "message": "<p>Dear Sales Head,</p>\n\n<p>A new Quotation <b>{{ doc.name }}</b> has been submitted for your approval by <b>{{ frappe.db.get_value(\"User\", doc.owner, \"full_name\") }}</b>.</p>\n\n<p><b>Customer:</b> {{ doc.customer }}<br>\n<b>Total Amount:</b> {{ doc.get_formatted(\"grand_total\") }}</p>\n\n<p>Please review and take the necessary action by clicking the link below:</p>\n\n<p><a href=\"{{ frappe.utils.get_url_to_form('Quotation', doc.name) }}\" \n   style=\"padding: 10px 20px; background-color: #007bff; color: white; text-decoration: none; border-radius: 5px;\">\n   View Quotation\n</a></p>\n\n<p>Regards,<br>\nERPNext System</p>\n",
+ "message_type": "Markdown",
+ "modified": "2026-03-30 12:15:59.314917",
+ "modified_by": "Administrator",
+ "module": "Jain Machine Tools",
+ "name": "Quotation on Submit for approval",
+ "owner": "Administrator",
+ "recipients": [
+  {
+   "receiver_by_document_field": "",
+   "receiver_by_role": "Sales Head"
+  }
+ ],
+ "send_system_notification": 0,
+ "send_to_all_assignees": 1,
+ "sender": "",
+ "sender_email": "",
+ "subject": "Quotation {{ doc.name }} is pending for approval"
+}

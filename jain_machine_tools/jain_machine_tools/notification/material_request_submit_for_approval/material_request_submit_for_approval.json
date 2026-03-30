@@ -1,0 +1,33 @@
+{
+ "attach_files": "",
+ "attach_print": 0,
+ "channel": "Email",
+ "condition": "doc.workflow_state==\"Pending\"",
+ "creation": "2026-03-30 13:07:51.807466",
+ "days_in_advance": 0,
+ "docstatus": 0,
+ "doctype": "Notification",
+ "document_type": "Material Request",
+ "enabled": 1,
+ "event": "Save",
+ "idx": 0,
+ "is_standard": 1,
+ "message": "<p>Dear Purchase Manager,</p>\n\n<p>Material Request <b>{{ doc.name }}</b> has been submitted and requires your approval.</p>\n\n<p>Please review the document before taking action:</p>\n\n<p><a href=\"{{ frappe.utils.get_url_to_form('Sales Order', doc.name) }}\" \n   style=\"padding: 10px 20px; background-color: #28a745; color: white; text-decoration: none; border-radius: 5px; display: inline-block;\">\n   Review & Approve Material Request\n</a></p>\n\n<p>Regards,<br>\nERPNext System</p>\n",
+ "message_type": "Markdown",
+ "modified": "2026-03-30 13:26:16.173676",
+ "modified_by": "Administrator",
+ "module": "Jain Machine Tools",
+ "name": "Material Request Submit for Approval",
+ "owner": "Administrator",
+ "recipients": [
+  {
+   "receiver_by_document_field": "",
+   "receiver_by_role": "Purchase Manager"
+  }
+ ],
+ "send_system_notification": 0,
+ "send_to_all_assignees": 1,
+ "sender": "",
+ "sender_email": "",
+ "subject": "Material Request {{ doc.name }} is Submitted for Approval"
+}
