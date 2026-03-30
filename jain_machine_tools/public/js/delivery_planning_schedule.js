@@ -7,10 +7,25 @@ frappe.ui.form.on('Delivery Planning Schedule', {
 		const is_saved = !frm.is_new();
 		frm.toggle_display('get_items', is_saved);
 		frm.toggle_display('items_section', is_saved);
+		set_delivery_planning_schedule_item_editability(frm);
 	},
 
 	get_items(frm) {
 		fetch_items_from_sales_order(frm);
+	}
+});
+
+frappe.ui.form.on('Delivery Planning Schedule Item', {
+	warehouse(frm, cdt, cdn) {
+		refresh_delivery_planning_schedule_item_stock(cdt, cdn);
+	},
+
+	item_code(frm, cdt, cdn) {
+		refresh_delivery_planning_schedule_item_stock(cdt, cdn);
+	},
+
+	form_render(frm, cdt, cdn) {
+		set_delivery_planning_schedule_item_editability(frm, cdn);
 	}
 });
 
@@ -65,4 +80,48 @@ function apply_sales_order_data(frm, data) {
 	frm.refresh_field('items');
 	frm.refresh_field('company');
 	frm.refresh_field('customer');
+	set_delivery_planning_schedule_item_editability(frm);
+}
+
+function set_delivery_planning_schedule_item_editability(frm, cdn = null) {
+	const grid = frm.get_field('items') && frm.get_field('items').grid;
+	if (!grid) {
+		return;
+	}
+
+	grid.update_docfield_property('warehouse', 'read_only', 0);
+
+	if (cdn && grid.grid_rows_by_docname && grid.grid_rows_by_docname[cdn]) {
+		const grid_row = grid.grid_rows_by_docname[cdn];
+		if (grid_row.grid_form) {
+			grid_row.grid_form.fields_dict.warehouse.df.read_only = 0;
+			grid_row.grid_form.fields_dict.warehouse.refresh();
+		}
+	}
+}
+
+function refresh_delivery_planning_schedule_item_stock(cdt, cdn) {
+	const row = locals[cdt][cdn];
+	if (!row) {
+		return;
+	}
+
+	if (!row.item_code || !row.warehouse) {
+		frappe.model.set_value(cdt, cdn, 'projected_qty', 0);
+		frappe.model.set_value(cdt, cdn, 'actual_qty', 0);
+		return;
+	}
+
+	frappe.call({
+		method: 'jain_machine_tools.jain_machine_tools.doctype.delivery_planning_schedule.delivery_planning_schedule.get_bin_details',
+		args: {
+			item_code: row.item_code,
+			warehouse: row.warehouse
+		},
+		callback(r) {
+			const data = r.message || {};
+			frappe.model.set_value(cdt, cdn, 'projected_qty', data.projected_qty || 0);
+			frappe.model.set_value(cdt, cdn, 'actual_qty', data.actual_qty || 0);
+		}
+	});
 }

@@ -10,7 +10,11 @@ from frappe.utils import flt, nowdate
 class DeliveryPlanningSchedule(Document):
 	def validate(self):
 		self.validate_sales_order()
+		self.sync_item_stock_quantities()
 		self.validate_item_totals()
+
+	def on_update(self):
+		self.sync_sales_order_item_warehouses()
 
 	def validate_sales_order(self):
 		if not self.sales_order:
@@ -59,6 +63,34 @@ class DeliveryPlanningSchedule(Document):
 				_(
 					"Delivery Planning Schedule quantities cannot exceed the remaining quantity on the linked Sales Order.\n{0}"
 				).format("\n".join(mismatches))
+			)
+
+	def sync_item_stock_quantities(self):
+		for row in self.get("items") or []:
+			projected_qty, actual_qty = get_bin_qty(row.item_code, row.warehouse)
+			row.projected_qty = projected_qty
+			row.actual_qty = actual_qty
+
+	def sync_sales_order_item_warehouses(self):
+		for row in self.get("items") or []:
+			if not row.sales_order_item:
+				continue
+
+			sales_order_item = frappe.db.get_value(
+				"Sales Order Item",
+				{"name": row.sales_order_item, "parent": self.sales_order},
+				["name", "warehouse"],
+				as_dict=True,
+			)
+			if not sales_order_item or sales_order_item.warehouse == row.warehouse:
+				continue
+
+			frappe.db.set_value(
+				"Sales Order Item",
+				row.sales_order_item,
+				"warehouse",
+				row.warehouse,
+				update_modified=True,
 			)
 
 
@@ -110,18 +142,7 @@ def get_items_from_sales_order(sales_order):
 		if remaining_qty <= 0:
 			continue
 
-		# Fetch Projected Qty and Actual Qty from Bin
-		projected_qty = 0
-		actual_qty = 0
-		if row.item_code and row.warehouse:
-			bin_data = frappe.db.get_value(
-				"Bin",
-				{"item_code": row.item_code, "warehouse": row.warehouse},
-				["projected_qty", "actual_qty"],
-				as_dict=True
-			) or {}
-			projected_qty = bin_data.get("projected_qty", 0)
-			actual_qty = bin_data.get("actual_qty", 0)
+		projected_qty, actual_qty = get_bin_qty(row.item_code, row.warehouse)
 
 		items.append(
 			{
@@ -148,6 +169,28 @@ def get_items_from_sales_order(sales_order):
 		"status": "Pending",
 		"items": items,
 	}
+
+
+@frappe.whitelist()
+def get_bin_details(item_code=None, warehouse=None):
+	projected_qty, actual_qty = get_bin_qty(item_code, warehouse)
+	return {
+		"projected_qty": projected_qty,
+		"actual_qty": actual_qty,
+	}
+
+
+def get_bin_qty(item_code=None, warehouse=None):
+	if not item_code or not warehouse:
+		return 0, 0
+
+	bin_data = frappe.db.get_value(
+		"Bin",
+		{"item_code": item_code, "warehouse": warehouse},
+		["projected_qty", "actual_qty"],
+		as_dict=True,
+	) or {}
+	return flt(bin_data.get("projected_qty")), flt(bin_data.get("actual_qty"))
 
 
 def _build_sales_order_qty_map(items):
