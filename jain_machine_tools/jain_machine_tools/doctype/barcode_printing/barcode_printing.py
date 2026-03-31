@@ -12,7 +12,7 @@ class BarcodePrinting(Document):
 	def on_submit(self):
 		"""Update barcode status and mark serial numbers as generated when submitted"""
 		# Mark all serial numbers in this barcode printing as barcode_generated
-		mark_serial_numbers_as_generated(self.name, checked=True)
+		mark_serial_numbers_as_generated(self, checked=True)
 
 		# Update barcode status in Purchase Receipt Item or Stock Entry Detail
 		update_barcode_status_for_document(self)
@@ -20,7 +20,7 @@ class BarcodePrinting(Document):
 	def on_cancel(self):
 		"""Unmark serial numbers when barcode printing is cancelled"""
 		# Unmark all serial numbers in this barcode printing
-		mark_serial_numbers_as_generated(self.name, checked=False)
+		mark_serial_numbers_as_generated(self, checked=False)
 
 		# Update barcode status in Purchase Receipt Item or Stock Entry Detail
 		update_barcode_status_for_document(self)
@@ -467,38 +467,63 @@ def get_printed_serial_numbers_pr(purchase_receipt, item_code):
 	return printed_serial_numbers
 
 
-def mark_serial_numbers_as_generated(barcode_printing_name, checked=True):
+def mark_serial_numbers_as_generated(doc, checked=True):
 	"""
 	Mark or unmark serial numbers as barcode_generated and update vendor warranty dates.
+	Creates Serial No if missing for Opening Stock type.
 
 	Args:
-		barcode_printing_name: Barcode Printing document name
+		doc: Barcode Printing document
 		checked: True to mark as generated, False to unmark
 	"""
 	# Get all serial numbers from the Barcode Printing Table with warranty dates
 	serial_entries = frappe.db.sql("""
-		SELECT serial_no, vendor_manufacturing_date, warranty_expiry_date
+		SELECT item_code, serial_no, manual_serial_no, warehouse, vendor_manufacturing_date, warranty_expiry_date
 		FROM `tabBarcode Printing Table`
 		WHERE parent = %(parent)s
-		AND serial_no IS NOT NULL
-		AND serial_no != ''
+		AND (
+			(serial_no IS NOT NULL AND serial_no != '') OR
+			(manual_serial_no IS NOT NULL AND manual_serial_no != '')
+		)
 	""", {
-		'parent': barcode_printing_name
+		'parent': doc.name
 	}, as_dict=True)
 
 	# Update each serial number
 	for entry in serial_entries:
-		if checked:
-			# When marking as generated, update barcode_generated flag and vendor warranty dates
-			frappe.db.set_value('Serial No', entry.serial_no, {
-				'barcode_generated': 1,
-				'vendor_manufacturing_date': entry.vendor_manufacturing_date,
-				'vendor_warranty_expiry_date': entry.warranty_expiry_date
-			}, update_modified=False)
-		else:
-			# When unmarking (on cancel), only unset the barcode_generated flag
-			# Keep the warranty dates as they were set
-			frappe.db.set_value('Serial No', entry.serial_no, 'barcode_generated', 0, update_modified=False)
+		sn = entry.manual_serial_no or entry.serial_no
+		if not sn:
+			continue
+
+		if frappe.db.exists('Serial No', sn):
+			if checked:
+				# When marking as generated, update barcode_generated flag and vendor warranty dates
+				frappe.db.set_value('Serial No', sn, {
+					'barcode_generated': 1,
+					'vendor_manufacturing_date': entry.vendor_manufacturing_date,
+					'vendor_warranty_expiry_date': entry.warranty_expiry_date
+				}, update_modified=False)
+			else:
+				# When unmarking (on cancel), only unset the barcode_generated flag
+				# Keep the warranty dates as they were set
+				frappe.db.set_value('Serial No', sn, 'barcode_generated', 0, update_modified=False)
+		elif checked and doc.type == "Opening Stock":
+			# Create new Serial No if it doesn't exist for Opening Stock
+			new_sn = frappe.get_doc({
+				"doctype": "Serial No",
+				"serial_no": sn,
+				"item_code": entry.item_code,
+				"company": doc.company,
+				"status": "Inactive",
+				"barcode_generated": 1,
+				"vendor_manufacturing_date": entry.vendor_manufacturing_date,
+				"vendor_warranty_expiry_date": entry.warranty_expiry_date
+			})
+			new_sn.insert(ignore_permissions=True)
+
+			# Force set the warehouse after insertion to bypass validation if provided
+			if entry.warehouse:
+				frappe.db.set_value("Serial No", sn, "warehouse", entry.warehouse, update_modified=False)
 
 	frappe.db.commit()
 

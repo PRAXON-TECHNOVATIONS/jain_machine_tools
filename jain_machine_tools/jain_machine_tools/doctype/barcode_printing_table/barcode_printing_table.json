@@ -8,6 +8,8 @@
  "field_order": [
   "item_code",
   "serial_no",
+  "manual_serial_no",
+  "warehouse",
   "vendor_manufacturing_date",
   "warranty_expiry_date"
  ],
@@ -27,6 +29,19 @@
    "in_list_view": 1,
    "label": "Serial No",
    "options": "Serial No"
+  },
+  {
+   "fieldname": "manual_serial_no",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Serial No"
+  },
+  {
+   "fieldname": "warehouse",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Warehouse",
+   "options": "Warehouse"
   },
   {
    "columns": 2,
