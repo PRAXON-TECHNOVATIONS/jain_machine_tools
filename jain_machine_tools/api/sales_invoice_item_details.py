@@ -1,8 +1,10 @@
 import json
 
+import frappe
 from erpnext.stock.get_item_details import get_item_details as erpnext_get_item_details
 
 
+@frappe.whitelist()
 def get_item_details(args, doc=None, for_validate=False, overwrite_warehouse=True):
 	"""
 	Keep ERPNext item detail resolution intact, but do not auto-pick FIFO serial numbers

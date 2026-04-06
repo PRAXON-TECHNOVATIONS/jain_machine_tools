@@ -10,9 +10,15 @@ frappe.ui.form.on("Barcode Printing", {
 					query: 'jain_machine_tools.api.barcode_printing_filters.get_stock_entry_repack'
 				};
 			}
-			// No filter for other doctypes like Purchase Receipt
+			if (frm.doc.type === 'Purchase Receipt') {
+				return {
+					query: 'jain_machine_tools.api.barcode_printing_filters.get_purchase_receipt_by_supplier_invoice'
+				};
+			}
 			return {};
 		});
+
+		toggle_warehouse_field(frm);
 	},
 
 	type(frm) {
@@ -26,8 +32,15 @@ frappe.ui.form.on("Barcode Printing", {
 					query: 'jain_machine_tools.api.barcode_printing_filters.get_stock_entry_repack'
 				};
 			}
+			if (frm.doc.type === 'Purchase Receipt') {
+				return {
+					query: 'jain_machine_tools.api.barcode_printing_filters.get_purchase_receipt_by_supplier_invoice'
+				};
+			}
 			return {};
 		});
+
+		toggle_warehouse_field(frm);
 	},
 
 	record(frm) {
@@ -86,6 +99,15 @@ frappe.ui.form.on("Barcode Printing", {
 		});
 	}
 });
+
+function toggle_warehouse_field(frm) {
+	const grid = frm.get_field('table_hjbk').grid;
+	const is_opening = frm.doc.type === 'Opening Stock';
+
+	grid.set_column_disp('warehouse', is_opening);
+	grid.set_column_disp('manual_serial_no', is_opening);
+	grid.set_column_disp('serial_no', !is_opening);
+}
 
 frappe.ui.form.on("Barcode Printing Table", {
 	vendor_manufacturing_date(frm, cdt, cdn) {

@@ -37,7 +37,8 @@ app_include_css = [
 app_include_js = ["/assets/jain_machine_tools/js/grid_custom_icons.js?v=1.0.2",
                   "/assets/jain_machine_tools/js/address_filters.js?v=1.0.0",
                   "/assets/jain_machine_tools/js/html5-qrcode.min.js",
-                  "/assets/jain_machine_tools/js/barcode_scanner_utils.js?v=1.0.1"
+                  "/assets/jain_machine_tools/js/barcode_scanner_utils.js?v=1.0.1",
+                  "/assets/jain_machine_tools/js/workspace_role_visibility.js?v=1.0.1"
 ]
 # include js, css files in header of web template
 # web_include_css = "/assets/jain_machine_tools/css/jain_machine_tools.css"

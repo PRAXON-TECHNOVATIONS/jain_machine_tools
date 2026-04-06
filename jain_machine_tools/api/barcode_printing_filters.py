@@ -97,3 +97,37 @@ def get_items_with_serial_no(doctype, txt, searchfield, start, page_len, filters
         'start': start,
         'page_len': page_len
     })
+
+
+@frappe.whitelist()
+@frappe.validate_and_sanitize_search_inputs
+def get_purchase_receipt_by_supplier_invoice(doctype, txt, searchfield, start, page_len, filters):
+    return frappe.db.sql(
+        """
+        SELECT
+            pr.name,
+            pr.custom_supplier_invoice_no,
+            pr.supplier
+        FROM `tabPurchase Receipt` pr
+        WHERE
+            pr.docstatus < 2
+            AND (
+                pr.name LIKE %(txt)s
+                OR IFNULL(pr.custom_supplier_invoice_no, '') LIKE %(txt)s
+                OR IFNULL(pr.supplier, '') LIKE %(txt)s
+            )
+        ORDER BY
+            CASE
+                WHEN pr.name LIKE %(txt)s THEN 1
+                WHEN IFNULL(pr.custom_supplier_invoice_no, '') LIKE %(txt)s THEN 2
+                ELSE 3
+            END,
+            pr.modified DESC
+        LIMIT %(start)s, %(page_len)s
+        """,
+        {
+            "txt": f"%{txt}%",
+            "start": start,
+            "page_len": page_len,
+        },
+    )
