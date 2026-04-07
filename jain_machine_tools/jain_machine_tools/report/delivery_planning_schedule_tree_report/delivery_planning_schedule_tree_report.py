@@ -288,7 +288,7 @@ def make_sales_invoice(dps_name):
     connection table with items from the given Delivery Planning Schedule.
     Returns the unsaved doc so the JS can open it in the form view.
     """
-    from erpnext.selling.doctype.sales_order.sales_order import make_sales_invoice as _make_si
+    from jain_machine_tools.overrides.sales_order import make_sales_invoice as _make_si
 
     dps = frappe.get_doc("Delivery Planning Schedule", dps_name)
 
