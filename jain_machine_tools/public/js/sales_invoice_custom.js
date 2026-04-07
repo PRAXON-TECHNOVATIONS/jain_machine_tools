@@ -205,12 +205,16 @@ function load_delivery_plans(frm, notify) {
 }
 
 async function sync_invoice_qty_from_delivery_plans(frm) {
-    const qtyBySoItem = {};
-    (frm.doc.delivery_plan_details || []).forEach((row) => {
-        if (!row.sales_order_item) {
-            return;
-        }
+    const selected_plan_rows = (frm.doc.delivery_plan_details || []).filter(
+        (row) => row.sales_order_item && flt(row.qty) > 0
+    );
 
+    if (!selected_plan_rows.length) {
+        return;
+    }
+
+    const qtyBySoItem = {};
+    selected_plan_rows.forEach((row) => {
         qtyBySoItem[row.sales_order_item] = (qtyBySoItem[row.sales_order_item] || 0) + flt(row.qty);
     });
 

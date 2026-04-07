@@ -285,7 +285,8 @@ scheduler_events = {
 # ------------------------------
 #
 override_whitelisted_methods = {
-	"erpnext.stock.get_item_details.get_item_details": "jain_machine_tools.api.sales_invoice_item_details.get_item_details"
+	"erpnext.stock.get_item_details.get_item_details": "jain_machine_tools.api.sales_invoice_item_details.get_item_details",
+	"erpnext.selling.doctype.sales_order.sales_order.make_sales_invoice": "jain_machine_tools.overrides.sales_order.make_sales_invoice",
 }
 #
 # each overriding function accepts a `data` argument;
