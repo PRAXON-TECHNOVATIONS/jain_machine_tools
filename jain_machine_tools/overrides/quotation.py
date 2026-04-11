@@ -14,45 +14,32 @@ class CustomTaxesAndTotals(calculate_taxes_and_totals):
 
 	def calculate_item_values(self):
 		"""
-		Override to add handling charges calculation after discount
+		Override to add handling charges calculation after discount.
 		Sequence: price_list_rate → margin → discount → handling_charges → rate
+
+		Root cause of discount bug (ERPNext taxes_and_totals.py line 179):
+		  `if not item.rate or (item.pricing_rules and discount_percentage > 0):`
+		ERPNext only recalculates rate from price_list_rate when item.rate is falsy.
+		If item.rate is pre-set (truthy), discounts are silently skipped.
+		Fix: clear item.rate before calling super() so ERPNext always applies
+		price_list_rate + discount correctly.
 		"""
-		# First, temporarily remove handling charges from rate if they exist
-		# This ensures parent calculation works with the base rate
+		# Clear item.rate so ERPNext always recalculates from price_list_rate + discount.
+		# Only clear when price_list_rate exists (manually-set rates with no price list are preserved).
 		for item in self.doc.get("items"):
-			handling_charges_type = item.get("handling_charges_type")
-			base_rate_stored = flt(item.get("base_rate_before_handling_charges"))
+			if item.price_list_rate:
+				item.rate = 0
 
-			# If base rate is stored, always restore it before calculation
-			# This handles both: active handling charges AND when type is cleared to 0
-			if base_rate_stored > 0:
-				item.rate = base_rate_stored
-				item.amount = flt(item.rate * item.qty, _safe_precision(item, "amount"))
-
-		# Call parent method (handles margin and discount)
+		# Standard ERPNext calculation: price_list_rate → margin → discount → item.rate
 		super(CustomTaxesAndTotals, self).calculate_item_values()
 
-		# Store rate before handling charges for each item
+		# After ERPNext has applied discounts, snapshot item.rate as the base for
+		# handling charges. This must happen before calculate_handling_charges so
+		# charges are applied on the already-discounted rate.
 		for item in self.doc.get("items"):
-			handling_charges_type = item.get("handling_charges_type")
-			base_rate_stored = flt(item.get("base_rate_before_handling_charges"))
+			item.base_rate_before_handling_charges = flt(item.rate)
 
-			# Determine if we should update the stored base rate
-			should_update_base = False
-
-			if not base_rate_stored:
-				# First time or field is empty - store the rate
-				should_update_base = True
-			elif not handling_charges_type:
-				# No handling charges configured - update base rate
-				# This allows manual rate changes to work properly
-				should_update_base = True
-
-			# Update the base rate if needed
-			if should_update_base:
-				item.base_rate_before_handling_charges = flt(item.rate)
-
-		# Now apply handling charges to each item
+		# Apply JMT handling charges on top of the discounted rate
 		for item in self.doc.get("items"):
 			self.calculate_handling_charges(item)
 
@@ -119,7 +106,7 @@ class CustomTaxesAndTotals(calculate_taxes_and_totals):
 			super(CustomTaxesAndTotals, self).calculate_totals()
 		except AttributeError as e:
 			# If 'category' attribute is missing, handle manually
-			if "'category'" in str(e) or "category" in str(e):
+			if "'category'" in str(e) or "fieldtype" in str(e):
 				# Safe calculation without category attribute
 				from frappe.utils import flt
 
@@ -273,13 +260,32 @@ def _insert_item_price_for_standard_items(args):
 		)
 
 
+# RM helper
+def _fetch_rm_from_customer(doc):
+	"""
+	Fetch custom_rm (Relation Manager) from Customer master and set it on the doc.
+	Quotation uses party_name; all others use customer.
+	"""
+	customer = None
+	if doc.doctype == "Quotation":
+		if doc.get("quotation_to") == "Customer":
+			customer = doc.get("party_name")
+	else:
+		customer = doc.get("customer")
+
+	if customer:
+		doc.custom_rm = frappe.db.get_value("Customer", customer, "custom_rm") or None
+	else:
+		doc.custom_rm = None
+
+
 # Validation hooks
 def validate_quotation(doc, method=None):
 	"""
 	Hook for Quotation validation
 	Replaces standard taxes_and_totals calculation with custom one
 	"""
-	# Use custom calculation class
+	_fetch_rm_from_customer(doc)
 	custom_calculate_taxes_and_totals(doc)
 
 
@@ -287,6 +293,7 @@ def validate_sales_order(doc, method=None):
 	"""
 	Hook for Sales Order validation
 	"""
+	_fetch_rm_from_customer(doc)
 	custom_calculate_taxes_and_totals(doc)
 
 
@@ -308,6 +315,7 @@ def validate_proforma_invoice(doc, method=None):
 	"""
 	Hook for Proforma Invoice validation
 	"""
+	_fetch_rm_from_customer(doc)
 	custom_calculate_taxes_and_totals(doc)
 
 
@@ -341,9 +349,11 @@ def _make_proforma_invoice(source_name, target_doc=None):
 
 		# Set customer AFTER run_method to prevent it from being overridden.
 		# Quotation uses party_name for customer; Proforma Invoice uses customer.
+		customer = None
 		if source.quotation_to == "Customer" and source.party_name:
-			target.customer = source.party_name
-			target.customer_name = source.customer_name or frappe.get_cached_value("Customer", source.party_name, "customer_name")
+			customer = source.party_name
+			target.customer = customer
+			target.customer_name = source.customer_name or frappe.get_cached_value("Customer", customer, "customer_name")
 
 		elif source.quotation_to == "Lead":
 			customer = frappe.db.get_value("Customer", {"lead_name": source.party_name}, "name")
@@ -351,6 +361,31 @@ def _make_proforma_invoice(source_name, target_doc=None):
 				frappe.throw(f"Please create Customer for Lead {source.party_name} before making Proforma Invoice")
 			target.customer = customer
 			target.customer_name = frappe.db.get_value("Customer", customer, "customer_name")
+
+		if customer:
+			customer_workflow_state = frappe.db.get_value("Customer", customer, "workflow_state")
+			if customer_workflow_state != "Approved":
+				frappe.throw(_("Please approve Customer {0} before making Proforma Invoice").format(customer))
+
+		address_fields = [
+			"customer_address",
+			"address_display",
+			"contact_person",
+			"contact_display",
+			"contact_mobile",
+			"contact_email",
+			"shipping_address_name",
+			"shipping_address",
+			"company_address",
+			"company_address_display",
+			"company_contact_person",
+			"territory",
+			"customer_group",
+		]
+		for fieldname in address_fields:
+			if source.get(fieldname):
+				target.set(fieldname, source.get(fieldname))
+
 		# Use custom calculation instead of standard ERPNext method
 		if target.get("taxes"):
 			custom_calculate_taxes_and_totals(target)
@@ -367,8 +402,21 @@ def _make_proforma_invoice(source_name, target_doc=None):
 			"Quotation": {
 				"doctype": "Proforma Invoice",
 				"field_map": {
-					# "party_name": "customer",
-					"customer_name": "customer_name"
+					"customer_name": "customer_name",
+					"customer_address": "customer_address",
+					"address_display": "address_display",
+					"contact_person": "contact_person",
+					"contact_display": "contact_display",
+					"contact_mobile": "contact_mobile",
+					"contact_email": "contact_email",
+					"shipping_address_name": "shipping_address_name",
+					"shipping_address": "shipping_address",
+					"company_address": "company_address",
+					"company_address_display": "company_address_display",
+					"company_contact_person": "company_contact_person",
+					"territory": "territory",
+					"customer_group": "customer_group",
+					"custom_rm": "custom_rm"
 				},
 				"validation": {"docstatus": ["=", 1]}  # Only submitted quotations
 			},

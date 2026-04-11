@@ -39,45 +39,23 @@ class CustomPurchaseTaxesAndTotals(calculate_taxes_and_totals):
 
 	def calculate_item_values(self):
 		"""
-		Override to add handling charges calculation after discount
+		Override to add handling charges calculation after discount.
 		Sequence: price_list_rate → margin → discount → handling_charges → rate
+
+		Fix: ERPNext only recalculates item.rate from price_list_rate when item.rate
+		is falsy (taxes_and_totals.py: `if not item.rate`). Pre-setting item.rate
+		causes discounts to be silently skipped. Clear item.rate first so ERPNext
+		always applies price_list_rate + discount correctly.
 		"""
-		# First, temporarily remove handling charges from rate if they exist
-		# This ensures parent calculation works with the base rate
 		for item in self.doc.get("items"):
-			handling_charges_type = item.get("handling_charges_type")
-			base_rate_stored = flt(item.get("base_rate_before_handling_charges"))
+			if item.price_list_rate:
+				item.rate = 0
 
-			# If base rate is stored, always restore it before calculation
-			# This handles both: active handling charges AND when type is cleared to 0
-			if base_rate_stored > 0:
-				item.rate = base_rate_stored
-				item.amount = flt(item.rate * item.qty, item.precision("amount"))
-
-		# Call parent method (handles margin and discount)
 		super(CustomPurchaseTaxesAndTotals, self).calculate_item_values()
 
-		# Store rate before handling charges for each item
 		for item in self.doc.get("items"):
-			handling_charges_type = item.get("handling_charges_type")
-			base_rate_stored = flt(item.get("base_rate_before_handling_charges"))
+			item.base_rate_before_handling_charges = flt(item.rate)
 
-			# Determine if we should update the stored base rate
-			should_update_base = False
-
-			if not base_rate_stored:
-				# First time or field is empty - store the rate
-				should_update_base = True
-			elif not handling_charges_type:
-				# No handling charges configured - update base rate
-				# This allows manual rate changes to work properly
-				should_update_base = True
-
-			# Update the base rate if needed
-			if should_update_base:
-				item.base_rate_before_handling_charges = flt(item.rate)
-
-		# Now apply handling charges to each item
 		for item in self.doc.get("items"):
 			self.calculate_handling_charges(item)
 
@@ -158,6 +136,7 @@ def validate_purchase_invoice(doc, method=None):
 	Hook for Purchase Invoice validation
 	"""
 	custom_calculate_taxes_and_totals(doc)
+	validate_purchase_invoice_against_po(doc)
 
 
 def validate_purchase_receipt(doc, method=None):
@@ -165,3 +144,139 @@ def validate_purchase_receipt(doc, method=None):
 	Hook for Purchase Receipt validation
 	"""
 	custom_calculate_taxes_and_totals(doc)
+
+
+def validate_purchase_invoice_against_po(doc):
+	"""
+	Allow Purchase Invoice qty/rate to be less than Purchase Order, but never more.
+	Also ensures cumulative Purchase Invoice qty across multiple submitted invoices
+	never exceeds the linked Purchase Order item qty.
+	"""
+	mismatches = []
+	po_detail_names = list({row.po_detail for row in doc.get("items", []) if row.get("po_detail")})
+	po_item_map = _get_po_item_map_with_billed_qty(po_detail_names, doc.name)
+	current_invoice_qty_by_po_detail = {}
+
+	for row in doc.get("items", []):
+		if not row.get("po_detail"):
+			continue
+
+		po_item = po_item_map.get(row.po_detail)
+		if not po_item:
+			continue
+
+		invoice_qty = _get_row_stock_qty(row)
+		po_qty = flt(po_item.get("stock_qty") or po_item.get("qty"))
+		invoice_rate = flt(row.get("rate"))
+		po_rate = flt(po_item.get("rate"))
+		item_code = _format_item_code(row)
+
+		if invoice_qty - po_qty > 1e-9:
+			mismatches.append(
+				_("{0}: current qty {1}, remaining qty {2}").format(item_code, invoice_qty, po_qty)
+			)
+
+		if invoice_rate - po_rate > 1e-9:
+			mismatches.append(
+				_("{0}: current rate {1}, allowed rate {2}").format(item_code, invoice_rate, po_rate)
+			)
+
+		current_invoice_qty_by_po_detail.setdefault(
+			row.po_detail,
+			{"item_code": item_code, "current_qty": 0.0},
+		)
+		current_invoice_qty_by_po_detail[row.po_detail]["current_qty"] += invoice_qty
+
+	for po_detail, qty_data in current_invoice_qty_by_po_detail.items():
+		po_item = po_item_map.get(po_detail)
+		if not po_item:
+			continue
+
+		po_qty = flt(po_item.get("stock_qty") or po_item.get("qty"))
+		already_billed_qty = flt(po_item.get("already_billed_qty"))
+		current_qty = flt(qty_data.get("current_qty"))
+		remaining_qty = flt(po_qty - already_billed_qty)
+
+		if current_qty - remaining_qty > 1e-9:
+			mismatches.append(
+				_("{0}: current qty {1}, remaining qty {2}").format(
+					qty_data.get("item_code"),
+					current_qty,
+					max(remaining_qty, 0),
+				)
+			)
+
+	if mismatches:
+		frappe.throw(
+			_(
+				"PO limit exceeded.<br><br>{0}"
+			).format("<br>".join(mismatches))
+		)
+
+
+@frappe.whitelist()
+def get_purchase_order_item_invoice_status(po_detail, purchase_invoice=None):
+	po_item_map = _get_po_item_map_with_billed_qty([po_detail], purchase_invoice)
+	po_item = po_item_map.get(po_detail)
+
+	if not po_item:
+		return {}
+
+	po_qty = flt(po_item.get("stock_qty") or po_item.get("qty"))
+	already_billed_qty = flt(po_item.get("already_billed_qty"))
+
+	return {
+		"po_detail": po_detail,
+		"po_qty": po_qty,
+		"already_billed_qty": already_billed_qty,
+		"remaining_qty": flt(po_qty - already_billed_qty),
+		"rate": flt(po_item.get("rate")),
+		"purchase_order": po_item.get("parent"),
+	}
+
+
+def _get_po_item_map_with_billed_qty(po_detail_names, exclude_purchase_invoice=None):
+	if not po_detail_names:
+		return {}
+
+	exclude_clause = ""
+	params = {"po_detail_names": tuple(po_detail_names)}
+
+	if exclude_purchase_invoice:
+		exclude_clause = "and pii.parent != %(exclude_purchase_invoice)s"
+		params["exclude_purchase_invoice"] = exclude_purchase_invoice
+
+	rows = frappe.db.sql(
+		f"""
+		select
+			poi.name,
+			poi.parent,
+			poi.qty,
+			poi.stock_qty,
+			poi.rate,
+			coalesce(sum(
+				case
+					when pi.docstatus = 1 then coalesce(pii.stock_qty, pii.qty * coalesce(pii.conversion_factor, 1), pii.qty)
+					else 0
+				end
+			), 0) as already_billed_qty
+		from `tabPurchase Order Item` poi
+		left join `tabPurchase Invoice Item` pii on pii.po_detail = poi.name
+		left join `tabPurchase Invoice` pi on pi.name = pii.parent
+		where poi.name in %(po_detail_names)s
+			{exclude_clause}
+		group by poi.name, poi.parent, poi.qty, poi.stock_qty, poi.rate
+		""",
+		params,
+		as_dict=True,
+	)
+
+	return {row.name: row for row in rows}
+
+
+def _get_row_stock_qty(row):
+	return flt(row.get("stock_qty")) or flt(row.get("qty")) * flt(row.get("conversion_factor") or 1)
+
+
+def _format_item_code(row):
+	return row.get("item_code") or _("Row #{0}").format(row.get("idx"))

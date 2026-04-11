@@ -332,6 +332,12 @@
    "print_hide": 1
   },
   {
+   "fieldname": "custom_rm",
+   "fieldtype": "Link",
+   "label": "RM",
+   "options": "Employee"
+  },
+  {
    "fieldname": "territory",
    "fieldtype": "Link",
    "label": "Territory",

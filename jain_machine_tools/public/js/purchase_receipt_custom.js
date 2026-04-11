@@ -1,4 +1,21 @@
 frappe.ui.form.on("Purchase Receipt", {
+    setup(frm) {
+        jain_machine_tools.address_filters.setup_supplier_address_filters(frm);
+    },
+
+    supplier(frm) {
+        jain_machine_tools.address_filters.clear_party_addresses(frm, [
+            'supplier_address',
+            'shipping_address',
+            'dispatch_address',
+            'billing_address'
+        ]);
+        jain_machine_tools.address_filters.clear_party_contacts(frm, [
+            'contact_person',
+            'customer_contact_person'
+        ]);
+    },
+
     refresh(frm) {
         if (frm.doc.docstatus !== 0 || !frm.doc.name) return;
         if (frm.__barcode_scan_added) return;
@@ -30,9 +47,11 @@ async function open_barcode_scan_dialog(frm) {
         );
 
         if (r?.message?.has_serial_no) {
+            const existing_serials = get_serial_list(row.serial_no);
             serial_items.push({
                 row,
-                completed: !!row.serial_no
+                completed: existing_serials.length >= row.qty,
+                scanned_count: existing_serials.length
             });
         }
     }
@@ -66,6 +85,41 @@ async function open_barcode_scan_dialog(frm) {
     render_item_table(d, frm, serial_items);
 }
 
+function get_serial_list(serial_no) {
+    return (serial_no || "")
+        .split("\n")
+        .map((value) => normalize_serial_no(value))
+        .filter(Boolean);
+}
+
+function get_saved_scanned_serials(item, obj) {
+    const serials = get_serial_list(item.serial_no);
+    if (serials.length) {
+        obj.scanned_count = serials.length;
+        obj.completed = serials.length >= item.qty;
+    }
+    return serials;
+}
+
+function normalize_serial_no(serial_no) {
+    return (serial_no || "").trim().toUpperCase();
+}
+
+function is_duplicate_serial_in_document(frm, current_item, serial_no) {
+    return (frm.doc.items || []).some((row) => {
+        if (!row || row.name === current_item.name) {
+            return false;
+        }
+
+        return get_serial_list(row.serial_no).includes(serial_no);
+    });
+}
+
+async function get_existing_serial_item_code(serial_no) {
+    const response = await frappe.db.get_value("Serial No", { name: serial_no }, ["item_code"]);
+    return response?.message?.item_code || null;
+}
+
 // ITEM TABLE
 
 function render_item_table(d, frm, items) {
@@ -76,6 +130,7 @@ function render_item_table(d, frm, items) {
                     <th>Select</th>
                     <th>Item Code</th>
                     <th>Qty</th>
+                    <th>Scanned</th>
                     <th>Status</th>
                 </tr>
             </thead>
@@ -86,14 +141,16 @@ function render_item_table(d, frm, items) {
         html += `
             <tr>
                 <td>
-                    <input type="checkbox"
+                    <input type="radio"
+                        name="scan-item-select"
                         class="scan-item"
                         data-idx="${i}"
                         ${obj.completed ? "disabled" : ""}>
                 </td>
                 <td>${obj.row.item_code}</td>
                 <td>${obj.row.qty}</td>
-                <td>${obj.completed ? "Completed" : "Pending"}</td>
+                <td>${obj.scanned_count || 0}</td>
+                <td>${get_item_status_label(obj)}</td>
             </tr>
         `;
     });
@@ -132,13 +189,25 @@ function render_item_table(d, frm, items) {
     });
 }
 
+function get_item_status_label(obj) {
+    if (obj.completed) {
+        return "Completed";
+    }
+
+    if (obj.scanned_count > 0) {
+        return "Partial";
+    }
+
+    return "Pending";
+}
+
 // SCAN SINGLE ITEM
 
 async function scan_item(d, frm, items, idx) {
     const obj = items[idx];
     const item = obj.row;
     const required_qty = item.qty;
-    const scanned = [];
+    const scanned = get_saved_scanned_serials(item, obj);
 
     d.fields_dict.scan_area.$wrapper.html(`
         <div style="display:flex; gap:24px; margin-top:20px;">
@@ -147,7 +216,7 @@ async function scan_item(d, frm, items, idx) {
             <div style="flex:1;">
                 <h4>Scanning: ${item.item_code}</h4>
                 <p>Required Qty: <b>${required_qty}</b></p>
-                <p>Scanned: <b id="scan-count">0</b></p>
+                <p>Scanned: <b id="scan-count">${scanned.length}</b></p>
 
                 <!-- SIMPLE CAMERA BOX -->
                 <div id="scanner-box"
@@ -164,9 +233,15 @@ async function scan_item(d, frm, items, idx) {
 
                 <button class="btn btn-success"
                         id="complete"
-                        disabled
+                        ${scanned.length === required_qty ? "" : "disabled"}
                         style="margin-top:14px;">
                     Complete Item
+                </button>
+                <button class="btn btn-secondary"
+                        id="save-progress"
+                        ${scanned.length ? "" : "disabled"}
+                        style="margin-top:14px; margin-left:8px;">
+                    Save
                 </button>
             </div>
 
@@ -178,6 +253,7 @@ async function scan_item(d, frm, items, idx) {
                         <tr>
                             <th style="width:50px;">#</th>
                             <th>Serial No</th>
+                            <th style="width:70px;">Remove</th>
                         </tr>
                     </thead>
                     <tbody></tbody>
@@ -189,8 +265,13 @@ async function scan_item(d, frm, items, idx) {
 
     const count_el = d.fields_dict.scan_area.$wrapper.find("#scan-count");
     const complete_btn = d.fields_dict.scan_area.$wrapper.find("#complete");
+    const save_btn = d.fields_dict.scan_area.$wrapper.find("#save-progress");
     const table_body = d.fields_dict.scan_area.$wrapper
         .find("#scanned-table tbody");
+    const update_complete_button = () => {
+        complete_btn.prop("disabled", scanned.length !== required_qty);
+        save_btn.prop("disabled", !scanned.length);
+    };
 
     function render_scanned() {
         table_body.html("");
@@ -199,10 +280,16 @@ async function scan_item(d, frm, items, idx) {
                 <tr>
                     <td>${i + 1}</td>
                     <td>${s}</td>
+                    <td>
+                        <button type="button" class="btn btn-xs btn-danger remove-scanned-serial" data-serial="${frappe.utils.escape_html(s)}">x</button>
+                    </td>
                 </tr>
             `);
         });
+        update_complete_button();
     }
+
+    render_scanned();
 
     const scanner = new Html5Qrcode("reader");
 
@@ -213,22 +300,54 @@ async function scan_item(d, frm, items, idx) {
             qrbox: { width: 280, height: 120 },
             disableFlip: true,
         },
-        (decodedText) => {
-            if (scanned.includes(decodedText)) return;
-            if (scanned.length >= required_qty) return;
+        async (decodedText) => {
+            const serial = normalize_serial_no(decodedText);
 
-            scanned.push(decodedText);
+            if (!serial) return;
+            if (scanned.includes(serial)) return;
+            if (scanned.length >= required_qty) return;
+            if (is_duplicate_serial_in_document(frm, item, serial)) {
+                frappe.msgprint(__("Duplicate serial number. This serial is already scanned in this document"));
+                return;
+            }
+            const existingItemCode = await get_existing_serial_item_code(serial);
+            if (existingItemCode) {
+                frappe.msgprint(
+                    __("Serial No {0} already exists in system for Item {1}", [serial, existingItemCode])
+                );
+                return;
+            }
+
+            scanned.push(serial);
             count_el.text(scanned.length);
             render_scanned();
-
-            if (scanned.length === required_qty) {
-                complete_btn.prop("disabled", false);
-                scanner.stop();
-            }
         }
     );
 
-    complete_btn.on("click", () => {
+    table_body.on("click", ".remove-scanned-serial", function() {
+        const serial = $(this).data("serial");
+        const serial_idx = scanned.indexOf(serial);
+        if (serial_idx === -1) {
+            return;
+        }
+
+        scanned.splice(serial_idx, 1);
+        count_el.text(scanned.length);
+        render_scanned();
+    });
+
+    save_btn.on("click", async () => {
+        await scanner.stop().catch(() => null);
+        persist_purchase_receipt_scan_progress(frm, item, scanned);
+        obj.scanned_count = scanned.length;
+        obj.completed = scanned.length >= required_qty;
+        frappe.show_alert({ message: __("Saved scanned serials for {0}", [item.item_code]), indicator: "green" });
+        d.fields_dict.scan_area.$wrapper.html("");
+        render_item_table(d, frm, items);
+    });
+
+    complete_btn.on("click", async () => {
+        await scanner.stop().catch(() => null);
         item.use_serial_batch_fields = 1;
         item.serial_no = scanned.join("\n");
         item.qty = scanned.length;
@@ -236,6 +355,7 @@ async function scan_item(d, frm, items, idx) {
         frm.refresh_field("items");
         frm.dirty();
 
+        obj.scanned_count = scanned.length;
         obj.completed = true;
         frappe.msgprint(`Scan completed for ${item.item_code}`);
 
@@ -254,14 +374,14 @@ function start_gun_scan(d, frm, items, idx) {
     const obj = items[idx];
     const item = obj.row;
     const required_qty = item.qty;
-    const scanned = [];
+    const scanned = get_saved_scanned_serials(item, obj);
 
     d.fields_dict.scan_area.$wrapper.html(`
         <div style="display:flex; gap:24px; margin-top:20px;">
             <div style="flex:1;">
                 <h4>Scanning: ${item.item_code}</h4>
                 <p>Required Qty: <b>${required_qty}</b></p>
-                <p>Scanned: <b id="scan-count">0</b></p>
+                <p>Scanned: <b id="scan-count">${scanned.length}</b></p>
 
                 <input type="text"
                     id="gun-input"
@@ -270,9 +390,15 @@ function start_gun_scan(d, frm, items, idx) {
 
                 <button class="btn btn-success"
                         id="complete"
-                        disabled
+                        ${scanned.length === required_qty ? "" : "disabled"}
                         style="margin-top:14px;">
                     Complete Item
+                </button>
+                <button class="btn btn-secondary"
+                        id="save-progress"
+                        ${scanned.length ? "" : "disabled"}
+                        style="margin-top:14px; margin-left:8px;">
+                    Save
                 </button>
             </div>
 
@@ -283,6 +409,7 @@ function start_gun_scan(d, frm, items, idx) {
                         <tr>
                             <th>#</th>
                             <th>Serial No</th>
+                            <th style="width:70px;">Remove</th>
                         </tr>
                     </thead>
                     <tbody></tbody>
@@ -293,23 +420,54 @@ function start_gun_scan(d, frm, items, idx) {
 
     const count_el = d.fields_dict.scan_area.$wrapper.find("#scan-count");
     const complete_btn = d.fields_dict.scan_area.$wrapper.find("#complete");
+    const save_btn = d.fields_dict.scan_area.$wrapper.find("#save-progress");
     const table_body = d.fields_dict.scan_area.$wrapper.find("#scanned-table tbody");
     const input = d.fields_dict.scan_area.$wrapper.find("#gun-input");
+    const render_scanned = () => {
+        table_body.html("");
+        scanned.forEach((serial, i) => {
+            table_body.append(`
+                <tr>
+                    <td>${i + 1}</td>
+                    <td>${serial}</td>
+                    <td>
+                        <button type="button" class="btn btn-xs btn-danger remove-scanned-serial" data-serial="${frappe.utils.escape_html(serial)}">x</button>
+                    </td>
+                </tr>
+            `);
+        });
+        complete_btn.prop("disabled", scanned.length !== required_qty);
+        save_btn.prop("disabled", !scanned.length);
+    };
 
+    render_scanned();
     input.focus();
 
-    input.on("keydown", function(e) {
+    input.on("keydown", async function(e) {
 
         if (e.key === "Enter") {
 
             e.preventDefault();
 
-            let serial = $(this).val().trim();
+            let serial = normalize_serial_no($(this).val());
 
             if (!serial) return;
 
             if (scanned.includes(serial)) {
                 frappe.msgprint("Duplicate serial");
+                $(this).val("");
+                return;
+            }
+            if (is_duplicate_serial_in_document(frm, item, serial)) {
+                frappe.msgprint(__("Duplicate serial number. This serial is already scanned in this document"));
+                $(this).val("");
+                return;
+            }
+            const existingItemCode = await get_existing_serial_item_code(serial);
+            if (existingItemCode) {
+                frappe.msgprint(
+                    __("Serial No {0} already exists in system for Item {1}", [serial, existingItemCode])
+                );
                 $(this).val("");
                 return;
             }
@@ -322,23 +480,34 @@ function start_gun_scan(d, frm, items, idx) {
             scanned.push(serial);
 
             count_el.text(scanned.length);
-
-            table_body.append(`
-                <tr>
-                    <td>${scanned.length}</td>
-                    <td>${serial}</td>
-                </tr>
-            `);
+            render_scanned();
 
             $(this).val("");
-
-            if (scanned.length === required_qty) {
-                complete_btn.prop("disabled", false);
-            }
 
             $(this).focus();
         }
 
+    });
+    table_body.on("click", ".remove-scanned-serial", function() {
+        const serial = $(this).data("serial");
+        const serial_idx = scanned.indexOf(serial);
+        if (serial_idx === -1) {
+            return;
+        }
+
+        scanned.splice(serial_idx, 1);
+        count_el.text(scanned.length);
+        render_scanned();
+        input.focus();
+    });
+
+    save_btn.on("click", () => {
+        persist_purchase_receipt_scan_progress(frm, item, scanned);
+        obj.scanned_count = scanned.length;
+        obj.completed = scanned.length >= required_qty;
+        frappe.show_alert({ message: __("Saved scanned serials for {0}", [item.item_code]), indicator: "green" });
+        d.fields_dict.scan_area.$wrapper.html("");
+        render_item_table(d, frm, items);
     });
     complete_btn.on("click", () => {
         item.use_serial_batch_fields = 1;
@@ -348,6 +517,7 @@ function start_gun_scan(d, frm, items, idx) {
         frm.refresh_field("items");
         frm.dirty();
 
+        obj.scanned_count = scanned.length;
         obj.completed = true;
 
         frappe.msgprint(`Scan completed for ${item.item_code}`);
@@ -361,6 +531,13 @@ function start_gun_scan(d, frm, items, idx) {
         }
 
     });
+}
+
+function persist_purchase_receipt_scan_progress(frm, item, scanned) {
+    item.use_serial_batch_fields = 1;
+    item.serial_no = scanned.join("\n");
+    frm.refresh_field("items");
+    frm.dirty();
 }
 frappe.ui.form.on("Purchase Receipt", {
     onload(frm) {

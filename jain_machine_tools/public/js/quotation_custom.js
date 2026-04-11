@@ -1,5 +1,9 @@
 // Custom Quotation handlers
 frappe.ui.form.on('Quotation', {
+	setup: function(frm) {
+		jain_machine_tools.address_filters.setup_customer_address_filters(frm);
+	},
+
 	refresh: function(frm) {
 		// Initialize custom grid icons
 		if (jain_machine_tools && jain_machine_tools.grid_custom_icons) {
@@ -15,6 +19,23 @@ frappe.ui.form.on('Quotation', {
 				});
 			}, __('Create'));
 		}
+	},
+
+	party_name: function(frm) {
+		if (frm.doc.quotation_to === 'Customer') {
+			jmt_fetch_rm(frm, frm.doc.party_name);
+		}
+	},
+
+	customer: function(frm) {
+		jain_machine_tools.address_filters.clear_party_addresses(frm, [
+			'customer_address',
+			'shipping_address_name',
+			'dispatch_address_name'
+		]);
+		jain_machine_tools.address_filters.clear_party_contacts(frm, [
+			'contact_person'
+		]);
 	},
 
 	items_add: function(frm, cdt, cdn) {
@@ -86,6 +107,16 @@ frappe.ui.form.on('Quotation Item', {
 		}
 	}
 });
+
+function jmt_fetch_rm(frm, customer) {
+	if (!customer) {
+		frm.set_value('custom_rm', '');
+		return;
+	}
+	frappe.db.get_value('Customer', customer, 'custom_rm', (r) => {
+		frm.set_value('custom_rm', r && r.custom_rm ? r.custom_rm : '');
+	});
+}
 
 function calculate_item_handling_charges(frm, cdt, cdn) {
 	let row = locals[cdt][cdn];

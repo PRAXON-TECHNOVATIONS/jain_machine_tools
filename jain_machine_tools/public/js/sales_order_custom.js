@@ -1,10 +1,32 @@
 // Custom Sales Order handlers
 frappe.ui.form.on('Sales Order', {
+	setup: function(frm) {
+		jain_machine_tools.address_filters.setup_customer_address_filters(frm);
+	},
+
 	refresh: function(frm) {
 		// Initialize custom grid icons
 		if (jain_machine_tools && jain_machine_tools.grid_custom_icons) {
 			jain_machine_tools.grid_custom_icons.setup(frm);
 		}
+
+		if (frm.doc.docstatus === 1) {
+			frm.add_custom_button(__('Delivery Plan'), () => {
+				frappe.set_route('List', 'Delivery Planning Schedule', {sales_order: frm.doc.name});
+			}, __('View'));
+		}
+	},
+
+	customer: function(frm) {
+		jmt_fetch_rm_so(frm, frm.doc.customer);
+		jain_machine_tools.address_filters.clear_party_addresses(frm, [
+			'customer_address',
+			'shipping_address_name',
+			'dispatch_address_name'
+		]);
+		jain_machine_tools.address_filters.clear_party_contacts(frm, [
+			'contact_person'
+		]);
 	},
 
 	items_add: function(frm, cdt, cdn) {
@@ -65,3 +87,13 @@ frappe.ui.form.on('Sales Order Item', {
 		frm.script_manager.trigger('calculate_taxes_and_totals');
 	}
 });
+
+function jmt_fetch_rm_so(frm, customer) {
+	if (!customer) {
+		frm.set_value('custom_rm', '');
+		return;
+	}
+	frappe.db.get_value('Customer', customer, 'custom_rm', (r) => {
+		frm.set_value('custom_rm', r && r.custom_rm ? r.custom_rm : '');
+	});
+}

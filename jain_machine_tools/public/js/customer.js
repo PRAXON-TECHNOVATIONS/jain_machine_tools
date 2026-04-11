@@ -1,15 +1,15 @@
 frappe.ui.form.on('Customer', {
-    onload: function(frm) {
+    onload: function (frm) {
 
-        frm.set_query("custom_rm", function() {
+        frm.set_query("custom_rm", function () {
             return {
                 filters: {
-                    designation: "Relationship Manager"
+                    designation: ["in", ["Relationship Manager", "Sales Head"]]
                 }
             };
         });
 
-        frm.set_query("custom_sales_coordinator", function() {
+        frm.set_query("custom_sales_coordinator", function () {
             return {
                 filters: {
                     designation: "Sales Coordinator"
@@ -52,31 +52,5 @@ frappe.ui.form.on('Customer', {
                 }
             }
         });
-    }
-});
-
-frappe.ui.form.on('Customer', {
-    after_save: function(frm) {
-
-        let employees = [];
-
-        if (frm.doc.custom_rm) {
-            employees.push(frm.doc.custom_rm);
-        }
-
-        if (frm.doc.custom_sales_coordinator) {
-            employees.push(frm.doc.custom_sales_coordinator);
-        }
-
-        frappe.call({
-            method: "jain_machine_tools.api.customer_assignment.link_assign_to",
-            args: {
-                name: frm.doc.name,
-                description: frm.doc.customer_name,
-                employees: employees,
-                doctype: "Customer"
-            }
-        });
-
     }
 });

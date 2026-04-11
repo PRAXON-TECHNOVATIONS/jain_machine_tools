@@ -7,6 +7,11 @@ import frappe
 from frappe import _
 from frappe.utils import cint
 
+from jain_machine_tools.utils.serial_normalization import (
+    normalize_serial_no,
+    normalize_serial_no_list,
+)
+
 
 @frappe.whitelist()
 def scan_purchase_receipt_serial(purchase_receipt: str, serial_no: str):
@@ -20,6 +25,8 @@ def scan_purchase_receipt_serial(purchase_receipt: str, serial_no: str):
     - Serial must not be already scanned in this PR
     - 1 serial scan = qty 1
     """
+
+    serial_no = normalize_serial_no(serial_no)
 
     if not purchase_receipt or not serial_no:
         frappe.throw(_("Purchase Receipt and Serial No are required"))
@@ -55,9 +62,7 @@ def scan_purchase_receipt_serial(purchase_receipt: str, serial_no: str):
 
     for row in pr.items:
         if row.serial_no:
-            existing_serials = [
-                s.strip() for s in row.serial_no.split("\n") if s.strip()
-            ]
+            existing_serials = normalize_serial_no_list(row.serial_no)
             if serial_no in existing_serials:
                 frappe.throw(
                     _("Serial No {0} already scanned in this Purchase Receipt")
@@ -76,7 +81,7 @@ def scan_purchase_receipt_serial(purchase_receipt: str, serial_no: str):
     if pr_item_row:
         # Append serial
         serials = (
-            pr_item_row.serial_no.split("\n")
+            normalize_serial_no_list(pr_item_row.serial_no)
             if pr_item_row.serial_no
             else []
         )

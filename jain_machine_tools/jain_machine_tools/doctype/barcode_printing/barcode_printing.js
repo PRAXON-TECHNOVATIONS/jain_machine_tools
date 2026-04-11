@@ -10,35 +10,20 @@ frappe.ui.form.on("Barcode Printing", {
 					query: 'jain_machine_tools.api.barcode_printing_filters.get_stock_entry_repack'
 				};
 			}
-			// No filter for other doctypes like Purchase Receipt
-			return {};
-		});
-
-		// Set query for item_code field to filter by t_warehouse or serial_no
-		frm.set_query('item_code', function() {
-			if (frm.doc.record && frm.doc.type === 'Stock Entry') {
+			if (frm.doc.type === 'Purchase Receipt') {
 				return {
-					query: 'jain_machine_tools.api.barcode_printing_filters.get_items_with_t_warehouse',
-					filters: {
-						'stock_entry': frm.doc.record
-					}
-				};
-			} else if (frm.doc.record && frm.doc.type === 'Purchase Receipt') {
-				return {
-					query: 'jain_machine_tools.api.barcode_printing_filters.get_items_with_serial_no',
-					filters: {
-						'purchase_receipt': frm.doc.record
-					}
+					query: 'jain_machine_tools.api.barcode_printing_filters.get_purchase_receipt_by_supplier_invoice'
 				};
 			}
 			return {};
 		});
+
+		toggle_warehouse_field(frm);
 	},
 
 	type(frm) {
 		// Clear record field when type changes
 		frm.set_value('record', '');
-		frm.set_value('item_code', '');
 
 		// Re-apply query filter
 		frm.set_query('record', function() {
@@ -47,33 +32,20 @@ frappe.ui.form.on("Barcode Printing", {
 					query: 'jain_machine_tools.api.barcode_printing_filters.get_stock_entry_repack'
 				};
 			}
-			return {};
-		});
-	},
-
-	record(frm) {
-		// Clear item_code when record changes
-		frm.set_value('item_code', '');
-
-		// Set query for item_code based on selected record
-		frm.set_query('item_code', function() {
-			if (frm.doc.record && frm.doc.type === 'Stock Entry') {
+			if (frm.doc.type === 'Purchase Receipt') {
 				return {
-					query: 'jain_machine_tools.api.barcode_printing_filters.get_items_with_t_warehouse',
-					filters: {
-						'stock_entry': frm.doc.record
-					}
-				};
-			} else if (frm.doc.record && frm.doc.type === 'Purchase Receipt') {
-				return {
-					query: 'jain_machine_tools.api.barcode_printing_filters.get_items_with_serial_no',
-					filters: {
-						'purchase_receipt': frm.doc.record
-					}
+					query: 'jain_machine_tools.api.barcode_printing_filters.get_purchase_receipt_by_supplier_invoice'
 				};
 			}
 			return {};
 		});
+
+		toggle_warehouse_field(frm);
+	},
+
+	record(frm) {
+		frm.clear_table('table_hjbk');
+		frm.refresh_field('table_hjbk');
 	},
 
 	get_serial_no(frm) {
@@ -88,17 +60,11 @@ frappe.ui.form.on("Barcode Printing", {
 			return;
 		}
 
-		if (!frm.doc.item_code) {
-			frappe.msgprint(__('Please select an Item Code first'));
-			return;
-		}
-
-		// Fetch serial numbers from the Stock Entry or Purchase Receipt
+		// Fetch item rows from the selected document's child table.
 		frappe.call({
 			method: 'jain_machine_tools.jain_machine_tools.doctype.barcode_printing.barcode_printing.get_serial_numbers',
 			args: {
 				record: frm.doc.record,
-				item_code: frm.doc.item_code,
 				doctype_name: frm.doc.type
 			},
 			callback: function(r) {
@@ -123,16 +89,25 @@ frappe.ui.form.on("Barcode Printing", {
 					frm.refresh_field('table_hjbk');
 
 					frappe.show_alert({
-						message: __('Loaded {0} serial number(s)', [r.message.length]),
+						message: __('Loaded {0} row(s)', [r.message.length]),
 						indicator: 'green'
 					}, 5);
 				} else {
-					frappe.msgprint(__('No serial numbers found for this item in the selected record'));
+					frappe.msgprint(__('No serial numbers found in the selected record'));
 				}
 			}
 		});
 	}
 });
+
+function toggle_warehouse_field(frm) {
+	const grid = frm.get_field('table_hjbk').grid;
+	const is_opening = frm.doc.type === 'Opening Stock';
+
+	grid.set_column_disp('warehouse', is_opening);
+	grid.set_column_disp('manual_serial_no', is_opening);
+	grid.set_column_disp('serial_no', !is_opening);
+}
 
 frappe.ui.form.on("Barcode Printing Table", {
 	vendor_manufacturing_date(frm, cdt, cdn) {

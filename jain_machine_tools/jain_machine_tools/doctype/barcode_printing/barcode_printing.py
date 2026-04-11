@@ -12,24 +12,18 @@ class BarcodePrinting(Document):
 	def on_submit(self):
 		"""Update barcode status and mark serial numbers as generated when submitted"""
 		# Mark all serial numbers in this barcode printing as barcode_generated
-		mark_serial_numbers_as_generated(self.name, checked=True)
+		mark_serial_numbers_as_generated(self, checked=True)
 
 		# Update barcode status in Purchase Receipt Item or Stock Entry Detail
-		if self.type == "Purchase Receipt":
-			update_barcode_status_purchase_receipt(self.record, self.item_code)
-		elif self.type == "Stock Entry":
-			update_barcode_status_stock_entry(self.record, self.item_code)
+		update_barcode_status_for_document(self)
 
 	def on_cancel(self):
 		"""Unmark serial numbers when barcode printing is cancelled"""
 		# Unmark all serial numbers in this barcode printing
-		mark_serial_numbers_as_generated(self.name, checked=False)
+		mark_serial_numbers_as_generated(self, checked=False)
 
 		# Update barcode status in Purchase Receipt Item or Stock Entry Detail
-		if self.type == "Purchase Receipt":
-			update_barcode_status_purchase_receipt(self.record, self.item_code)
-		elif self.type == "Stock Entry":
-			update_barcode_status_stock_entry(self.record, self.item_code)
+		update_barcode_status_for_document(self)
 
 
 def get_barcode_image(serial_no, barcode_type="Code128"):
@@ -79,20 +73,20 @@ def get_barcode_image(serial_no, barcode_type="Code128"):
 
 
 @frappe.whitelist()
-def get_serial_numbers(record, item_code, doctype_name=None):
+def get_serial_numbers(record, item_code=None, doctype_name=None):
 	"""
-	Fetch serial numbers from Stock Entry Detail or Purchase Receipt Item for the given item_code.
+	Fetch serial numbers from Stock Entry Detail or Purchase Receipt Item.
 
 	Args:
 		record: Stock Entry or Purchase Receipt name
-		item_code: Item code to filter
+		item_code: Optional item code to filter
 		doctype_name: Type of document (Stock Entry or Purchase Receipt)
 
 	Returns:
 		List of serial numbers
 	"""
-	if not record or not item_code:
-		frappe.throw("Please select a record and item code")
+	if not record:
+		frappe.throw("Please select a record")
 
 	# Determine doctype if not provided
 	if not doctype_name:
@@ -129,7 +123,7 @@ def get_serial_numbers_from_stock_entry(record, item_code):
 		FROM `tabStock Entry Detail` sed
 		WHERE
 			sed.parent = %(record)s
-			AND sed.item_code = %(item_code)s
+			AND (%(item_code)s IS NULL OR %(item_code)s = '' OR sed.item_code = %(item_code)s)
 			AND sed.t_warehouse IS NOT NULL
 			AND sed.t_warehouse != ''
 	""", {
@@ -138,9 +132,16 @@ def get_serial_numbers_from_stock_entry(record, item_code):
 	}, as_dict=True)
 
 	if not items:
-		frappe.throw(f"No items found with target warehouse for Item: {item_code} in {record}")
+		if item_code:
+			frappe.throw(f"No items found with target warehouse for Item: {item_code} in {record}")
+		return []
 
 	serial_numbers = []
+
+	# Use Stock Entry posting date as vendor manufacturing date.
+	posting_date = frappe.db.get_value("Stock Entry", record, "posting_date")
+	manufacturing_date = getdate(posting_date) if posting_date else None
+	expiry_date = add_months(manufacturing_date, 12) if manufacturing_date else None
 
 	# Get serial numbers from serial_and_batch_bundle
 	for item in items:
@@ -163,7 +164,9 @@ def get_serial_numbers_from_stock_entry(record, item_code):
 			for entry in bundle_entries:
 				serial_numbers.append({
 					'item_code': item.item_code,
-					'serial_no': entry.serial_no
+					'serial_no': entry.serial_no,
+					'vendor_manufacturing_date': manufacturing_date,
+					'warranty_expiry_date': expiry_date
 				})
 
 	return serial_numbers
@@ -189,7 +192,7 @@ def get_serial_numbers_from_purchase_receipt(record, item_code):
 		FROM `tabPurchase Receipt Item` pri
 		WHERE
 			pri.parent = %(record)s
-			AND pri.item_code = %(item_code)s
+			AND (%(item_code)s IS NULL OR %(item_code)s = '' OR pri.item_code = %(item_code)s)
 			AND pri.serial_and_batch_bundle IS NOT NULL
 			AND pri.serial_and_batch_bundle != ''
 	""", {
@@ -198,7 +201,9 @@ def get_serial_numbers_from_purchase_receipt(record, item_code):
 	}, as_dict=True)
 
 	if not items:
-		frappe.throw(f"No items found with serial numbers for Item: {item_code} in {record}")
+		if item_code:
+			frappe.throw(f"No items found with serial numbers for Item: {item_code} in {record}")
+		return []
 
 	serial_numbers = []
 
@@ -234,6 +239,17 @@ def get_serial_numbers_from_purchase_receipt(record, item_code):
 				})
 
 	return serial_numbers
+
+
+def update_barcode_status_for_document(doc):
+	"""Update barcode status for all item codes present in the child table."""
+	item_codes = {row.item_code for row in doc.table_hjbk if row.item_code}
+
+	for item_code in item_codes:
+		if doc.type == "Purchase Receipt":
+			update_barcode_status_purchase_receipt(doc.record, item_code)
+		elif doc.type == "Stock Entry":
+			update_barcode_status_stock_entry(doc.record, item_code)
 
 
 def update_barcode_status_purchase_receipt(purchase_receipt, item_code):
@@ -451,38 +467,63 @@ def get_printed_serial_numbers_pr(purchase_receipt, item_code):
 	return printed_serial_numbers
 
 
-def mark_serial_numbers_as_generated(barcode_printing_name, checked=True):
+def mark_serial_numbers_as_generated(doc, checked=True):
 	"""
 	Mark or unmark serial numbers as barcode_generated and update vendor warranty dates.
+	Creates Serial No if missing for Opening Stock type.
 
 	Args:
-		barcode_printing_name: Barcode Printing document name
+		doc: Barcode Printing document
 		checked: True to mark as generated, False to unmark
 	"""
 	# Get all serial numbers from the Barcode Printing Table with warranty dates
 	serial_entries = frappe.db.sql("""
-		SELECT serial_no, vendor_manufacturing_date, warranty_expiry_date
+		SELECT item_code, serial_no, manual_serial_no, warehouse, vendor_manufacturing_date, warranty_expiry_date
 		FROM `tabBarcode Printing Table`
 		WHERE parent = %(parent)s
-		AND serial_no IS NOT NULL
-		AND serial_no != ''
+		AND (
+			(serial_no IS NOT NULL AND serial_no != '') OR
+			(manual_serial_no IS NOT NULL AND manual_serial_no != '')
+		)
 	""", {
-		'parent': barcode_printing_name
+		'parent': doc.name
 	}, as_dict=True)
 
 	# Update each serial number
 	for entry in serial_entries:
-		if checked:
-			# When marking as generated, update barcode_generated flag and vendor warranty dates
-			frappe.db.set_value('Serial No', entry.serial_no, {
-				'barcode_generated': 1,
-				'vendor_manufacturing_date': entry.vendor_manufacturing_date,
-				'vendor_warranty_expiry_date': entry.warranty_expiry_date
-			}, update_modified=False)
-		else:
-			# When unmarking (on cancel), only unset the barcode_generated flag
-			# Keep the warranty dates as they were set
-			frappe.db.set_value('Serial No', entry.serial_no, 'barcode_generated', 0, update_modified=False)
+		sn = entry.manual_serial_no or entry.serial_no
+		if not sn:
+			continue
+
+		if frappe.db.exists('Serial No', sn):
+			if checked:
+				# When marking as generated, update barcode_generated flag and vendor warranty dates
+				frappe.db.set_value('Serial No', sn, {
+					'barcode_generated': 1,
+					'vendor_manufacturing_date': entry.vendor_manufacturing_date,
+					'vendor_warranty_expiry_date': entry.warranty_expiry_date
+				}, update_modified=False)
+			else:
+				# When unmarking (on cancel), only unset the barcode_generated flag
+				# Keep the warranty dates as they were set
+				frappe.db.set_value('Serial No', sn, 'barcode_generated', 0, update_modified=False)
+		elif checked and doc.type == "Opening Stock":
+			# Create new Serial No if it doesn't exist for Opening Stock
+			new_sn = frappe.get_doc({
+				"doctype": "Serial No",
+				"serial_no": sn,
+				"item_code": entry.item_code,
+				"company": doc.company,
+				"status": "Inactive",
+				"barcode_generated": 1,
+				"vendor_manufacturing_date": entry.vendor_manufacturing_date,
+				"vendor_warranty_expiry_date": entry.warranty_expiry_date
+			})
+			new_sn.insert(ignore_permissions=True)
+
+			# Force set the warehouse after insertion to bypass validation if provided
+			if entry.warehouse:
+				frappe.db.set_value("Serial No", sn, "warehouse", entry.warehouse, update_modified=False)
 
 	frappe.db.commit()
 

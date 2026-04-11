@@ -35,7 +35,10 @@ app_include_css = [
 ]
 
 app_include_js = ["/assets/jain_machine_tools/js/grid_custom_icons.js?v=1.0.2",
-                  "/assets/jain_machine_tools/js/html5-qrcode.min.js"
+                  "/assets/jain_machine_tools/js/address_filters.js?v=1.0.0",
+                  "/assets/jain_machine_tools/js/html5-qrcode.min.js",
+                  "/assets/jain_machine_tools/js/barcode_scanner_utils.js?v=1.0.1",
+                  "/assets/jain_machine_tools/js/workspace_role_visibility.js?v=1.0.1"
 ]
 # include js, css files in header of web template
 # web_include_css = "/assets/jain_machine_tools/css/jain_machine_tools.css"
@@ -65,7 +68,9 @@ doctype_js = {
     "Item": "public/js/item.js",
     "Customer": "public/js/customer.js",
     "Sales Invoice": "public/js/sales_invoice_custom.js",
+    "Delivery Planning Schedule": "public/js/delivery_planning_schedule.js",
     "Stock Entry": "public/js/stock_entry_custom.js",
+    "Proforma Invoice": "jain_machine_tools/doctype/proforma_invoice/proforma_invoice.js",
 }
 
 # doctype_list_js = {"doctype" : "public/js/doctype_list.js"}
@@ -150,8 +155,10 @@ jinja = {
 permission_query_conditions = {
     "Material Request": "jain_machine_tools.permissions.material_request_permission.material_request_permission",
     "Purchase Order":"jain_machine_tools.permissions.purchase_order_permission.purchase_order_permission",
-    "Supplier":"jain_machine_tools.permissions.supplier_permisions.supplier_permission"
+    "Supplier":"jain_machine_tools.permissions.supplier_permisions.supplier_permission",
+    "Customer": "jain_machine_tools.permissions.customer_permission.customer_query_conditions"
 }
+
 
 # has_permission = {
 # 	"Event": "frappe.desk.doctype.event.event.has_permission",
@@ -161,9 +168,21 @@ permission_query_conditions = {
 # ---------------
 # Override standard doctype classes
 
-# override_doctype_class = {
-# 	"ToDo": "custom_app.overrides.CustomToDo"
-# }
+override_doctype_class = {
+	"Material Request": "jain_machine_tools.overrides.naming.JMTMaterialRequest",
+	"Request for Quotation": "jain_machine_tools.overrides.naming.JMTRequestForQuotation",
+	"Supplier Quotation": "jain_machine_tools.overrides.naming.JMTSupplierQuotation",
+	"Purchase Order": "jain_machine_tools.overrides.naming.JMTPurchaseOrder",
+	"Lead": "jain_machine_tools.overrides.naming.JMTLead",
+	"Opportunity": "jain_machine_tools.overrides.naming.JMTOpportunity",
+	"Quotation": "jain_machine_tools.overrides.naming.JMTQuotation",
+	"Sales Order": "jain_machine_tools.overrides.naming.JMTSalesOrder",
+	"Sales Invoice": "jain_machine_tools.overrides.naming.JMTSalesInvoice",
+	"Delivery Note": "jain_machine_tools.overrides.naming.JMTDeliveryNote",
+	"Stock Entry": "jain_machine_tools.overrides.naming.JMTStockEntry",
+	"Purchase Receipt": "jain_machine_tools.overrides.naming.JMTPurchaseReceipt",
+	"Purchase Invoice": "jain_machine_tools.overrides.naming.JMTPurchaseInvoice",
+}
 
 # Document Events
 # ---------------
@@ -197,7 +216,11 @@ doc_events = {
         "validate": "jain_machine_tools.overrides.purchase_order.validate_purchase_invoice"
     },
     "Purchase Receipt": {
-        "validate": "jain_machine_tools.overrides.purchase_order.validate_purchase_receipt"
+        "validate": [
+            "jain_machine_tools.api.serial_case_hooks.normalize_item_serial_fields",
+            "jain_machine_tools.api.serial_case_hooks.validate_purchase_receipt_serial_conflicts",
+            "jain_machine_tools.overrides.purchase_order.validate_purchase_receipt"
+        ]
     },
     "Material Request": {
         "before_insert": "jain_machine_tools.patches.reorder_override.set_reorder_field"
@@ -205,7 +228,11 @@ doc_events = {
     "Supplier": {
         "before_save": "jain_machine_tools.api.supplier_gstin_check.check_duplicate_gstin"
     },
-    "Serial No": {"on_update": "jain_machine_tools.api.serial_no_hooks.on_update"},
+    "Serial No": {
+        "validate": "jain_machine_tools.api.serial_case_hooks.normalize_serial_doc",
+        "before_insert": "jain_machine_tools.api.serial_case_hooks.normalize_serial_doc",
+        "on_update": "jain_machine_tools.api.serial_no_hooks.on_update"
+    },
     "Quotation": {
         "validate": "jain_machine_tools.overrides.quotation.validate_quotation"
     },
@@ -213,8 +240,18 @@ doc_events = {
         "validate": "jain_machine_tools.overrides.quotation.validate_sales_order"
     },
     "Sales Invoice": {
-        "validate": "jain_machine_tools.overrides.sales_invoice.validate_sales_invoice",
-        "on_submit": "jain_machine_tools.api.sales_invoice_warranty.update_serial_warranty_on_submit"
+        "validate": [
+            "jain_machine_tools.api.serial_case_hooks.normalize_item_serial_fields",
+            "jain_machine_tools.overrides.sales_invoice.validate_sales_invoice"
+        ],
+        "on_submit": [
+            "jain_machine_tools.api.sales_invoice_warranty.update_serial_warranty_on_submit",
+            "jain_machine_tools.overrides.sales_invoice.update_delivery_planning_schedule_status"
+        ],
+        "on_cancel": "jain_machine_tools.overrides.sales_invoice.update_delivery_planning_schedule_status"
+    },
+    "Stock Entry": {
+        "validate": "jain_machine_tools.api.serial_case_hooks.normalize_item_serial_fields"
     },
     "Delivery Note": {
         "validate": "jain_machine_tools.overrides.quotation.validate_delivery_note"
@@ -233,7 +270,7 @@ doc_events = {
 
 scheduler_events = {
 	# Optimized Auto Reorder - runs every hour instead of daily
-	"hourly": [
+	"daily": [
 		"jain_machine_tools.stock.optimized_reorder.optimized_reorder_item"
 	],
 }
@@ -247,9 +284,10 @@ scheduler_events = {
 # Overriding Methods
 # ------------------------------
 #
-# override_whitelisted_methods = {
-# 	"frappe.desk.doctype.event.event.get_events": "jain_machine_tools.event.get_events"
-# }
+override_whitelisted_methods = {
+	"erpnext.stock.get_item_details.get_item_details": "jain_machine_tools.api.sales_invoice_item_details.get_item_details",
+	"erpnext.selling.doctype.sales_order.sales_order.make_sales_invoice": "jain_machine_tools.overrides.sales_order.make_sales_invoice",
+}
 #
 # each overriding function accepts a `data` argument;
 # generated from the base implementation of the doctype dashboard,
@@ -320,6 +358,25 @@ standard_queries = {
             }
 
 fixtures = [
+    {
+        "doctype": "Number Card",
+        "filters": [
+            ["name", "in", (
+                "JMT Sales Today",
+                "JMT Sales This Week",
+                "JMT Sales This Month",
+                "JMT Sales This Year",
+            )],
+        ],
+    },
+    {
+        "doctype": "Property Setter",
+        "filters": [
+            ["doc_type", "=", "Sales Order"],
+            ["field_name", "in", ("billing_status", "delivery_status")],
+            ["property", "=", "in_list_view"],
+        ],
+    },
     {
         "doctype": "Workflow",
         "filters": [
