@@ -144,6 +144,7 @@ def validate_purchase_receipt(doc, method=None):
 	Hook for Purchase Receipt validation
 	"""
 	custom_calculate_taxes_and_totals(doc)
+	validate_purchase_receipt_against_po(doc)
 
 
 def validate_purchase_invoice_against_po(doc):
@@ -212,6 +213,50 @@ def validate_purchase_invoice_against_po(doc):
 				"PO limit exceeded.<br><br>{0}"
 			).format("<br>".join(mismatches))
 		)
+
+
+def validate_purchase_receipt_against_po(doc):
+	"""
+	Allow Purchase Receipt rate to be less than or equal to Purchase Order rate,
+	but never greater than the linked Purchase Order item rate.
+	"""
+	mismatches = []
+	po_detail_names = list(
+		{
+			row.get("purchase_order_item") or row.get("po_detail")
+			for row in doc.get("items", [])
+			if row.get("purchase_order_item") or row.get("po_detail")
+		}
+	)
+	po_item_map = _get_po_item_map_with_billed_qty(po_detail_names)
+
+	for row in doc.get("items", []):
+		po_detail = row.get("purchase_order_item") or row.get("po_detail")
+		if not po_detail:
+			continue
+
+		po_item = po_item_map.get(po_detail)
+		if not po_item:
+			continue
+
+		receipt_rate = flt(row.get("rate"))
+		po_rate = flt(po_item.get("rate"))
+		rate_precision = row.precision("rate") if hasattr(row, "precision") else 2
+
+		if flt(receipt_rate - po_rate, rate_precision) > 0:
+			mismatches.append(
+				_(
+					"Row #{0}: Item {1} has Purchase Receipt Rate = {2} and Purchase Order Rate = {3}. Purchase Receipt Rate cannot be greater than Purchase Order Rate."
+				).format(
+					row.idx,
+					_format_item_code(row),
+					frappe.format_value(receipt_rate, {"fieldtype": "Currency", "options": doc.currency}),
+					frappe.format_value(po_rate, {"fieldtype": "Currency", "options": doc.currency}),
+				)
+			)
+
+	if mismatches:
+		frappe.throw(mismatches, title=_("Purchase Receipt Rate Validation"), as_list=True)
 
 
 @frappe.whitelist()

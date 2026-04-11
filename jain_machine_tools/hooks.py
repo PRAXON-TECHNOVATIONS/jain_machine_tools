@@ -358,25 +358,25 @@ standard_queries = {
             }
 
 fixtures = [
-    {
-        "doctype": "Number Card",
-        "filters": [
-            ["name", "in", (
-                "JMT Sales Today",
-                "JMT Sales This Week",
-                "JMT Sales This Month",
-                "JMT Sales This Year",
-            )],
-        ],
-    },
-    {
-        "doctype": "Property Setter",
-        "filters": [
-            ["doc_type", "=", "Sales Order"],
-            ["field_name", "in", ("billing_status", "delivery_status")],
-            ["property", "=", "in_list_view"],
-        ],
-    },
+#     {
+#         "doctype": "Number Card",
+#         "filters": [
+#             ["name", "in", (
+#                 "JMT Sales Today",
+#                 "JMT Sales This Week",
+#                 "JMT Sales This Month",
+#                 "JMT Sales This Year",
+#             )],
+#         ],
+#     },
+#     {
+#         "doctype": "Property Setter",
+#         "filters": [
+#             ["doc_type", "=", "Sales Order"],
+#             ["field_name", "in", ("billing_status", "delivery_status")],
+#             ["property", "=", "in_list_view"],
+#         ],
+#     },
     {
         "doctype": "Workflow",
         "filters": [
@@ -384,118 +384,118 @@ fixtures = [
                 "name",
                 "in",
                 (
-                    "Purchase Order Approval",
-                    "Supplier Approval",
+                    # "Purchase Order Approval",
+                    # "Supplier Approval",
                     "Material Request Approval",
-                    "Quotation Approval",
+                    # "Quotation Approval",
                     "Sales Order Approval",
-                    "Customer Approval"
+                    # "Customer Approval"
                 ),
             ]
         ],
     },
-    {
-        "doctype": "Workflow Action Master",
-        "filters": [
-            [
-                "workflow_action_name",
-                "in",
-                (
-                    "Submit",
-                    "Approve",
-                    "Reject",
-                    "Resubmit",
-                ),
-            ]
-        ],
-    },
-    {
-        "doctype": "Workflow State",
-        "filters": [
-            [
-                "name",
-                "in",
-                (
-                    "Draft",
-                    "Pending Approval",
-                    "Pending Accounts Approval",
-                    "Pending Sales Approval",
-                    "Approved",
-                    "Rejected",
-                ),
-            ]
-        ],
-    },
-    {
-        "doctype": "Notification",
-        "filters": [
-            [
-                "name",
-                "in",
-                (
-                    "PO Send to Supplier After Approval",
-                    "Purchase Order Approval - Notify Purchase Manager",
-                    "New Supplier Created – Approval Required Mail",
-                    "New Supplier Created – Approval Required Notification",
-                ),
-            ]
-        ],
-    },
-    {
-        "doctype": "Email Template",
-        "filters": [["name", "=", "Request for Quotation Email"]],
-    },
-    {"doctype": "Print Format", "filters": [["module", "=", "Jain Machine Tools"]]},
-    {
-        "doctype": "Letter Head",
-        "filters": [["name", "=", "Default"]],
-    },
-    {   "doctype": "Workspace",
-        "filters": [
-            [
-                "name",
-                "in", 
-                (
-                    "Purchase",
-                    "Sales",
-                    "JMT Stock"
-                ),
-            ]
-        ]
-    },
-    {
-        "doctype": "Custom DocPerm",
-        "filters": [
-            [
-                "role",
-                "in",
-                (
-                    "Store Manager",
-                    "Purchase Manager",
-                    "Accounts Manager",
-                    "Accounts Head",
-                    "Purchase User",
-                    "Sales Executive",
-                    "Sales Head",
-                    "JMT Stock User"
-                ),
-            ]
-        ],
-    },
-  {
-        "doctype": "Role",
-        "filters": [
-            [
-                "name",
-                "in",
-                (
-                    "Store Manager",
-                    "Sales Executive",
-                    "Sales Head",
-                    "Accounts Head",
-                    "JMT Stock User"
-                ),
-            ]
-        ],
-    },
+#     {
+#         "doctype": "Workflow Action Master",
+#         "filters": [
+#             [
+#                 "workflow_action_name",
+#                 "in",
+#                 (
+#                     "Submit",
+#                     "Approve",
+#                     "Reject",
+#                     "Resubmit",
+#                 ),
+#             ]
+#         ],
+#     },
+#     {
+#         "doctype": "Workflow State",
+#         "filters": [
+#             [
+#                 "name",
+#                 "in",
+#                 (
+#                     "Draft",
+#                     "Pending Approval",
+#                     "Pending Accounts Approval",
+#                     "Pending Sales Approval",
+#                     "Approved",
+#                     "Rejected",
+#                 ),
+#             ]
+#         ],
+#     },
+#     {
+#         "doctype": "Notification",
+#         "filters": [
+#             [
+#                 "name",
+#                 "in",
+#                 (
+#                     "PO Send to Supplier After Approval",
+#                     "Purchase Order Approval - Notify Purchase Manager",
+#                     "New Supplier Created – Approval Required Mail",
+#                     "New Supplier Created – Approval Required Notification",
+#                 ),
+#             ]
+#         ],
+#     },
+#     {
+#         "doctype": "Email Template",
+#         "filters": [["name", "=", "Request for Quotation Email"]],
+#     },
+#     {"doctype": "Print Format", "filters": [["module", "=", "Jain Machine Tools"]]},
+#     {
+#         "doctype": "Letter Head",
+#         "filters": [["name", "=", "Default"]],
+#     },
+#     {   "doctype": "Workspace",
+#         "filters": [
+#             [
+#                 "name",
+#                 "in", 
+#                 (
+#                     "Purchase",
+#                     "Sales",
+#                     "JMT Stock"
+#                 ),
+#             ]
+#         ]
+#     },
+#     {
+#         "doctype": "Custom DocPerm",
+#         "filters": [
+#             [
+#                 "role",
+#                 "in",
+#                 (
+#                     "Store Manager",
+#                     "Purchase Manager",
+#                     "Accounts Manager",
+#                     "Accounts Head",
+#                     "Purchase User",
+#                     "Sales Executive",
+#                     "Sales Head",
+#                     "JMT Stock User"
+#                 ),
+#             ]
+#         ],
+#     },
+#   {
+#         "doctype": "Role",
+#         "filters": [
+#             [
+#                 "name",
+#                 "in",
+#                 (
+#                     "Store Manager",
+#                     "Sales Executive",
+#                     "Sales Head",
+#                     "Accounts Head",
+#                     "JMT Stock User"
+#                 ),
+#             ]
+#         ],
+#     },
 ]

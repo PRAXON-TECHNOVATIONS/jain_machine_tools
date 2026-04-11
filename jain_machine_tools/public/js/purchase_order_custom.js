@@ -3,6 +3,15 @@ frappe.ui.form.on('Purchase Order', {
 		jain_machine_tools.address_filters.setup_supplier_address_filters(frm);
 	},
 
+	refresh: function(frm) {
+		frm.remove_custom_button(__('Update Items'));
+		setTimeout(() => {
+			$(frm.page.wrapper)
+				.find('button[data-label="Update%20Items"]')
+				.remove();
+		}, 100);
+	},
+
 	supplier: function(frm) {
 		jain_machine_tools.address_filters.clear_party_addresses(frm, [
 			'supplier_address',

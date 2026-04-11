@@ -26,15 +26,13 @@
    "columns": 3,
    "fieldname": "serial_no",
    "fieldtype": "Link",
-   "in_list_view": 1,
    "label": "Serial No",
    "options": "Serial No"
   },
   {
    "fieldname": "manual_serial_no",
    "fieldtype": "Data",
-   "in_list_view": 1,
-   "label": "Serial No"
+   "label": "Serial No (Opening Stock)"
   },
   {
    "fieldname": "warehouse",
@@ -64,7 +62,7 @@
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2026-01-07 13:03:25.795271",
+ "modified": "2026-04-11 18:40:41.844037",
  "modified_by": "Administrator",
  "module": "Jain Machine Tools",
  "name": "Barcode Printing Table",

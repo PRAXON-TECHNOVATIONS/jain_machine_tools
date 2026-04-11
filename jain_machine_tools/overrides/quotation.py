@@ -279,6 +279,38 @@ def _fetch_rm_from_customer(doc):
 		doc.custom_rm = None
 
 
+def _validate_rate_not_above_price_list(doc):
+	"""
+	Block save when an item's final rate is greater than its price list rate.
+
+	Lower manual rates are allowed. Rows without a price list rate are skipped.
+	"""
+	errors = []
+
+	for item in doc.get("items") or []:
+		price_list_rate = flt(item.get("price_list_rate"))
+		rate = flt(item.get("rate"))
+
+		if not price_list_rate:
+			continue
+
+		rate_precision = item.precision("rate") if hasattr(item, "precision") else 2
+		if flt(rate - price_list_rate, rate_precision) > 0:
+			errors.append(
+				_(
+					"Row #{0}: Item {1} has Entered Rate = {2} and Price List Rate = {3}. Entered Rate cannot be greater than Price List Rate."
+				).format(
+					item.idx,
+					item.get("item_code") or item.get("item_name") or _("Unknown Item"),
+					frappe.format_value(rate, {"fieldtype": "Currency", "options": doc.currency}),
+					frappe.format_value(price_list_rate, {"fieldtype": "Currency", "options": doc.currency}),
+				)
+			)
+
+	if errors:
+		frappe.throw(errors, title=_("Rate Validation"), as_list=True)
+
+
 # Validation hooks
 def validate_quotation(doc, method=None):
 	"""
@@ -287,6 +319,7 @@ def validate_quotation(doc, method=None):
 	"""
 	_fetch_rm_from_customer(doc)
 	custom_calculate_taxes_and_totals(doc)
+	_validate_rate_not_above_price_list(doc)
 
 
 def validate_sales_order(doc, method=None):
@@ -295,6 +328,7 @@ def validate_sales_order(doc, method=None):
 	"""
 	_fetch_rm_from_customer(doc)
 	custom_calculate_taxes_and_totals(doc)
+	_validate_rate_not_above_price_list(doc)
 
 
 def validate_sales_invoice(doc, method=None):

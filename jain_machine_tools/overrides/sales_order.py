@@ -26,12 +26,20 @@ SYSTEM_CHILD_FIELDS = {
 def make_sales_invoice(source_name, target_doc=None, ignore_permissions=False, args=None):
 	from erpnext.selling.doctype.sales_order.sales_order import make_sales_invoice as erpnext_make_sales_invoice
 
-	doc = erpnext_make_sales_invoice(
-		source_name,
-		target_doc=target_doc,
-		ignore_permissions=ignore_permissions,
-		args=args,
-	)
+	call_kwargs = {
+		"target_doc": target_doc,
+		"ignore_permissions": ignore_permissions,
+	}
+	if args is not None:
+		call_kwargs["args"] = args
+
+	try:
+		doc = erpnext_make_sales_invoice(source_name, **call_kwargs)
+	except TypeError as exc:
+		if "unexpected keyword argument 'args'" not in str(exc):
+			raise
+		call_kwargs.pop("args", None)
+		doc = erpnext_make_sales_invoice(source_name, **call_kwargs)
 	_copy_collection_plan_rows(source_name, doc)
 	return doc
 
