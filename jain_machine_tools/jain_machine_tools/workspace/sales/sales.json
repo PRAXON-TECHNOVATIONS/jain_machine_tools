@@ -1,12 +1,7 @@
 {
- "charts": [
-  {
-   "chart_name": "Sales Order Analysis",
-   "label": "Sales Order Analysis"
-  }
- ],
- "content": "[{\"id\":\"Lyfl8z2ixa\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\">Sales</span>\",\"col\":12}},{\"id\":\"i48eNRfgwa\",\"type\":\"chart\",\"data\":{\"chart_name\":\"Sales Order Analysis\",\"col\":12}},{\"id\":\"HDTjsp_n2E\",\"type\":\"number_card\",\"data\":{\"number_card_name\":\"Annual Sales\",\"col\":4}},{\"id\":\"Whtq-72-zl\",\"type\":\"number_card\",\"data\":{\"number_card_name\":\"Sales Orders to Deliver\",\"col\":4}},{\"id\":\"cxo93izszl\",\"type\":\"number_card\",\"data\":{\"number_card_name\":\"Sales Orders to Bill\",\"col\":4}},{\"id\":\"1x7zcrD8bb\",\"type\":\"number_card\",\"data\":{\"number_card_name\":\"Total Outgoing Bills\",\"col\":4}},{\"id\":\"s5LzD52aOc\",\"type\":\"number_card\",\"data\":{\"number_card_name\":\"Active Customers\",\"col\":4}},{\"id\":\"aVKVQ74PuH\",\"type\":\"spacer\",\"data\":{\"col\":12}},{\"id\":\"Ad5YzIJO7x\",\"type\":\"card\",\"data\":{\"card_name\":\"Master\",\"col\":4}},{\"id\":\"vEC1wD-w9b\",\"type\":\"card\",\"data\":{\"card_name\":\"Transations\",\"col\":4}},{\"id\":\"yp3VFp0cd7\",\"type\":\"card\",\"data\":{\"card_name\":\"Reports\",\"col\":4}}]",
- "creation": "2026-03-26 23:00:07.942020",
+ "charts": [],
+ "content": "[{\"id\":\"Lyfl8z2ixa\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\">Sales Performance</span>\",\"col\":12}},{\"id\":\"jmt_nc_today\",\"type\":\"number_card\",\"data\":{\"number_card_name\":\"JMT Sales Today\",\"col\":3}},{\"id\":\"jmt_nc_week\",\"type\":\"number_card\",\"data\":{\"number_card_name\":\"JMT Sales This Week\",\"col\":3}},{\"id\":\"jmt_nc_month\",\"type\":\"number_card\",\"data\":{\"number_card_name\":\"JMT Sales This Month\",\"col\":3}},{\"id\":\"jmt_nc_year\",\"type\":\"number_card\",\"data\":{\"number_card_name\":\"JMT Sales This Year\",\"col\":3}},{\"id\":\"jmt_links_header\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\">Sales</span>\",\"col\":12}},{\"id\":\"Ad5YzIJO7x\",\"type\":\"card\",\"data\":{\"card_name\":\"Master\",\"col\":4}},{\"id\":\"vEC1wD-w9b\",\"type\":\"card\",\"data\":{\"card_name\":\"Transations\",\"col\":4}},{\"id\":\"TtMFgOt7W6\",\"type\":\"card\",\"data\":{\"card_name\":\"Report\",\"col\":4}}]",
+ "creation": "2026-04-11 15:48:00.509223",
  "custom_blocks": [],
  "docstatus": 0,
  "doctype": "Workspace",
@@ -18,6 +13,35 @@
  "is_hidden": 0,
  "label": "Sales",
  "links": [
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Transations",
+   "link_count": 2,
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Material Request",
+   "link_count": 0,
+   "link_to": "Material Request",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Sales Order",
+   "link_count": 0,
+   "link_to": "Sales Order",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
   {
    "hidden": 0,
    "is_query_report": 0,
@@ -60,174 +84,28 @@
   {
    "hidden": 0,
    "is_query_report": 0,
-   "label": "Reports",
-   "link_count": 8,
+   "label": "Report",
+   "link_count": 1,
    "link_type": "DocType",
    "onboard": 0,
    "type": "Card Break"
   },
   {
    "hidden": 0,
-   "is_query_report": 0,
-   "label": "Sales Analytics",
-   "link_count": 0,
-   "link_to": "Sales Analytics",
-   "link_type": "Report",
-   "onboard": 0,
-   "report_ref_doctype": "Sales Order",
-   "type": "Link"
-  },
-  {
-   "hidden": 0,
-   "is_query_report": 0,
-   "label": "Sales Order Analysis",
-   "link_count": 0,
-   "link_to": "Sales Order Analysis",
-   "link_type": "Report",
-   "onboard": 0,
-   "report_ref_doctype": "Sales Order",
-   "type": "Link"
-  },
-  {
-   "hidden": 0,
-   "is_query_report": 0,
-   "label": "Sales Order Trends",
-   "link_count": 0,
-   "link_to": "Sales Order Trends",
-   "link_type": "Report",
-   "onboard": 0,
-   "report_ref_doctype": "Sales Order",
-   "type": "Link"
-  },
-  {
-   "hidden": 0,
-   "is_query_report": 0,
-   "label": "Sales Pipeline Analytics",
-   "link_count": 0,
-   "link_to": "Sales Pipeline Analytics",
-   "link_type": "Report",
-   "onboard": 0,
-   "report_ref_doctype": "Opportunity",
-   "type": "Link"
-  },
-  {
-   "hidden": 0,
    "is_query_report": 1,
-   "label": "Address And Contacts",
+   "label": "Stock Balance",
    "link_count": 0,
-   "link_to": "Address And Contacts",
+   "link_to": "Stock Balance",
    "link_type": "Report",
-   "onboard": 0,
-   "type": "Link"
-  },
-  {
-   "hidden": 0,
-   "is_query_report": 0,
-   "label": "Customers Without Any Sales Transactions",
-   "link_count": 0,
-   "link_to": "Customers Without Any Sales Transactions",
-   "link_type": "Report",
-   "onboard": 0,
-   "report_ref_doctype": "Sales Invoice",
-   "type": "Link"
-  },
-  {
-   "hidden": 0,
-   "is_query_report": 0,
-   "label": "Customer Credit Balance",
-   "link_count": 0,
-   "link_to": "Customer Credit Balance",
-   "link_type": "Report",
-   "onboard": 0,
-   "report_ref_doctype": "Customer",
-   "type": "Link"
-  },
-  {
-   "hidden": 0,
-   "is_query_report": 1,
-   "label": "Item-wise Sales History",
-   "link_count": 0,
-   "link_to": "Item-wise Sales History",
-   "link_type": "Report",
-   "onboard": 0,
-   "type": "Link"
-  },
-  {
-   "hidden": 0,
-   "is_query_report": 0,
-   "label": "Transations",
-   "link_count": 4,
-   "link_type": "DocType",
-   "onboard": 0,
-   "type": "Card Break"
-  },
-  {
-   "hidden": 0,
-   "is_query_report": 0,
-   "label": "Material Request",
-   "link_count": 0,
-   "link_to": "Material Request",
-   "link_type": "DocType",
-   "onboard": 0,
-   "type": "Link"
-  },
-  {
-   "hidden": 0,
-   "is_query_report": 0,
-   "label": "Quotation",
-   "link_count": 0,
-   "link_to": "Quotation",
-   "link_type": "DocType",
-   "onboard": 0,
-   "type": "Link"
-  },
-  {
-   "hidden": 0,
-   "is_query_report": 0,
-   "label": "Proforma Invoice",
-   "link_count": 0,
-   "link_to": "Proforma Invoice",
-   "link_type": "DocType",
-   "onboard": 0,
-   "type": "Link"
-  },
-  {
-   "hidden": 0,
-   "is_query_report": 0,
-   "label": "Sales Order",
-   "link_count": 0,
-   "link_to": "Sales Order",
-   "link_type": "DocType",
    "onboard": 0,
    "type": "Link"
   }
  ],
- "modified": "2026-03-27 08:32:19.416126",
+ "modified": "2026-04-11 15:54:07.387593",
  "modified_by": "Administrator",
  "module": "Jain Machine Tools",
  "name": "Sales",
- "number_cards": [
-  {
-   "label": "Annual Sales",
-   "number_card_name": "Annual Sales"
-  },
-  {
-   "label": "Sales Orders to Deliver",
-   "number_card_name": "Sales Orders to Deliver"
-  },
-  {
-   "label": "Sales Orders to Bill",
-   "number_card_name": "Sales Orders to Bill"
-  },
-  {
-   "label": "Total Outgoing Bills",
-   "number_card_name": "Total Outgoing Bills"
-  },
-  {
-   "label": "Active Customers",
-   "number_card_name": "Active Customers"
-  }
- ],
+ "number_cards": [],
  "owner": "Administrator",
  "parent_page": "",
  "public": 1,

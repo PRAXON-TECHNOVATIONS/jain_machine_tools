@@ -4,7 +4,7 @@ def execute():
     # Mapping: report -> list of roles
     report_role_map = {
         "Stock Ledger": ["Store Manager", "Stock User", "Sales Head", "Accounts Manager"],
-        "Stock Balance": ["Store Manager", "Stock User", "Stock Manager", "JMT Stock User", "Accounts Manager"],
+        "Stock Balance": ["Store Manager", "Stock User", "Stock Manager", "JMT Stock User", "Accounts Manager", "Sales Coordinate", "Sales Head", "Relationship Manager"],
         "Stock Projected Qty": ["Accounts User", "Item Manager", "JMT Stock User", "Maintenance User", "Manufacturing User", "Purchase User", "Sales User", "Stock Manager", "Stock User"],
         "Stock Ageing": ["Accounts User", "Item Manager", "JMT Stock User", "Maintenance User", "Manufacturing User", "Purchase User", "Sales User", "Stock Manager", "Stock User"],
         "Item Price Stock": ["Accounts User", "Item Manager", "JMT Stock User", "Maintenance User", "Manufacturing User", "Purchase User", "Sales User", "Stock Manager", "Stock User"],
