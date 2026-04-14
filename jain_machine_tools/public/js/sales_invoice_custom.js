@@ -42,11 +42,15 @@ frappe.ui.form.on('Sales Invoice', {
                     frm.dirty();
                     await frm.trigger("calculate_taxes_and_totals");
                 }
-            }),
-            __("Actions")
+            })
         );
+        if (frm.doc.docstatus !== 0 || !frm.doc.name) return;
+        if (frm.__barcode_scan_added) return;
 
-        frm.__barcode_scan_added = true;
+        cur_frm.add_custom_button(__("Barcode Scan"),
+             () => open_barcode_scan_dialog(frm),
+        );
+        // frm.__barcode_scan_added = true;
     },
     async before_save(frm) {
         await sync_invoice_qty_from_delivery_plans(frm);

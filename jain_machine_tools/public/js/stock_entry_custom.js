@@ -44,13 +44,18 @@ function add_barcode_scan_button(frm) {
                     frm.refresh_field('items');
                     frm.dirty();
                 }
-            }),
-            __('Actions')
+            })
+        );
+        if (frm.doc.docstatus !== 0 || !frm.doc.name) return;
+        if (frm.__barcode_scan_added) return;
+
+        cur_frm.add_custom_button(__("Barcode Scan"),
+             () => open_barcode_scan_dialog(frm),
         );
 
-        frm.__barcode_scan_added = true;
+        // frm.__barcode_scan_added = true;
     } else {
-        frm.remove_custom_button(__('Barcode Scan'), __('Actions'));
+        frm.remove_custom_button(__('Barcode Scan'));
         delete frm.__barcode_scan_added;
     }
 }
