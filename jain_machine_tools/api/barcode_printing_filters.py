@@ -20,7 +20,7 @@ def get_stock_entry_repack(doctype, txt, searchfield, start, page_len, filters):
             )
         ORDER BY se.modified DESC
         LIMIT %(start)s, %(page_len)s
-    """, {
+    """, {  
         'txt': '%%%s%%' % txt,
         'start': start,
         'page_len': page_len

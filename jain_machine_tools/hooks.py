@@ -220,7 +220,9 @@ doc_events = {
             "jain_machine_tools.api.serial_case_hooks.normalize_item_serial_fields",
             "jain_machine_tools.api.serial_case_hooks.validate_purchase_receipt_serial_conflicts",
             "jain_machine_tools.overrides.purchase_order.validate_purchase_receipt"
-        ]
+        ],
+        "on_cancel": "jain_machine_tools.overrides.purchase_order.on_cancel"
+        
     },
     "Material Request": {
         "before_insert": "jain_machine_tools.patches.reorder_override.set_reorder_field"

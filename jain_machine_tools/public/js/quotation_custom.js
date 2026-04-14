@@ -105,7 +105,15 @@ frappe.ui.form.on('Quotation Item', {
 				calculate_item_handling_charges(frm, cdt, cdn);
 			}, 100);
 		}
-	}
+	},
+	
+	handling_charges_percentage: function(frm, cdt, cdn) {
+		let row = locals[cdt][cdn];
+		if (row.handling_charges_type === 'Percentage') {
+			row.handling_charges_value = (row.amount * row.handling_charges_percentage) / 100;
+    		frm.refresh_field('items');
+		}
+	},
 });
 
 function jmt_fetch_rm(frm, customer) {
