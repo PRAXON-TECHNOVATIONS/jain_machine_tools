@@ -325,3 +325,18 @@ def _get_row_stock_qty(row):
 
 def _format_item_code(row):
 	return row.get("item_code") or _("Row #{0}").format(row.get("idx"))
+
+
+def on_cancel(doc, method):
+	if not doc.items:
+		return
+
+	for row in doc.items:
+		if row.serial_no:
+			serial_list = row.serial_no.split("\n")
+			for sn in serial_list:
+				if frappe.db.exists("Serial No", sn):
+					try:
+						frappe.delete_doc("Serial No", sn, force=1)
+					except Exception as e:
+						frappe.log_error(f"Error deleting Serial No {sn}: {str(e)}")               

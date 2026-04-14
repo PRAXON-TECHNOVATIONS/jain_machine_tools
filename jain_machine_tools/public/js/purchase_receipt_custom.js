@@ -20,15 +20,24 @@ frappe.ui.form.on("Purchase Receipt", {
         if (frm.doc.docstatus !== 0 || !frm.doc.name) return;
         if (frm.__barcode_scan_added) return;
 
-        frm.add_custom_button(
-            __("Barcode Scan"),
-            () => open_barcode_scan_dialog(frm),
-            __("Actions")
+        cur_frm.add_custom_button(__("Barcode Scan"),
+             () => open_barcode_scan_dialog(frm),
         );
 
-        frm.__barcode_scan_added = true;
+        // frm.__barcode_scan_added = true;
     },
 });
+
+frappe.ui.form.on('Purchase Receipt Item', {
+    
+    handling_charges_percentage: function(frm, cdt, cdn) {
+		let row = locals[cdt][cdn];
+		if (row.handling_charges_type === 'Percentage') {
+			row.handling_charges_value = (row.amount * row.handling_charges_percentage) / 100;
+    		frm.refresh_field('items');
+		}
+	},
+})
 
 async function open_barcode_scan_dialog(frm) {
     if (typeof Html5Qrcode === "undefined") {

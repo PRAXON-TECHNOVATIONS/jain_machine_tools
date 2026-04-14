@@ -83,8 +83,22 @@ frappe.ui.form.on('Purchase Order Item', {
 				calculate_item_handling_charges(frm, cdt, cdn);
 			}, 100);
 		}
-	}
+	},
+
+	handling_charges_percentage: function(frm, cdt, cdn) {
+		let row = locals[cdt][cdn];
+		if (row.handling_charges_type === 'Percentage') {
+			row.handling_charges_value = (row.amount * row.handling_charges_percentage) / 100;
+    		frm.refresh_field('items');
+		}
+	},
 });
+
+function calculate_row(frm, cdt, cdn) {
+    let row = locals[cdt][cdn];
+    row.result = (row.amount * row.percentage) / 100;
+    frm.refresh_field('child_table_fieldname');
+}
 
 function calculate_item_handling_charges(frm, cdt, cdn) {
 	let row = locals[cdt][cdn];

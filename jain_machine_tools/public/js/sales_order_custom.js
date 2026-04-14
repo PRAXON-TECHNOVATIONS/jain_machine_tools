@@ -85,7 +85,16 @@ frappe.ui.form.on('Sales Order Item', {
 			frappe.model.set_value(cdt, cdn, 'handling_charges_type', '');
 		}
 		frm.script_manager.trigger('calculate_taxes_and_totals');
-	}
+	},
+
+	handling_charges_percentage: function(frm, cdt, cdn) {
+		let row = locals[cdt][cdn];
+		if (row.handling_charges_type === 'Percentage') {
+			row.handling_charges_value = (row.amount * row.handling_charges_percentage) / 100;
+    		frm.refresh_field('items');
+		}
+	},
+
 });
 
 function jmt_fetch_rm_so(frm, customer) {
