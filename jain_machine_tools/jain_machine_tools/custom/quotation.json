@@ -173,7 +173,7 @@
    "name": "Quotation-custom_old_quotation_status",
    "no_copy": 0,
    "non_negative": 0,
-   "options": "Budgeting\nClosed Lost\nFinalization\nNegotiation\nQuotation Cancelled\nTender",
+   "options": "\nBudgeting\nClosed Lost\nFinalization\nNegotiation\nQuotation Cancelled\nTender",
    "owner": "Administrator",
    "permlevel": 0,
    "placeholder": null,
@@ -188,7 +188,7 @@
    "search_index": 0,
    "show_dashboard": 0,
    "sort_options": 0,
-   "translatable": 1,
+   "translatable": 0,
    "unique": 0,
    "width": null
   },
