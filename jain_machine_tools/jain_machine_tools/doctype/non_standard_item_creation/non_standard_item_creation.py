@@ -134,6 +134,7 @@ class NonStandardItemCreation(Document):
         item = frappe.new_doc("Item")
         item.item_code = self.new_item_code
         item.item_name = self.new_item_code
+        item.description = self.build_item_description(base)
         item.is_non_standard = 1
         item.valuation_rate = self.valuation_price
 
@@ -176,6 +177,30 @@ class NonStandardItemCreation(Document):
 
         item.insert(ignore_permissions=True)
         frappe.msgprint(f"Item {self.new_item_code} created successfully", indicator="green")
+
+    def build_item_description(self, base):
+        """Base item's description as-is + selected parameter values, appended within the same line"""
+        import re
+
+        base_description = (base.description or "").strip()
+
+        param_values = [
+            row.selected_value.strip()
+            for row in sorted(self.parameters, key=lambda d: d.idx or 0)
+            if row.selected_value
+        ]
+
+        suffix = " ".join(param_values)
+        if not suffix:
+            return base_description
+
+        # Insert before the trailing closing tags (e.g. </p></div>) so it stays on the same line
+        match = re.search(r"(?:</\w+>\s*)+$", base_description)
+        if match:
+            insert_at = match.start()
+            return f"{base_description[:insert_at]} {suffix}{base_description[insert_at:]}"
+
+        return f"{base_description} {suffix}"
 
     # ---------------------------------------------------------
     # PRICE LOGIC
